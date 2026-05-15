@@ -140,11 +140,24 @@ function HeroSection() {
             </Table>
           </Card>
           
-          <Card className="absolute -bottom-6 -left-12 w-56 bg-primary text-primary-foreground p-5 shadow-[0_20px_40px_rgba(0,0,0,0.2)] hidden md:block border-none z-20 animate-float">
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-5 opacity-80">Sales Growth</div>
-            <div className="flex items-end gap-2.5 h-20">
-              {[40, 70, 45, 90, 60, 80, 50].map((h, i) => (
-                <div key={i} className="flex-1 bg-white/30 rounded-full hover:bg-white/50 transition-all cursor-pointer" style={{ height: `${h}%` }} />
+          <Card className="absolute -bottom-10 -left-16 w-64 bg-primary text-primary-foreground p-6 shadow-[0_30px_60px_rgba(0,0,0,0.3)] hidden md:block border-none z-20 animate-float">
+            <div className="flex items-center justify-between mb-6">
+              <div className="text-[10px] font-black uppercase tracking-wider opacity-80">Sales Growth</div>
+              <div className="flex items-center gap-1 text-[11px] font-bold bg-white/20 px-2 py-0.5 rounded-full">
+                +24%
+              </div>
+            </div>
+            <div className="flex items-end gap-3 h-24">
+              {[40, 65, 45, 90, 55, 80, 70].map((h, i) => (
+                <div 
+                  key={i} 
+                  className="flex-1 bg-gradient-to-t from-white/10 to-white/40 rounded-full hover:from-white/30 hover:to-white/60 transition-all cursor-pointer relative group" 
+                  style={{ height: `${h}%` }}
+                >
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-primary text-[10px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    ${(h * 1.2).toFixed(0)}k
+                  </div>
+                </div>
               ))}
             </div>
           </Card>
