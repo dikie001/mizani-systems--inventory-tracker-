@@ -91,22 +91,23 @@ function HeroSection() {
         <div className="relative perspective-1000 transform-gpu">
           <Card className="shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden border-white/10 bg-card/80 backdrop-blur-xl tilt-card">
             <Table>
-              <TableHeader className="bg-muted/30">
+              <TableHeader className="border-none">
                 <TableRow className="hover:bg-transparent border-none">
-                  <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] py-3 px-6 text-muted-foreground/70">Product Name</TableHead>
-                  <TableHead className="text-right text-[10px] font-black uppercase tracking-[0.2em] py-3 px-6 text-muted-foreground/70">Stock</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] pt-1.5 pb-2 px-6 text-muted-foreground/70">Product Name</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] pt-1.5 pb-2 px-6 text-muted-foreground/70">Price</TableHead>
+                  <TableHead className="text-right text-[10px] font-black uppercase tracking-[0.2em] pt-1.5 pb-2 px-6 text-muted-foreground/70">Stock</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {[
-                  { name: "Adidas Ultraboost", stock: "240 pcs" },
-                  { name: "Adidas Predator", stock: "220 pcs" },
-                  { name: "Nike Air Force 1", stock: "201 pcs" },
-                  { name: "Puma Suede", stock: "185 pcs" },
-                  { name: "Reebok Classic", stock: "150 pcs" },
+                  { name: "Adidas Ultraboost", price: "$159", stock: "240 pcs" },
+                  { name: "Adidas Predator", price: "$129", stock: "220 pcs" },
+                  { name: "Nike Air Force 1", price: "$110", stock: "201 pcs" },
+                  { name: "Puma Suede", price: "$89", stock: "185 pcs" },
+                  { name: "Reebok Classic", price: "$75", stock: "150 pcs" },
                 ].map((item) => (
                   <TableRow key={item.name} className="hover:bg-white/5 transition-colors border-white/5">
-                    <TableCell className="py-2.5 px-6">
+                    <TableCell className="py-2 px-6">
                       <div className="flex items-center gap-4">
                         <div className="h-10 w-10 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center font-bold text-sm text-primary border border-primary/10">
                           {item.name.charAt(0)}
@@ -114,7 +115,10 @@ function HeroSection() {
                         <span className="font-semibold text-[15px] tracking-tight">{item.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right py-2.5 px-6">
+                    <TableCell className="py-2 px-6">
+                      <span className="font-mono text-xs font-bold text-emerald-500/80">{item.price}</span>
+                    </TableCell>
+                    <TableCell className="text-right py-2 px-6">
                       <span className="font-mono text-sm font-semibold text-muted-foreground/80">{item.stock}</span>
                     </TableCell>
                   </TableRow>
