@@ -67,6 +67,10 @@ function getBreadcrumbLabel(segment: string) {
   )
 }
 
+function breadcrumbSegmentsFromPath(pathname: string) {
+  return pathname.split("/").filter(Boolean).slice(1)
+}
+
 export function DashboardHeader() {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
@@ -78,20 +82,11 @@ export function DashboardHeader() {
   const userImage = session?.user?.image ?? ""
   const userInitials = getInitials(session?.user?.name, session?.user?.email)
 
-  const breadcrumbSegments = pathname
-    .split("/")
-    .filter(Boolean)
-    .slice(1)
-    .map((segment, index) => {
-      const href = `/dashboard/${breadcrumbSegmentsFromPath(pathname)
-        .slice(0, index + 1)
-        .join("/")}`
-
-      return {
-        href,
-        label: getBreadcrumbLabel(segment),
-      }
-    })
+  const breadcrumbPath = breadcrumbSegmentsFromPath(pathname)
+  const breadcrumbSegments = breadcrumbPath.map((segment, index) => ({
+    href: `/dashboard/${breadcrumbPath.slice(0, index + 1).join("/")}`,
+    label: getBreadcrumbLabel(segment),
+  }))
 
   useEffect(() => {
     if (status !== "authenticated" || !userName) {
@@ -143,13 +138,6 @@ export function DashboardHeader() {
         aria-label="Breadcrumb"
         className="flex min-w-0 items-center gap-1 text-sm"
       >
-        <Link
-          href="/dashboard"
-          className="truncate text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Mizani Systems
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
         <Link
           href="/dashboard"
           className="truncate text-muted-foreground transition-colors hover:text-foreground"
@@ -304,8 +292,4 @@ export function DashboardHeader() {
       </div>
     </header>
   )
-}
-
-function breadcrumbSegmentsFromPath(pathname: string) {
-  return pathname.split("/").filter(Boolean).slice(1)
 }
