@@ -113,7 +113,7 @@ export function DashboardSidebar() {
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="bg-transparent">
-      <SidebarHeader className="h-14 justify-center border-b border-sidebar-border/60 px-2.5 py-0 group-data-[collapsible=icon]:h-14">
+      <SidebarHeader className="h-16 justify-center border-b border-sidebar-border/60 px-3 py-0 group-data-[collapsible=icon]:h-16">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -126,11 +126,11 @@ export function DashboardSidebar() {
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm shadow-emerald-950/10">
                   <Box className="h-3.5 w-3.5" />
                 </div>
-                <div className="flex flex-col gap-0.5 leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="text-xs font-semibold tracking-tight">
+                <div className="flex flex-col gap-0 leading-none group-data-[collapsible=icon]:hidden">
+                  <span className="text-[15px] font-bold tracking-normal">
                     Mizani
                   </span>
-                  <span className="text-[8px] tracking-wider text-sidebar-foreground/40 uppercase">
+                  <span className="text-[10px] font-medium tracking-normal text-sidebar-foreground/45">
                     Systems
                   </span>
                 </div>
@@ -140,13 +140,13 @@ export function DashboardSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="gap-3 px-2.5 py-3 group-data-[collapsible=icon]:gap-1.5 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2">
+      <SidebarContent className="gap-4 px-3 py-4 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3">
         <SidebarGroup className="px-0 py-0 group-data-[collapsible=icon]:gap-2">
-          <SidebarGroupLabel className="px-2.5 pb-1.5 text-[9px] font-semibold tracking-widest text-sidebar-foreground/35 uppercase">
+          <SidebarGroupLabel className="px-2.5 pb-1.5 text-[9px] font-semibold tracking-normal text-sidebar-foreground/35 uppercase">
             Workspace
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
+            <SidebarMenu className="gap-1.5">
               {mainNav.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
@@ -180,11 +180,11 @@ export function DashboardSidebar() {
         <Separator className="mx-3 w-auto bg-sidebar-border/70 group-data-[collapsible=icon]:hidden" />
 
         <SidebarGroup className="px-0 py-0 group-data-[collapsible=icon]:gap-2">
-          <SidebarGroupLabel className="px-2.5 pb-1.5 text-[9px] font-semibold tracking-widest text-sidebar-foreground/35 uppercase">
+          <SidebarGroupLabel className="px-2.5 pb-1.5 text-[9px] font-semibold tracking-normal text-sidebar-foreground/35 uppercase">
             More
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
+            <SidebarMenu className="gap-1.5">
               {secondaryNav.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
