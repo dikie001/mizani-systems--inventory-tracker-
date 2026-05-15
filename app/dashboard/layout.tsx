@@ -3,9 +3,9 @@ import type { Metadata } from "next"
 import { DashboardShell } from "./dashboard-shell"
 
 export const metadata: Metadata = {
-  title: "Dashboard | Mizani Systems",
+  title: "Dashboard | StockVault",
   description:
-    "Manage your inventory, track orders, and monitor key metrics from your Mizani Systems dashboard.",
+    "Manage your inventory, track orders, and monitor key metrics from your StockVault dashboard.",
 }
 
 export default function DashboardLayout({

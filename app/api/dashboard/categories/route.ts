@@ -41,15 +41,16 @@ export async function GET(request: Request) {
     })
 
     const data = categories.map(cat => {
-      const catSales = orderItems
-        .filter(item => item.product.categoryId === cat.id)
-        .reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      const filteredItems = orderItems.filter(item => item.product.categoryId === cat.id)
+      const catSales = filteredItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      const catItems = filteredItems.reduce((sum, item) => sum + item.quantity, 0)
       
       return {
         category: cat.name,
-        value: catSales
+        value: catSales,
+        items: catItems
       }
-    }).filter(c => c.value > 0)
+    }).filter(c => c.items > 0 || c.value > 0)
 
     // If no sales data for range, fallback to stock value for visualization
     if (data.length === 0) {
@@ -61,8 +62,9 @@ export async function GET(request: Request) {
       return NextResponse.json(
         stockData.map(c => ({
           category: c.name,
-          value: c.products.reduce((acc, p) => acc + (p.price * p.stock), 0)
-        })).filter(c => c.value > 0)
+          value: c.products.reduce((acc, p) => acc + (p.price * p.stock), 0),
+          items: c.products.reduce((acc, p) => acc + p.stock, 0)
+        })).filter(c => c.items > 0 || c.value > 0)
       )
     }
 

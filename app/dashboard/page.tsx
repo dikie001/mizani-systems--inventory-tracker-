@@ -111,6 +111,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
             title: "Total Products",
@@ -151,6 +152,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
 
       {/* Charts Row */}
       <div className="grid gap-6 lg:grid-cols-2">
