@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import type { Prisma } from "@prisma/client"
 import { auth } from "@/auth"
+import {
+  computeProductStatus,
+  formatProduct,
+  normalizeProductPayload,
+  productQueryInclude,
+} from "@/lib/inventory"
+import prisma from "@/lib/prisma"
 
 export async function GET(request: Request) {
   const session = await auth()
-  if (!session) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -12,100 +19,131 @@ export async function GET(request: Request) {
   const search = searchParams.get("search")
   const category = searchParams.get("category")
   const status = searchParams.get("status")
+  const warehouse = searchParams.get("warehouse")
 
-  const where: any = {}
-  
+  const where: Prisma.ProductWhereInput = {}
+
   if (search) {
     where.OR = [
       { name: { contains: search, mode: "insensitive" } },
       { sku: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } },
     ]
   }
+
   if (category && category !== "all") {
-    where.category = { name: category }
+    where.category = {
+      name: category,
+    }
   }
+
   if (status && status !== "all") {
     where.status = status
+  }
+
+  if (warehouse && warehouse !== "all") {
+    where.warehouse = {
+      name: warehouse,
+    }
   }
 
   try {
     const products = await prisma.product.findMany({
       where,
-      include: {
-        category: true,
-        warehouse: true,
-      },
+      include: productQueryInclude(),
       orderBy: { createdAt: "desc" },
     })
 
-    // Flatten to match frontend expectation
-    const formatted = products.map((p) => ({
-      id: p.id,
-      name: p.name,
-      sku: p.sku,
-      category: p.category.name,
-      price: p.price,
-      stock: p.stock,
-      status: p.status,
-      warehouse: p.warehouse.name,
-    }))
-
-    return NextResponse.json(formatted)
+    return NextResponse.json(products.map(formatProduct))
   } catch (error) {
     console.error("Failed to fetch products:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to fetch products." },
+      { status: 500 },
+    )
   }
 }
 
 export async function POST(request: Request) {
   const session = await auth()
-  if (!session) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   try {
-    const body = await request.json()
-    
-    // In a real app, validate body with Zod
+    const payload = normalizeProductPayload(await request.json())
 
-    // Find or create category
-    let category = await prisma.category.findUnique({ where: { name: body.category } })
-    if (!category) {
-      category = await prisma.category.create({ data: { name: body.category } })
-    }
+    const product = await prisma.$transaction(async (tx) => {
+      const existingProduct = await tx.product.findUnique({
+        where: { sku: payload.sku },
+        select: { id: true },
+      })
 
-    // Default warehouse for demo
-    let warehouse = await prisma.warehouse.findFirst({ where: { name: "Main" } })
-    if (!warehouse) {
-      warehouse = await prisma.warehouse.create({ data: { name: "Main" } })
-    }
-
-    const product = await prisma.product.create({
-      data: {
-        name: body.name,
-        sku: body.sku,
-        description: body.description,
-        price: parseFloat(body.price),
-        stock: parseInt(body.stock, 10),
-        status: parseInt(body.stock, 10) > 20 ? "in-stock" : parseInt(body.stock, 10) > 5 ? "low-stock" : "critical",
-        categoryId: category.id,
-        warehouseId: warehouse.id,
-      },
-    })
-
-    // Log the action
-    await prisma.auditLog.create({
-      data: {
-        action: "Product Created",
-        entity: product.name,
-        type: "create",
-        userId: session.user?.id as string,
+      if (existingProduct) {
+        throw new Error("A product with that SKU already exists.")
       }
+
+      const category = await tx.category.upsert({
+        where: { name: payload.category },
+        update: {},
+        create: { name: payload.category },
+      })
+
+      const warehouse = await tx.warehouse.upsert({
+        where: { name: payload.warehouse },
+        update: {},
+        create: { name: payload.warehouse },
+      })
+
+      const createdProduct = await tx.product.create({
+        data: {
+          name: payload.name,
+          sku: payload.sku,
+          description: payload.description,
+          price: payload.price,
+          stock: payload.stock,
+          minStock: payload.minStock,
+          maxStock: payload.maxStock,
+          status: computeProductStatus(payload.stock, payload.minStock),
+          categoryId: category.id,
+          warehouseId: warehouse.id,
+        },
+        include: productQueryInclude(),
+      })
+
+      if (payload.stock > 0) {
+        await tx.stockMovement.create({
+          data: {
+            productId: createdProduct.id,
+            userId: session.user.id,
+            type: "Initial Stock",
+            quantity: payload.stock,
+            status: "completed",
+          },
+        })
+      }
+
+      await tx.auditLog.create({
+        data: {
+          action: "Product Created",
+          entity: payload.name,
+          type: "create",
+          userId: session.user.id,
+        },
+      })
+
+      return createdProduct
     })
 
-    return NextResponse.json(product)
+    return NextResponse.json(formatProduct(product), { status: 201 })
   } catch (error) {
     console.error("Failed to create product:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    const message =
+      error instanceof Error ? error.message : "Failed to create product."
+
+    return NextResponse.json(
+      { error: message },
+      { status: message.includes("already exists") ? 409 : 400 },
+    )
   }
 }
