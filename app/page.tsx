@@ -28,11 +28,11 @@ function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl">
+        <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground italic">
-            C
+            M
           </div>
-          <span>StockVault</span>
+          <span>Mizani Systems</span>
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
           <Link href="#features" className="hover:text-primary">Features</Link>
@@ -58,33 +58,19 @@ function HeroSection() {
       <div className="container mx-auto px-6 grid gap-12 lg:grid-cols-2 items-center relative z-10">
         <div>
           <h1 className="text-4xl font-extrabold tracking-tighter sm:text-7xl mb-6 leading-[1.1]">
-            Warehouse stock <br />
-            <span className="text-gradient">Management</span> Solution
+            Precision Inventory <br />
+            <span className="text-gradient">Tracking</span> Solution
           </h1>
           <p className="text-xl text-muted-foreground mb-10 max-w-lg">
-            Complete inventory system to control and manage products in real time and grow your business efficiently.
+            A comprehensive inventory tracking system to monitor products in real-time and streamline your stock management.
           </p>
-          <div className="flex flex-wrap gap-4 mb-12">
-            <Button size="lg" className="px-8" asChild>
-              <Link href="/auth">Free Trial 1 Month</Link>
+          <div className="flex flex-wrap gap-4">
+            <Button size="lg" className="px-8 rounded-full" asChild>
+              <Link href="/auth">Start Free Trial</Link>
             </Button>
-            <Button size="lg" variant="outline" className="px-8">
+            <Button size="lg" variant="outline" className="px-8 rounded-full">
               How It Works
             </Button>
-          </div>
-          <div className="flex gap-12 pt-8 border-t">
-            <div>
-              <div className="text-2xl font-bold">14K</div>
-              <div className="text-xs text-muted-foreground uppercase tracking-widest">Brand Owner</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">23K</div>
-              <div className="text-xs text-muted-foreground uppercase tracking-widest">User Active</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">500+</div>
-              <div className="text-xs text-muted-foreground uppercase tracking-widest">Partners</div>
-            </div>
           </div>
         </div>
 
@@ -209,7 +195,7 @@ function FeatureSection() {
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-            Advantages Of Using a Warehouse Inventory System
+            Advantages of Modern Inventory Tracking
           </h2>
         </div>
         <div className="grid gap-8 md:grid-cols-3">
@@ -330,11 +316,11 @@ function Footer() {
       <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-2 font-bold text-xl">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground italic">
-            C
+            M
           </div>
-          <span>StockVault</span>
+          <span>Mizani Systems</span>
         </div>
-        <p className="text-sm text-muted-foreground">© 2026 StockVault. All rights reserved.</p>
+        <p className="text-sm text-muted-foreground">© 2026 Mizani Systems. All rights reserved.</p>
         <div className="flex gap-6 text-sm text-muted-foreground">
           <Link href="#" className="hover:text-foreground">Privacy</Link>
           <Link href="#" className="hover:text-foreground">Terms</Link>

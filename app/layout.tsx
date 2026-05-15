@@ -1,12 +1,12 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Outfit, Geist_Mono } from "next/font/google"
 
 import "./globals.css"
 import { Providers } from "@/components/providers"
 import { Toaster } from "sonner"
 import { cn } from "@/lib/utils"
 
-const fontSans = Geist({
+const fontSans = Outfit({
   subsets: ["latin"],
   variable: "--font-sans",
 })
@@ -17,9 +17,9 @@ const fontMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "StockVault — Intelligent Inventory Management",
+  title: "Mizani Systems — Precision Inventory Tracking",
   description:
-    "Manage inventory, track orders, and gain insights with StockVault's modern inventory management platform.",
+    "Track inventory, manage stock levels, and gain real-time insights with Mizani Systems' modern inventory tracker.",
 }
 
 export default function RootLayout({
