@@ -1,10 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import useSWR from "swr"
-import { Download, TrendingUp, Loader2 } from "lucide-react"
+import { Download, TrendingUp, Loader2, DollarSign, Package, ShoppingBag, Percent } from "lucide-react"
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Cell,
-  Pie, PieChart, XAxis, YAxis,
+  Pie, PieChart, XAxis, YAxis, ResponsiveContainer
 } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -15,17 +16,9 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
-
-// Keeping Top Products static as we don't have historical order item details seeded
-const topProducts = [
-  { product: "Earbuds Pro", units: 1842 },
-  { product: "Smart Watch", units: 1356 },
-  { product: "Headphones", units: 1189 },
-  { product: "Coffee Beans", units: 978 },
-  { product: "Running Shoes", units: 867 },
-]
 
 const revenueConfig: ChartConfig = {
   revenue: { label: "Revenue", color: "var(--chart-1)" },
@@ -38,30 +31,38 @@ const productConfig: ChartConfig = {
 
 const pieConfig: ChartConfig = {
   value: { label: "Share" },
-  Electronics: { label: "Electronics", color: "var(--chart-1)" },
-  Apparel: { label: "Apparel", color: "var(--chart-2)" },
-  "Food & Bev": { label: "Food & Bev", color: "var(--chart-3)" },
-  Home: { label: "Home", color: "var(--chart-4)" },
-  Sports: { label: "Sports", color: "var(--chart-5)" },
-  Beauty: { label: "Beauty", color: "var(--color-chart-1)" },
 }
 
-// Map index to colors for dynamic categories
 const pieColors = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--color-chart-1)"]
 
 export default function ReportsPage() {
-  const { data: revenueData, isLoading: revLoading } = useSWR<any[]>('/api/dashboard/revenue', fetcher)
-  const { data: categoryData, isLoading: catLoading } = useSWR<any[]>('/api/dashboard/categories', fetcher)
+  const [range, setRange] = useState("12m")
+
+  const { data: stats, isLoading: statsLoading } = useSWR(`/api/dashboard/reports/stats?range=${range}`, fetcher)
+  const { data: revenueData, isLoading: revLoading } = useSWR(`/api/dashboard/revenue?range=${range}`, fetcher)
+  const { data: categoryData, isLoading: catLoading } = useSWR(`/api/dashboard/categories?range=${range}`, fetcher)
+  const { data: topProducts, isLoading: topLoading } = useSWR(`/api/dashboard/reports/top-products?range=${range}`, fetcher)
+
+  const handleExport = () => {
+    window.print()
+  }
+
+  const kpis = [
+    { label: "Total Revenue", value: stats?.revenue.value, change: stats?.revenue.change, icon: DollarSign, color: "text-emerald-500", prefix: "$" },
+    { label: "Total Costs", value: stats?.costs.value, change: stats?.costs.change, icon: ShoppingBag, color: "text-red-500", prefix: "$" },
+    { label: "Net Profit", value: stats?.profit.value, change: stats?.profit.change, icon: Percent, color: "text-blue-500", prefix: "$" },
+    { label: "Avg Order Value", value: stats?.aov.value, change: stats?.aov.change, icon: Package, color: "text-amber-500", prefix: "$" },
+  ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-6 print:p-8 print:space-y-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
           <p className="text-sm text-muted-foreground">Analytics, trends, and business insights</p>
         </div>
         <div className="flex gap-2">
-          <Select defaultValue="12m">
+          <Select value={range} onValueChange={setRange}>
             <SelectTrigger className="h-8 w-36 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="7d">Last 7 days</SelectItem>
@@ -70,60 +71,75 @@ export default function ReportsPage() {
               <SelectItem value="12m">Last 12 months</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm"><Download className="mr-1.5 h-3.5 w-3.5" />Export PDF</Button>
+          <Button variant="outline" size="sm" onClick={handleExport}>
+            <Download className="mr-1.5 h-3.5 w-3.5" />Export PDF
+          </Button>
         </div>
       </div>
 
+      <div className="hidden print:block mb-6">
+        <h1 className="text-3xl font-bold">Inventory System Report</h1>
+        <p className="text-muted-foreground">Range: {range} | Generated on {new Date().toLocaleDateString()}</p>
+      </div>
+
       {/* Summary KPIs */}
-      <div className="grid gap-4 sm:grid-cols-4">
-        {[
-          { label: "Total Revenue", value: "$374,700", change: "+18.3%" },
-          { label: "Total Costs", value: "$218,400", change: "+12.1%" },
-          { label: "Net Profit", value: "$156,300", change: "+27.4%" },
-          { label: "Avg Order Value", value: "$142.50", change: "+5.8%" },
-        ].map((kpi) => (
-          <Card key={kpi.label}>
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        {kpis.map((kpi) => (
+          <Card key={kpi.label} className="print:shadow-none">
             <CardContent className="pt-4">
-              <p className="text-xs text-muted-foreground">{kpi.label}</p>
-              <p className="mt-1 text-2xl font-bold">{kpi.value}</p>
-              <p className="mt-1 flex items-center gap-1 text-xs text-emerald-500">
-                <TrendingUp className="h-3 w-3" />{kpi.change} vs last year
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground font-medium">{kpi.label}</p>
+                <kpi.icon className={`h-3.5 w-3.5 ${kpi.color}`} />
+              </div>
+              {statsLoading ? (
+                <Skeleton className="mt-1 h-8 w-24" />
+              ) : (
+                <>
+                  <p className="mt-1 text-2xl font-bold">
+                    {kpi.prefix}{typeof kpi.value === 'number' ? kpi.value.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
+                  </p>
+                  <p className={`mt-1 flex items-center gap-1 text-[10px] ${kpi.change?.startsWith('+') ? 'text-emerald-500' : 'text-red-500'}`}>
+                    <TrendingUp className="h-2.5 w-2.5" />{kpi.change} vs last period
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Revenue vs Costs Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Revenue vs Costs</CardTitle>
-          <CardDescription>Monthly comparison for the last 12 months</CardDescription>
+      <Card className="print:shadow-none">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Revenue vs Costs</CardTitle>
+          <CardDescription>Financial performance for the selected period</CardDescription>
         </CardHeader>
         <CardContent>
           {revLoading ? (
-            <div className="flex justify-center p-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+            <div className="flex h-[300px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
           ) : (
-            <ChartContainer config={revenueConfig} className="aspect-auto h-[272px] w-full">
-              <AreaChart data={revenueData || []} margin={{ top: 8, left: 0, right: 8, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="fillRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-revenue)" stopOpacity={0.25} />
-                    <stop offset="100%" stopColor="var(--color-revenue)" stopOpacity={0.02} />
-                  </linearGradient>
-                  <linearGradient id="fillCost" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-costs)" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="var(--color-costs)" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-                <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Area type="monotone" dataKey="revenue" stroke="var(--color-revenue)" strokeWidth={1.75} fill="url(#fillRev)" />
-                <Area type="monotone" dataKey="costs" stroke="var(--color-costs)" strokeWidth={1.75} fill="url(#fillCost)" />
-              </AreaChart>
+            <ChartContainer config={revenueConfig} className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={revenueData || []} margin={{ top: 10, left: 10, right: 10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="fillRev" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--color-revenue)" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="var(--color-revenue)" stopOpacity={0.02} />
+                    </linearGradient>
+                    <linearGradient id="fillCost" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--color-costs)" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="var(--color-costs)" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} minTickGap={30} />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Area type="monotone" dataKey="revenue" stroke="var(--color-revenue)" strokeWidth={2} fill="url(#fillRev)" />
+                  <Area type="monotone" dataKey="costs" stroke="var(--color-costs)" strokeWidth={2} fill="url(#fillCost)" />
+                </AreaChart>
+              </ResponsiveContainer>
             </ChartContainer>
           )}
         </CardContent>
@@ -131,43 +147,61 @@ export default function ReportsPage() {
 
       {/* Bottom row: Top Products + Category Distribution */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Selling Products</CardTitle>
-            <CardDescription>By units sold this year</CardDescription>
+        <Card className="print:shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Top Selling Products</CardTitle>
+            <CardDescription>Units sold in this period</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={productConfig} className="aspect-auto h-[228px] w-full">
-              <BarChart data={topProducts} layout="vertical" margin={{ top: 6, left: 0, right: 8, bottom: 6 }} barCategoryGap="30%">
-                <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                <XAxis type="number" tickLine={false} axisLine={false} />
-                <YAxis type="category" dataKey="product" tickLine={false} axisLine={false} width={90} tickMargin={8} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="units" fill="var(--color-units)" radius={[0, 4, 4, 0]} barSize={16} />
-              </BarChart>
-            </ChartContainer>
+            {topLoading ? (
+              <div className="flex h-[240px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+            ) : (
+              <ChartContainer config={productConfig} className="h-[240px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={topProducts || []} layout="vertical" margin={{ top: 0, left: 0, right: 20, bottom: 0 }}>
+                    <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+                    <XAxis type="number" hide />
+                    <YAxis type="category" dataKey="product" tickLine={false} axisLine={false} width={100} tickMargin={8} className="text-[10px]" />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="units" fill="var(--color-units)" radius={[0, 4, 4, 0]} barSize={18} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Category Distribution</CardTitle>
+        <Card className="print:shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Sales Distribution</CardTitle>
             <CardDescription>Revenue share by category</CardDescription>
           </CardHeader>
-          <CardContent className="flex items-center justify-center">
+          <CardContent>
             {catLoading ? (
-               <div className="flex justify-center p-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+               <div className="flex h-[240px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : (
-              <ChartContainer config={pieConfig} className="aspect-square h-[236px] w-full">
-                <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent nameKey="category" hideLabel />} />
-                  <Pie data={categoryData || []} dataKey="value" nameKey="category" cx="50%" cy="50%" innerRadius={56} outerRadius={92} strokeWidth={1.5}>
-                    {(categoryData || []).map((entry, index) => (
-                      <Cell key={entry.category} fill={pieColors[index % pieColors.length]} />
-                    ))}
-                  </Pie>
-                  <ChartLegend content={<ChartLegendContent nameKey="category" />} />
-                </PieChart>
+              <ChartContainer config={pieConfig} className="h-[240px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <ChartTooltip content={<ChartTooltipContent nameKey="category" hideLabel />} />
+                    <Pie 
+                      data={categoryData || []} 
+                      dataKey="value" 
+                      nameKey="category" 
+                      cx="50%" cy="50%" 
+                      innerRadius={60} 
+                      outerRadius={85} 
+                      paddingAngle={4}
+                      strokeWidth={2}
+                      stroke="hsl(var(--background))"
+                    >
+                      {(categoryData || []).map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                      ))}
+                    </Pie>
+                    <ChartLegend content={<ChartLegendContent nameKey="category" />} />
+                  </PieChart>
+                </ResponsiveContainer>
               </ChartContainer>
             )}
           </CardContent>
@@ -176,3 +210,4 @@ export default function ReportsPage() {
     </div>
   )
 }
+

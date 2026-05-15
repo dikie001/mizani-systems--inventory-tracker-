@@ -215,7 +215,8 @@ export default function OrdersPage() {
                             disabled={order.status === "cancelled"}
                             onClick={() => handleCancelOrder(order.id)}
                           >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" /> Cancel order
+                            <Trash2 className="mr-2 h-3.5 w-3.5" />
+                            <span>Cancel order</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

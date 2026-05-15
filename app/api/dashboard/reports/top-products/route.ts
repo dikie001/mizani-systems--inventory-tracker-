@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
-
 import { subDays, subMonths, startOfDay } from "date-fns"
 
 export async function GET(request: Request) {
@@ -22,10 +21,7 @@ export async function GET(request: Request) {
   startDate = startOfDay(startDate)
 
   try {
-    // Fetch all categories
-    const categories = await prisma.category.findMany()
-    
-    // Fetch order items within range to calculate sales distribution
+    // Get all order items for orders within the range
     const orderItems = await prisma.orderItem.findMany({
       where: {
         order: {
@@ -35,40 +31,32 @@ export async function GET(request: Request) {
       },
       include: {
         product: {
-          select: { categoryId: true }
+          select: { name: true }
         }
       }
     })
 
-    const data = categories.map(cat => {
-      const catSales = orderItems
-        .filter(item => item.product.categoryId === cat.id)
-        .reduce((sum, item) => sum + (item.price * item.quantity), 0)
-      
-      return {
-        category: cat.name,
-        value: catSales
-      }
-    }).filter(c => c.value > 0)
-
-    // If no sales data for range, fallback to stock value for visualization
-    if (data.length === 0) {
-      const stockData = await prisma.category.findMany({
-        include: {
-          products: true
+    // Group by product
+    const productMap: Record<string, { product: string, units: number }> = {}
+    
+    orderItems.forEach(item => {
+      if (!productMap[item.productId]) {
+        productMap[item.productId] = {
+          product: item.product.name,
+          units: 0
         }
-      })
-      return NextResponse.json(
-        stockData.map(c => ({
-          category: c.name,
-          value: c.products.reduce((acc, p) => acc + (p.price * p.stock), 0)
-        })).filter(c => c.value > 0)
-      )
-    }
+      }
+      productMap[item.productId].units += item.quantity
+    })
 
-    return NextResponse.json(data)
+    // Convert to array and sort
+    const topProducts = Object.values(productMap)
+      .sort((a, b) => b.units - a.units)
+      .slice(0, 5)
+
+    return NextResponse.json(topProducts)
   } catch (error) {
-    console.error("Failed to fetch categories:", error)
+    console.error("Failed to fetch top products:", error)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
