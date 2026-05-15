@@ -54,11 +54,12 @@ function Navbar() {
 
 function HeroSection() {
   return (
-    <section className="py-24 md:py-32 bg-background">
-      <div className="container mx-auto px-6 grid gap-12 lg:grid-cols-2 items-center">
+    <section className="pt-16 pb-24 md:pt-20 md:pb-32 bg-background relative overflow-hidden">
+      <div className="container mx-auto px-6 grid gap-12 lg:grid-cols-2 items-center relative z-10">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6">
-            Warehouse stock Management Solution
+          <h1 className="text-4xl font-extrabold tracking-tighter sm:text-7xl mb-6 leading-[1.1]">
+            Warehouse stock <br />
+            <span className="text-gradient">Management</span> Solution
           </h1>
           <p className="text-xl text-muted-foreground mb-10 max-w-lg">
             Complete inventory system to control and manage products in real time and grow your business efficiently.
@@ -87,13 +88,13 @@ function HeroSection() {
           </div>
         </div>
 
-        <div className="relative">
-          <Card className="shadow-2xl overflow-hidden border-border bg-card">
+        <div className="relative perspective-1000">
+          <Card className="shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden border-white/10 bg-card/80 backdrop-blur-xl tilt-card">
             <Table>
-              <TableHeader className="bg-muted/50">
-                <TableRow>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Product Name</TableHead>
-                  <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider">Stock</TableHead>
+              <TableHeader className="bg-muted/30">
+                <TableRow className="hover:bg-transparent border-none">
+                  <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] py-4 px-6 text-muted-foreground/70">Product Name</TableHead>
+                  <TableHead className="text-right text-[10px] font-black uppercase tracking-[0.2em] py-4 px-6 text-muted-foreground/70">Stock</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -104,27 +105,29 @@ function HeroSection() {
                   { name: "Puma Suede", stock: "185 pcs" },
                   { name: "Reebok Classic", stock: "150 pcs" },
                 ].map((item) => (
-                  <TableRow key={item.name}>
-                    <TableCell className="py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-muted rounded-md flex items-center justify-center font-bold text-xs">
+                  <TableRow key={item.name} className="hover:bg-white/5 transition-colors border-white/5">
+                    <TableCell className="py-5 px-6">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center font-bold text-sm text-primary border border-primary/10">
                           {item.name.charAt(0)}
                         </div>
-                        <span className="font-medium text-sm">{item.name}</span>
+                        <span className="font-semibold text-[15px] tracking-tight">{item.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right font-medium text-sm text-muted-foreground">{item.stock}</TableCell>
+                    <TableCell className="text-right py-5 px-6">
+                      <span className="font-mono text-sm font-semibold text-muted-foreground/80">{item.stock}</span>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </Card>
           
-          <Card className="absolute -bottom-10 -left-10 w-48 bg-primary text-primary-foreground p-4 shadow-2xl hidden md:block">
-            <div className="text-[10px] font-bold uppercase tracking-wider mb-4 opacity-70">Sales Growth</div>
-            <div className="flex items-end gap-2 h-16">
-              {[40, 70, 45, 90, 60, 80].map((h, i) => (
-                <div key={i} className="flex-1 bg-primary-foreground/20 rounded-t-sm" style={{ height: `${h}%` }} />
+          <Card className="absolute -bottom-6 -left-12 w-56 bg-primary text-primary-foreground p-5 shadow-[0_20px_40px_rgba(0,0,0,0.2)] hidden md:block border-none z-20 animate-float">
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-5 opacity-80">Sales Growth</div>
+            <div className="flex items-end gap-2.5 h-20">
+              {[40, 70, 45, 90, 60, 80, 50].map((h, i) => (
+                <div key={i} className="flex-1 bg-white/30 rounded-full hover:bg-white/50 transition-all cursor-pointer" style={{ height: `${h}%` }} />
               ))}
             </div>
           </Card>

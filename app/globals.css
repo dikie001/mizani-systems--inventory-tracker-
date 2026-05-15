@@ -184,4 +184,17 @@
   .blob {
     @apply absolute -z-10 h-[300px] w-[300px] rounded-full blur-[100px];
   }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .tilt-card {
+    transform: rotateY(-12deg) rotateX(4deg) rotateZ(1deg);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .tilt-card:hover {
+    transform: rotateY(-8deg) rotateX(2deg) rotateZ(0deg) scale(1.02);
+  }
 }
