@@ -5,15 +5,18 @@ import { updateProductAlerts } from "@/lib/inventory"
 
 export async function GET(request: Request) {
   const session = await auth()
-  if (!session) {
+  if (!session?.user?.id || !session.user.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  const workspaceId = session.user.workspaceId
   const { searchParams } = new URL(request.url)
   const search = searchParams.get("search")
   const status = searchParams.get("status")
 
-  const where: any = {}
+  const where: any = {
+    workspaceId,
+  }
   
   if (search) {
     where.OR = [
@@ -53,9 +56,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const session = await auth()
-  if (!session || !session.user?.id) {
+  if (!session?.user?.id || !session.user.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+
+  const workspaceId = session.user.workspaceId
 
   try {
     const body = await request.json()
@@ -70,12 +75,15 @@ export async function POST(request: Request) {
       const orderItemsToCreate = []
 
       for (const item of items) {
-        const product = await tx.product.findUnique({
-          where: { id: item.productId }
+        const product = await tx.product.findFirst({
+          where: { 
+            id: item.productId,
+            workspaceId,
+          }
         })
 
         if (!product) {
-          throw new Error(`Product ${item.productId} not found`)
+          throw new Error(`Product ${item.productId} not found in this workspace`)
         }
 
         if (product.stock < item.quantity) {
@@ -105,6 +113,7 @@ export async function POST(request: Request) {
           data: {
             productId: item.productId,
             userId: session.user.id as string,
+            workspaceId,
             type: "Sale",
             quantity: -item.quantity,
             status: "completed"
@@ -119,6 +128,7 @@ export async function POST(request: Request) {
           total: totalAmount,
           status: "pending",
           payment: "unpaid",
+          workspaceId,
           orderItems: {
             create: orderItemsToCreate
           }
@@ -134,7 +144,8 @@ export async function POST(request: Request) {
           action: `Created order ${order.id}`,
           entity: "Order",
           type: "create",
-          userId: session.user.id as string
+          userId: session.user.id as string,
+          workspaceId,
         }
       })
 

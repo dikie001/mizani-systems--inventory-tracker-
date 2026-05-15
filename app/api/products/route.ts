@@ -11,7 +11,7 @@ import prisma from "@/lib/prisma"
 
 export async function GET(request: Request) {
   const session = await auth()
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session.user.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -20,8 +20,9 @@ export async function GET(request: Request) {
   const category = searchParams.get("category")
   const status = searchParams.get("status")
 
-
-  const where: Prisma.ProductWhereInput = {}
+  const where: Prisma.ProductWhereInput = {
+    workspaceId: session.user.workspaceId,
+  }
 
   if (search) {
     where.OR = [
@@ -34,14 +35,13 @@ export async function GET(request: Request) {
   if (category && category !== "all") {
     where.category = {
       name: category,
+      workspaceId: session.user.workspaceId,
     }
   }
 
   if (status && status !== "all") {
     where.status = status
   }
-
-
 
   try {
     const products = await prisma.product.findMany({
@@ -62,30 +62,43 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const session = await auth()
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session.user.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+
+  const workspaceId = session.user.workspaceId
 
   try {
     const payload = normalizeProductPayload(await request.json())
 
     const product = await prisma.$transaction(async (tx) => {
       const existingProduct = await tx.product.findUnique({
-        where: { sku: payload.sku },
+        where: { 
+          workspaceId_sku: {
+            workspaceId,
+            sku: payload.sku,
+          }
+        },
         select: { id: true },
       })
 
       if (existingProduct) {
-        throw new Error("A product with that SKU already exists.")
+        throw new Error("A product with that SKU already exists in this workspace.")
       }
 
       const category = await tx.category.upsert({
-        where: { name: payload.category },
+        where: { 
+          workspaceId_name: {
+            workspaceId,
+            name: payload.category,
+          }
+        },
         update: {},
-        create: { name: payload.category },
+        create: { 
+          name: payload.category,
+          workspaceId,
+        },
       })
-
-
 
       const createdProduct = await tx.product.create({
         data: {
@@ -98,7 +111,7 @@ export async function POST(request: Request) {
           maxStock: payload.maxStock,
           status: computeProductStatus(payload.stock, payload.minStock),
           categoryId: category.id,
-
+          workspaceId,
         },
         include: productQueryInclude(),
       })
@@ -108,6 +121,7 @@ export async function POST(request: Request) {
           data: {
             productId: createdProduct.id,
             userId: session.user.id,
+            workspaceId,
             type: "Initial Stock",
             quantity: payload.stock,
             status: "completed",
@@ -121,6 +135,7 @@ export async function POST(request: Request) {
           entity: payload.name,
           type: "create",
           userId: session.user.id,
+          workspaceId,
         },
       })
 

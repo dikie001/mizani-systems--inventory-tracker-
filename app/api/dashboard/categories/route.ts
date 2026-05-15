@@ -6,10 +6,11 @@ import { subDays, subMonths, startOfDay } from "date-fns"
 
 export async function GET(request: Request) {
   const session = await auth()
-  if (!session) {
+  if (!session?.user?.id || !session.user.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  const workspaceId = session.user.workspaceId
   const { searchParams } = new URL(request.url)
   const range = searchParams.get("range") || "12m"
 
@@ -22,13 +23,16 @@ export async function GET(request: Request) {
   startDate = startOfDay(startDate)
 
   try {
-    // Fetch all categories
-    const categories = await prisma.category.findMany()
+    // Fetch all categories for this workspace
+    const categories = await prisma.category.findMany({
+      where: { workspaceId }
+    })
     
     // Fetch order items within range to calculate sales distribution
     const orderItems = await prisma.orderItem.findMany({
       where: {
         order: {
+          workspaceId,
           createdAt: { gte: startDate },
           status: { not: "cancelled" }
         }
@@ -55,6 +59,7 @@ export async function GET(request: Request) {
     // If no sales data for range, fallback to stock value for visualization
     if (data.length === 0) {
       const stockData = await prisma.category.findMany({
+        where: { workspaceId },
         include: {
           products: true
         }

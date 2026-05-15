@@ -6,12 +6,16 @@ declare module "next-auth" {
       id: string
       role: string
       status: string
+      workspaceId?: string
+      workspaceName?: string
     }
   }
 
   interface User {
     role: string
     status: string
+    workspaceId?: string
+    workspaceName?: string
   }
 }
 
@@ -19,6 +23,8 @@ declare module "next-auth/jwt" {
   interface JWT {
     role?: string
     status?: string
+    workspaceId?: string
+    workspaceName?: string
   }
 }
 

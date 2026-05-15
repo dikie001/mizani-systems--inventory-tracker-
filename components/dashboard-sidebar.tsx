@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import useSWR from "swr"
+import { useSession } from "next-auth/react"
 
 import {
   BarChart3,
@@ -78,6 +79,7 @@ function isNavItemActive(pathname: string, href: string) {
 
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const { data: session } = useSession()
   const { state, setOpenMobile } = useSidebar()
   const isCollapsed = state === "collapsed"
 
@@ -119,19 +121,19 @@ export function DashboardSidebar() {
             <SidebarMenuButton
               size="lg"
               asChild
-              tooltip="Mizani"
-              className="h-9 rounded-lg px-2 text-sidebar-foreground transition-all duration-200 group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:border group-data-[collapsible=icon]:border-sidebar-border/50 group-data-[collapsible=icon]:bg-sidebar-accent/30 group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/40"
+              tooltip={session?.user?.workspaceName || "Workspace"}
+              className="h-11 rounded-lg px-2 text-sidebar-foreground transition-all duration-200 group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:border group-data-[collapsible=icon]:border-sidebar-border/50 group-data-[collapsible=icon]:bg-sidebar-accent/30 group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/40"
             >
               <Link href="/dashboard" onClick={handleNavClick}>
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm shadow-emerald-950/10">
-                  <Box className="h-3.5 w-3.5" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm shadow-emerald-950/10 transition-transform group-hover:scale-105">
+                  <Box className="h-4 w-4" />
                 </div>
-                <div className="flex flex-col gap-0 leading-none group-data-[collapsible=icon]:hidden">
-                  <span className="text-[15px] font-bold tracking-normal">
-                    Mizani
+                <div className="flex flex-col gap-0 leading-tight group-data-[collapsible=icon]:hidden">
+                  <span className="text-[14px] font-bold tracking-tight text-white">
+                    {session?.user?.workspaceName || "Mizani"}
                   </span>
-                  <span className="text-[10px] font-medium tracking-normal text-sidebar-foreground/45">
-                    Systems
+                  <span className="text-[10px] font-medium tracking-wide text-sidebar-foreground/45 uppercase">
+                    Workspace
                   </span>
                 </div>
               </Link>
@@ -239,3 +241,4 @@ export function DashboardSidebar() {
     </Sidebar>
   )
 }
+

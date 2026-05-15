@@ -5,12 +5,15 @@ import prisma from "@/lib/prisma"
 
 export async function GET() {
   const session = await auth()
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session.user.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  const workspaceId = session.user.workspaceId
+
   try {
     const movements = await prisma.stockMovement.findMany({
+      where: { workspaceId },
       take: 10,
       orderBy: { createdAt: "desc" },
       include: {
@@ -40,9 +43,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const session = await auth()
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session.user.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+
+  const workspaceId = session.user.workspaceId
 
   try {
     const body = (await request.json()) as {
@@ -74,12 +79,15 @@ export async function POST(request: Request) {
     }
 
     const movement = await prisma.$transaction(async (tx) => {
-      const product = await tx.product.findUnique({
-        where: { id: productId },
+      const product = await tx.product.findFirst({
+        where: { 
+          id: productId,
+          workspaceId,
+        },
       })
 
       if (!product) {
-        throw new Error("Product not found.")
+        throw new Error("Product not found in this workspace.")
       }
 
       const nextStock = product.stock + quantity
@@ -99,6 +107,7 @@ export async function POST(request: Request) {
         data: {
           productId,
           userId: session.user.id,
+          workspaceId,
           type,
           quantity,
           status: "completed",
@@ -111,6 +120,7 @@ export async function POST(request: Request) {
           entity: updatedProduct.name,
           type: "update",
           userId: session.user.id,
+          workspaceId,
         },
       })
 
@@ -135,7 +145,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { error: message },
-      { status: message === "Product not found." ? 404 : 400 },
+      { status: message.includes("not found") ? 404 : 400 },
     )
   }
 }

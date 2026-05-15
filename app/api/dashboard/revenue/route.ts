@@ -6,10 +6,11 @@ import { subDays, subMonths, startOfMonth, format, eachMonthOfInterval, eachDayO
 
 export async function GET(request: Request) {
   const session = await auth()
-  if (!session) {
+  if (!session?.user?.id || !session.user.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  const workspaceId = session.user.workspaceId
   const { searchParams } = new URL(request.url)
   const range = searchParams.get("range") || "12m"
 
@@ -32,6 +33,7 @@ export async function GET(request: Request) {
     // Fetch real orders
     const orders = await prisma.order.findMany({
       where: {
+        workspaceId,
         createdAt: { gte: startDate },
         status: { not: "cancelled" }
       },
@@ -41,7 +43,6 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: 'asc' }
     })
-
     let data: any[] = []
 
     if (isDaily) {

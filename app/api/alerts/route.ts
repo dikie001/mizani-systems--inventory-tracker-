@@ -4,16 +4,20 @@ import { auth } from "@/auth"
 
 export async function GET(request: Request) {
   const session = await auth()
-  if (!session) {
+  if (!session?.user?.id || !session.user.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  const workspaceId = session.user.workspaceId
   const { searchParams } = new URL(request.url)
   const status = searchParams.get("status") || "active"
 
   try {
     const alerts = await prisma.alert.findMany({
-      where: status === "all" ? {} : { status },
+      where: {
+        workspaceId,
+        ...(status === "all" ? {} : { status })
+      },
       include: {
         product: {
           include: {

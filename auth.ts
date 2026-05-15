@@ -48,16 +48,34 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             image: true,
             role: true,
             status: true,
+            currentWorkspaceId: true,
+            memberships: {
+              where: {
+                workspaceId: { not: null }
+              },
+              include: {
+                workspace: {
+                  select: {
+                    name: true
+                  }
+                }
+              },
+              take: 1
+            }
           },
         })
 
         if (dbUser) {
+          const currentMembership = dbUser.memberships.find(m => m.workspaceId === dbUser.currentWorkspaceId) || dbUser.memberships[0]
+          
           token.sub = dbUser.id
           token.email = dbUser.email
           token.name = dbUser.name
           token.picture = dbUser.image
           token.role = dbUser.role
           token.status = dbUser.status
+          token.workspaceId = dbUser.currentWorkspaceId || currentMembership?.workspaceId
+          token.workspaceName = currentMembership?.workspace?.name
         }
       }
 
@@ -69,6 +87,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.role = typeof token.role === "string" ? token.role : "user"
         session.user.status =
           typeof token.status === "string" ? token.status : "active"
+        session.user.workspaceId = 
+          typeof token.workspaceId === "string" ? token.workspaceId : undefined
+        session.user.workspaceName = 
+          typeof token.workspaceName === "string" ? token.workspaceName : undefined
         session.user.name =
           typeof token.name === "string" ? token.name : session.user.name
         session.user.email =

@@ -4,15 +4,18 @@ import { auth } from "@/auth"
 
 export async function GET(request: Request) {
   const session = await auth()
-  if (!session) {
+  if (!session?.user?.id || !session.user.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  const workspaceId = session.user.workspaceId
   const { searchParams } = new URL(request.url)
   const search = searchParams.get("search")
   const type = searchParams.get("type")
 
-  const where: any = {}
+  const where: any = {
+    workspaceId,
+  }
   
   if (search) {
     where.OR = [
