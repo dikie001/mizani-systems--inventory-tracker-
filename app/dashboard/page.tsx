@@ -197,7 +197,7 @@ export default function DashboardPage() {
               >
                 <AreaChart
                   data={revenue}
-                  margin={{ top: 12, left: 0, right: 0, bottom: 20 }}
+                  margin={{ top: 12, left: 12, right: 0, bottom: 20 }}
                 >
                   <defs>
                     <linearGradient
@@ -236,11 +236,11 @@ export default function DashboardPage() {
                     }}
                   />
                   <YAxis
-                    width={56}
+                    width={45}
                     tickLine={false}
                     axisLine={false}
-                    tick={{ fontSize: 13 }}
-                    tickMargin={10}
+                    tick={{ fontSize: 12 }}
+                    tickMargin={4}
                     tickFormatter={(value) => 
                       revMetric === "revenue" 
                         ? `$${(value / 1000).toFixed(0)}k` 
@@ -250,9 +250,9 @@ export default function DashboardPage() {
                       value: revMetric === "revenue" ? "Revenue" : "Orders",
                       angle: -90,
                       position: "insideLeft",
-                      offset: -2,
+                      offset: 2,
                       fill: "var(--muted-foreground)",
-                      style: { fontSize: 13, fontWeight: 500 },
+                      style: { fontSize: 12, fontWeight: 500 },
                     }}
                   />
                   <ChartTooltip

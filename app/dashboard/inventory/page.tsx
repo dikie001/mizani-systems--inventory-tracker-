@@ -598,14 +598,12 @@ export default function InventoryPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Button 
             variant="outline" 
-            size="sm" 
             onClick={() => setImportOpen(true)} 
-            className="h-12 px-5"
           >
             <Upload className="mr-1.5 h-4 w-4" />
             Import
           </Button>
-          <Button size="sm" onClick={beginCreate} className="h-12 px-5 shadow-sm transition-all hover:shadow-md">
+          <Button onClick={beginCreate}>
             <Plus className="mr-1.5 h-4 w-4" />
             Add Product
           </Button>
