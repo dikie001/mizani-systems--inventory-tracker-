@@ -196,7 +196,7 @@ export default function DashboardPage() {
               >
                 <AreaChart
                   data={revenue}
-                  margin={{ top: 12, left: 6, right: 4, bottom: 20 }}
+                  margin={{ top: 12, left: 0, right: 0, bottom: 20 }}
                 >
                   <defs>
                     <linearGradient
@@ -225,7 +225,7 @@ export default function DashboardPage() {
                     axisLine={false}
                     tick={{ fontSize: 13 }}
                     tickMargin={10}
-                    padding={{ left: 12, right: 12 }}
+                    padding={{ left: 0, right: 0 }}
                     label={{
                       value: "Month",
                       position: "bottom",
