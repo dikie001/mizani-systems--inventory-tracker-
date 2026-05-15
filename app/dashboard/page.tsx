@@ -508,8 +508,8 @@ export default function DashboardPage() {
               })
             )}
           </CardContent>
-          <CardFooter>
-            <Button variant="outline" size="sm" className="w-full" asChild>
+          <CardFooter className="justify-end border-none bg-transparent pt-0 pb-6">
+            <Button variant="outline" size="sm" className="" asChild>
               <Link href="/dashboard/orders">
                 <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
                 Create restock order
