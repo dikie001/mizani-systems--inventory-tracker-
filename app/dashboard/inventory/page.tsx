@@ -687,15 +687,15 @@ export default function InventoryPage() {
             color: "red",
           },
         ].map((metric) => (
-          <Card key={metric.label} className="overflow-hidden border bg-background/50 shadow-sm transition-all hover:shadow-md">
+          <Card key={metric.label} className="overflow-hidden border bg-card shadow-sm transition-all hover:shadow-md">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{metric.label}</p>
-                  <h3 className="mt-1 text-2xl font-bold tracking-tight">{metric.value}</h3>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{metric.label}</p>
+                  <h3 className="mt-1 text-2xl font-black tracking-tight">{metric.value}</h3>
                 </div>
                 <div
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl shadow-sm
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg shadow-sm
                     ${
                       metric.color === "blue"
                         ? "bg-blue-500/10 text-blue-600 dark:bg-blue-500/20"
@@ -707,7 +707,7 @@ export default function InventoryPage() {
                     }
                   `}
                 >
-                  <metric.icon className="h-5 w-5" />
+                  <metric.icon className="h-4 w-4" />
                 </div>
               </div>
             </CardContent>
