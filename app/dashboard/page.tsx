@@ -7,7 +7,7 @@ import {
   Package, Plus, ShoppingCart, FileText, Upload, Users, TrendingUp, Loader2
 } from "lucide-react"
 import {
-  Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis,
+  Area, AreaChart, Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis,
 } from "recharts"
 
 import { Badge } from "@/components/ui/badge"
@@ -102,10 +102,13 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {revLoading ? (
-              <div className="flex h-[240px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              <div className="flex h-[220px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : (
-              <ChartContainer config={revenueChartConfig} className="aspect-auto h-[240px] w-full">
-                <AreaChart data={revenueData || []} margin={{ top: 8, left: 0, right: 8, bottom: 0 }}>
+              <ChartContainer config={revenueChartConfig} className="aspect-auto h-[220px] w-full">
+                <AreaChart
+                  data={revenueData || []}
+                  margin={{ top: 4, left: -12, right: 0, bottom: 2 }}
+                >
                   <defs>
                     <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="var(--color-revenue)" stopOpacity={0.3} />
@@ -113,8 +116,32 @@ export default function DashboardPage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                  <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-                  <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+                  <XAxis
+                    dataKey="month"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={6}
+                    padding={{ left: 6, right: 6 }}
+                    label={{
+                      value: "Month",
+                      position: "insideBottom",
+                      offset: -2,
+                      fill: "var(--muted-foreground)",
+                    }}
+                  />
+                  <YAxis
+                    width={48}
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={6}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    label={{
+                      value: "Revenue",
+                      angle: -90,
+                      position: "insideLeft",
+                      fill: "var(--muted-foreground)",
+                    }}
+                  />
                   <ChartTooltip
                     content={
                       <ChartTooltipContent
@@ -147,13 +174,42 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {catLoading ? (
-              <div className="flex h-[236px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              <div className="flex h-[224px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : (
-              <ChartContainer config={categoryChartConfig} className="aspect-auto h-[236px] w-full">
-                <BarChart data={categoryData || []} margin={{ top: 6, left: 0, right: 8, bottom: 6 }} layout="vertical" barCategoryGap="30%">
+              <ChartContainer config={categoryChartConfig} className="aspect-auto h-[224px] w-full">
+                <BarChart
+                  data={categoryData || []}
+                  margin={{ top: 4, left: 6, right: 8, bottom: 2 }}
+                  layout="vertical"
+                  barCategoryGap="24%"
+                >
                   <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                  <XAxis type="number" tickLine={false} axisLine={false} />
-                  <YAxis type="category" dataKey="category" tickLine={false} axisLine={false} tickMargin={8} width={80} />
+                  <XAxis
+                    type="number"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={6}
+                    label={{
+                      value: "Total items",
+                      position: "insideBottom",
+                      offset: -2,
+                      fill: "var(--muted-foreground)",
+                    }}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="category"
+                    tick={false}
+                    axisLine={false}
+                    tickLine={false}
+                    width={26}
+                    label={{
+                      value: "Categories",
+                      angle: -90,
+                      position: "insideLeft",
+                      fill: "var(--muted-foreground)",
+                    }}
+                  />
                   <ChartTooltip
                     content={
                       <ChartTooltipContent
@@ -166,7 +222,21 @@ export default function DashboardPage() {
                       />
                     }
                   />
-                  <Bar dataKey="items" fill="var(--color-items)" radius={[0, 4, 4, 0]} barSize={16} />
+                  <Bar
+                    dataKey="items"
+                    fill="var(--color-items)"
+                    radius={[0, 4, 4, 0]}
+                    barSize={18}
+                  >
+                    <LabelList
+                      dataKey="category"
+                      position="insideLeft"
+                      offset={10}
+                      fill="rgba(28, 18, 36, 0.92)"
+                      fontSize={11}
+                      fontWeight={600}
+                    />
+                  </Bar>
                 </BarChart>
               </ChartContainer>
             )}
