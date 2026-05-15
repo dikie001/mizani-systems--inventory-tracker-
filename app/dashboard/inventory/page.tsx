@@ -665,46 +665,37 @@ export default function InventoryPage() {
           {
             label: "Total Products",
             value: isLoading ? "-" : String(products?.length ?? 0),
-            description: "Catalog size",
             icon: Box,
             color: "blue",
           },
           {
             label: "Units On Hand",
             value: isLoading ? "-" : totalUnits.toLocaleString(),
-            description: "Current stock level",
             icon: Package,
             color: "emerald",
           },
           {
             label: "Low Stock Items",
             value: isLoading ? "-" : String(lowStockCount),
-            description: "Needs attention",
             icon: ArrowUpDown,
             color: "amber",
           },
           {
             label: "Critical Alert",
             value: isLoading ? "-" : String(criticalCount),
-            description: "Out of stock risk",
             icon: AlertTriangle,
             color: "red",
           },
         ].map((metric) => (
-          <Card key={metric.label} className="overflow-hidden border-none shadow-md">
-            <CardContent className="p-0">
-              <div className="flex items-center p-6">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-muted-foreground">{metric.label}</p>
-                  <div className="mt-1 flex items-baseline gap-2">
-                    <h3 className="text-2xl font-bold tracking-tight">{metric.value}</h3>
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
-                      {metric.description}
-                    </span>
-                  </div>
+          <Card key={metric.label} className="overflow-hidden border bg-background/50 shadow-sm transition-all hover:shadow-md">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{metric.label}</p>
+                  <h3 className="mt-1 text-2xl font-bold tracking-tight">{metric.value}</h3>
                 </div>
                 <div
-                  className={`flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl shadow-sm
                     ${
                       metric.color === "blue"
                         ? "bg-blue-500/10 text-blue-600 dark:bg-blue-500/20"
@@ -716,22 +707,9 @@ export default function InventoryPage() {
                     }
                   `}
                 >
-                  <metric.icon className="h-6 w-6" />
+                  <metric.icon className="h-5 w-5" />
                 </div>
               </div>
-              <div
-                className={`h-1 w-full 
-                  ${
-                    metric.color === "blue"
-                      ? "bg-blue-500/20"
-                      : metric.color === "emerald"
-                        ? "bg-emerald-500/20"
-                        : metric.color === "amber"
-                          ? "bg-amber-500/20"
-                          : "bg-red-500/20"
-                  }
-                `}
-              />
             </CardContent>
           </Card>
         ))}
