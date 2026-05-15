@@ -197,7 +197,7 @@ export default function DashboardPage() {
               >
                 <AreaChart
                   data={revenue}
-                  margin={{ top: 12, left: 30, right: 0, bottom: 30 }}
+                  margin={{ top: 12, left: 10, right: 0, bottom: 30 }}
                 >
                   <defs>
                     <linearGradient
