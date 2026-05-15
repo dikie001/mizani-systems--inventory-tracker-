@@ -153,23 +153,6 @@ function HeroSection() {
   )
 }
 
-function PartnersSection() {
-  return (
-    <div className="bg-muted/30 py-12 border-y">
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 text-muted-foreground">
-          <p className="font-medium">We work with well-known companies</p>
-          <div className="flex flex-wrap justify-center gap-12 text-2xl font-bold opacity-50">
-            <span>IBM</span>
-            <span>Microsoft</span>
-            <span>Reebok</span>
-            <span>Google</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function FeatureSection() {
   const features = [
@@ -335,7 +318,6 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background font-sans antialiased">
       <Navbar />
       <HeroSection />
-      <PartnersSection />
       <FeatureSection />
       <ManageSection />
       <PricingSection />
