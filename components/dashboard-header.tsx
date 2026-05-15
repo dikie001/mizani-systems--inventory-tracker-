@@ -131,8 +131,11 @@ export function DashboardHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/85 md:px-5">
-      <SidebarTrigger className="-ml-1 transition-all duration-200 ease-linear peer-data-[state=expanded]:peer-data-[collapsible=icon]:fixed peer-data-[state=expanded]:peer-data-[collapsible=icon]:left-[calc(var(--sidebar-width)-2.5rem)] peer-data-[state=expanded]:peer-data-[collapsible=icon]:top-3 peer-data-[state=expanded]:peer-data-[collapsible=icon]:z-40" />
-      <Separator orientation="vertical" className="mr-1 h-5 peer-data-[state=expanded]:peer-data-[collapsible=icon]:hidden" />
+      <SidebarTrigger className="-ml-1 transition-all duration-200 ease-linear peer-data-[state=expanded]:peer-data-[collapsible=icon]:fixed peer-data-[state=expanded]:peer-data-[collapsible=icon]:top-3 peer-data-[state=expanded]:peer-data-[collapsible=icon]:left-[calc(var(--sidebar-width)-2.5rem)] peer-data-[state=expanded]:peer-data-[collapsible=icon]:z-40" />
+      <Separator
+        orientation="vertical"
+        className="mr-1 h-5 peer-data-[state=expanded]:peer-data-[collapsible=icon]:hidden"
+      />
 
       <nav
         aria-label="Breadcrumb"
@@ -169,7 +172,7 @@ export function DashboardHeader() {
 
       <div className="ml-auto flex items-center gap-2.5">
         <div className="relative hidden md:block">
-          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search inventory..."
             className="h-9 w-60 rounded-full border-border/70 bg-muted/35 pl-8 text-sm shadow-none"
@@ -245,7 +248,10 @@ export function DashboardHeader() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild className="h-11 rounded-2xl px-3 text-[15px]">
+            <DropdownMenuItem
+              asChild
+              className="h-11 rounded-2xl px-3 text-[15px]"
+            >
               <Link href="/dashboard">
                 <WalletCards className="h-4 w-4" />
                 My Workspace

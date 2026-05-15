@@ -165,10 +165,6 @@ export default function DashboardPage() {
               </ChartContainer>
             )}
           </CardContent>
-          <CardFooter className="gap-2 text-sm">
-            <div className="flex items-center gap-1 font-medium"><TrendingUp className="h-4 w-4 text-emerald-500" />Up 18.3% this month</div>
-            <span className="text-muted-foreground">compared to previous period</span>
-          </CardFooter>
         </Card>
 
         {/* Category Chart */}
@@ -250,10 +246,6 @@ export default function DashboardPage() {
               </ChartContainer>
             )}
           </CardContent>
-          <CardFooter className="gap-2 text-sm">
-            <span className="font-medium">{stats?.totalProducts || 0} total items</span>
-            <span className="text-muted-foreground">across {(categoryData || []).length} categories</span>
-          </CardFooter>
         </Card>
       </div>
 
