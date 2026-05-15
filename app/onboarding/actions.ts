@@ -22,11 +22,13 @@ export async function createWorkspace(data: {
       // Create the workspace
       const newWorkspace = await tx.workspace.create({
         data: {
-          name: data.name,
+          name: data.name.trim(),
           slug: `${slug}-${Math.random().toString(36).substring(2, 7)}`,
           businessType: data.businessType,
           inventorySize: data.inventorySize,
-          goals: data.goals,
+          goals: {
+            set: data.goals || []
+          },
         },
       })
 

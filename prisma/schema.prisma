@@ -49,6 +49,7 @@ model Workspace {
   orders        Order[]
   stockMovements StockMovement[]
   auditLogs     AuditLog[]
+  alerts        Alert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -161,7 +162,7 @@ model Alert {
   status    String   @default("active") // active, dismissed, resolved
   
   workspaceId String
-  // Relation implicitly handled by Product -> Workspace, but adding it for direct access
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
