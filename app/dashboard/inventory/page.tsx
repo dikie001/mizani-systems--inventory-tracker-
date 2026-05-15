@@ -665,50 +665,41 @@ export default function InventoryPage() {
           {
             label: "Total Products",
             value: isLoading ? "-" : String(products?.length ?? 0),
+            description: "Catalog size",
             icon: Box,
-            color: "blue",
+            color: "text-primary",
           },
           {
             label: "Units On Hand",
             value: isLoading ? "-" : totalUnits.toLocaleString(),
+            description: "Stock volume",
             icon: Package,
-            color: "emerald",
+            color: "text-emerald-600 dark:text-emerald-400",
           },
           {
             label: "Low Stock Items",
             value: isLoading ? "-" : String(lowStockCount),
+            description: "Needs restock",
             icon: ArrowUpDown,
-            color: "amber",
+            color: "text-amber-600 dark:text-amber-400",
           },
           {
             label: "Critical Alert",
             value: isLoading ? "-" : String(criticalCount),
+            description: "Action required",
             icon: AlertTriangle,
-            color: "red",
+            color: "text-destructive",
           },
         ].map((metric) => (
-          <Card key={metric.label} className="overflow-hidden border bg-card shadow-sm transition-all hover:shadow-md">
-            <CardContent className="p-6">
+          <Card key={metric.label} className="overflow-hidden border bg-card shadow-sm transition-all hover:bg-muted/5">
+            <CardContent className="p-4">
               <div className="flex items-start justify-between">
-                <div>
+                <div className="space-y-1">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{metric.label}</p>
-                  <h3 className="mt-1 text-2xl font-black tracking-tight">{metric.value}</h3>
+                  <h3 className={`text-xl font-bold tracking-tight ${metric.color}`}>{metric.value}</h3>
+                  <p className="text-[10px] text-muted-foreground/60">{metric.description}</p>
                 </div>
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg shadow-sm
-                    ${
-                      metric.color === "blue"
-                        ? "bg-blue-500/10 text-blue-600 dark:bg-blue-500/20"
-                        : metric.color === "emerald"
-                          ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20"
-                          : metric.color === "amber"
-                            ? "bg-amber-500/10 text-amber-600 dark:bg-amber-500/20"
-                            : "bg-red-500/10 text-red-600 dark:bg-red-500/20"
-                    }
-                  `}
-                >
-                  <metric.icon className="h-4 w-4" />
-                </div>
+                <metric.icon className="h-3.5 w-3.5 text-muted-foreground/40" />
               </div>
             </CardContent>
           </Card>
