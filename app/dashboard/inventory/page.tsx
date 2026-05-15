@@ -608,21 +608,30 @@ function InventoryPageContent() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Inventory</h1>
-          <p className="text-muted-foreground">
-            Monitor stock levels, manage products, and track catalog updates.
+          <h1 className="text-2xl font-bold tracking-tight">Inventory</h1>
+          <p className="text-sm text-muted-foreground">
+            Monitor stock levels, manage products, and track catalog updates
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting || isLoading}>
+            {exporting ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            Export
+          </Button>
           <Button 
             variant="outline" 
+            size="sm"
             onClick={() => setImportOpen(true)} 
           >
-            <Upload className="mr-1.5 h-4 w-4" />
+            <Upload className="mr-1.5 h-3.5 w-3.5" />
             Import
           </Button>
-          <Button onClick={beginCreate}>
-            <Plus className="mr-1.5 h-4 w-4" />
+          <Button size="sm" onClick={beginCreate}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
             Add Product
           </Button>
         </div>
@@ -683,35 +692,30 @@ function InventoryPageContent() {
       </div>
 
       <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <CardHeader>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-xl">Product Catalog</CardTitle>
+              <CardTitle>Product Catalog</CardTitle>
               <CardDescription>
                 {isLoading
-                  ? "Loading products..."
-                  : `Showing ${products?.length ?? 0} items`}
+                  ? "Loading..."
+                  : `${products?.length || 0} items`}
               </CardDescription>
             </div>
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/40" />
-                <Input
-                  placeholder="Search products..."
-                  className="h-9 w-[220px] pl-9 text-[11px] bg-muted/20 border-white/5 rounded-xl shadow-none focus-visible:ring-1 focus-visible:ring-white/10 transition-all placeholder:text-muted-foreground/30"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
+                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input 
+                  placeholder="Search products..." 
+                  className="h-8 w-48 pl-8 text-sm" 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
                 />
               </div>
-              
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="h-9 w-[140px] text-[11px] bg-muted/20 border-white/5 rounded-xl shadow-none focus:ring-0 px-3">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-3.5 w-3.5 text-foreground/80" />
-                    <span className="font-semibold">
-                      <SelectValue placeholder="All Types" />
-                    </span>
-                  </div>
+                <SelectTrigger className="h-8 w-32 text-sm">
+                  <Filter className="mr-1.5 h-3 w-3" />
+                  <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
@@ -722,12 +726,9 @@ function InventoryPageContent() {
                   ))}
                 </SelectContent>
               </Select>
-
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-9 w-[110px] text-[11px] bg-muted/20 border-white/5 rounded-xl shadow-none focus:ring-0">
-                  <span className="font-semibold text-foreground/80">
-                    <SelectValue placeholder="Status" />
-                  </span>
+                <SelectTrigger className="h-8 w-32 text-sm">
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
@@ -736,21 +737,6 @@ function InventoryPageContent() {
                   <SelectItem value="critical">Critical</SelectItem>
                 </SelectContent>
               </Select>
-
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-9 px-4 text-[11px] font-bold border-white/5 rounded-xl bg-muted/10 hover:bg-muted/30 transition-all"
-                onClick={handleExport}
-                disabled={exporting || isLoading}
-              >
-                {exporting ? (
-                  <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-                ) : (
-                  <Download className="mr-1.5 h-3 w-3" />
-                )}
-                Export
-              </Button>
             </div>
           </div>
         </CardHeader>
