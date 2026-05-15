@@ -1,6 +1,6 @@
 "use client"
 
-import { ChangeEvent, FormEvent, useId, useRef, useState, useEffect } from "react"
+import { ChangeEvent, FormEvent, useId, useRef, useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import useSWR from "swr"
 import {
@@ -232,6 +232,20 @@ function formatDate(value: string) {
 }
 
 export default function InventoryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/40" />
+        </div>
+      }
+    >
+      <InventoryPageContent />
+    </Suspense>
+  )
+}
+
+function InventoryPageContent() {
   const categoryListId = useId()
 
 
