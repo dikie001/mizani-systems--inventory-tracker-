@@ -96,7 +96,18 @@ model Product {
 
   orderItems     OrderItem[]
   stockMovements StockMovement[]
+  alerts         Alert[]
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Alert {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  severity  String   // warning, critical
+  status    String   @default("active") // active, dismissed, resolved
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

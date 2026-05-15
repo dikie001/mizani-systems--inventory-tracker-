@@ -5,6 +5,7 @@ import {
   formatProduct,
   normalizeProductPayload,
   productQueryInclude,
+  updateProductAlerts,
 } from "@/lib/inventory"
 import prisma from "@/lib/prisma"
 
@@ -95,6 +96,8 @@ export async function PUT(request: Request, context: RouteContext) {
         },
         include: productQueryInclude(true),
       })
+
+      await updateProductAlerts(tx, id)
 
       const stockDelta = payload.stock - existingProduct.stock
       if (stockDelta !== 0) {

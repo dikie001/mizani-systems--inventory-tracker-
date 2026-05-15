@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
+import { updateProductAlerts } from "@/lib/inventory"
 
 export async function GET(request: Request) {
   const session = await auth()
@@ -96,6 +97,8 @@ export async function POST(request: Request) {
             stock: { decrement: item.quantity }
           }
         })
+
+        await updateProductAlerts(tx, item.productId)
 
         // Create stock movement
         await tx.stockMovement.create({

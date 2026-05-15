@@ -1,6 +1,7 @@
 "use client"
 
-import useSWR from "swr"
+import { useState } from "react"
+import useSWR, { mutate } from "swr"
 import {
   AlertCircle, AlertTriangle, ArrowUpRight, Bell, CheckCircle2, Package,
   ShoppingCart, TrendingDown, XCircle, Loader2, ShieldAlert, Flame, Layers, Box
@@ -13,12 +14,16 @@ import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { toast } from "sonner"
+import Link from "next/link"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-function AlertCard({ item, severity }: { item: any; severity: "critical" | "warning" }) {
+function AlertCard({ item, onDismiss }: { item: any; onDismiss: (id: string) => void }) {
   const max = item.maxStock || 100
   const pct = Math.round((item.stock / max) * 100)
+  const severity = item.severity
+
   return (
     <Card className={severity === "critical" ? "border-red-500/30" : ""}>
       <CardContent className="pt-4">
@@ -46,8 +51,12 @@ function AlertCard({ item, severity }: { item: any; severity: "critical" | "warn
         </div>
 
         <div className="mt-4 flex gap-2">
-          <Button size="sm" className="flex-1"><ShoppingCart className="mr-1.5 h-3.5 w-3.5" />Reorder</Button>
-          <Button variant="outline" size="sm">Dismiss</Button>
+          <Button size="sm" className="flex-1" asChild>
+            <Link href={`/dashboard/inventory?search=${item.sku}`}>
+              <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />Restock
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => onDismiss(item.id)}>Dismiss</Button>
         </div>
       </CardContent>
     </Card>
@@ -55,12 +64,31 @@ function AlertCard({ item, severity }: { item: any; severity: "critical" | "warn
 }
 
 export default function AlertsPage() {
-  const { data: products, isLoading } = useSWR<any[]>('/api/products?status=low-stock', fetcher)
-  const { data: criticalProducts, isLoading: cLoading } = useSWR<any[]>('/api/products?status=critical', fetcher)
+  const { data: activeAlerts, isLoading } = useSWR<any[]>('/api/alerts?status=active', fetcher)
+  const { data: resolvedAlerts, isLoading: rLoading } = useSWR<any[]>('/api/alerts?status=resolved', fetcher)
 
-  const lowStockAlerts = products || []
-  const criticalAlerts = criticalProducts || []
-  const resolvedAlerts: any[] = [] // Demo empty for now
+  const alerts = activeAlerts || []
+  const resolved = resolvedAlerts || []
+  
+  const criticalAlerts = alerts.filter(a => a.severity === 'critical')
+  const lowStockAlerts = alerts.filter(a => a.severity === 'warning')
+
+  const handleDismiss = async (id: string) => {
+    try {
+      const res = await fetch(`/api/alerts/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'dismissed' })
+      })
+      if (res.ok) {
+        toast.success("Alert dismissed")
+        mutate('/api/alerts?status=active')
+        mutate('/api/alerts/counts')
+      }
+    } catch (error) {
+      toast.error("Failed to dismiss alert")
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -83,7 +111,7 @@ export default function AlertsPage() {
         {[
           {
             label: "Critical Alerts",
-            value: cLoading ? "-" : criticalAlerts.length,
+            value: isLoading ? "-" : criticalAlerts.length,
             icon: Flame,
             color: "text-rose-600 dark:text-rose-400",
           },
@@ -94,8 +122,8 @@ export default function AlertsPage() {
             color: "text-orange-600 dark:text-orange-400",
           },
           {
-            label: "Resolved Today",
-            value: resolvedAlerts.length,
+            label: "Resolved Recently",
+            value: rLoading ? "-" : resolved.length,
             icon: CheckCircle2,
             color: "text-emerald-600 dark:text-emerald-400",
           },
@@ -116,12 +144,12 @@ export default function AlertsPage() {
 
       <Tabs defaultValue="active">
         <TabsList>
-          <TabsTrigger value="active">Active ({criticalAlerts.length + lowStockAlerts.length})</TabsTrigger>
-          <TabsTrigger value="resolved">Resolved ({resolvedAlerts.length})</TabsTrigger>
+          <TabsTrigger value="active">Active ({alerts.length})</TabsTrigger>
+          <TabsTrigger value="resolved">Resolved ({resolved.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="mt-4 space-y-4">
-          {isLoading || cLoading ? (
+          {isLoading ? (
             <div className="flex justify-center p-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
           ) : (
             <>
@@ -132,7 +160,7 @@ export default function AlertsPage() {
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     {criticalAlerts.map((item) => (
-                      <AlertCard key={item.id} item={item} severity="critical" />
+                      <AlertCard key={item.id} item={item} onDismiss={handleDismiss} />
                     ))}
                   </div>
                 </div>
@@ -147,21 +175,44 @@ export default function AlertsPage() {
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     {lowStockAlerts.map((item) => (
-                      <AlertCard key={item.id} item={item} severity="warning" />
+                      <AlertCard key={item.id} item={item} onDismiss={handleDismiss} />
                     ))}
                   </div>
                 </div>
               )}
               
-              {criticalAlerts.length === 0 && lowStockAlerts.length === 0 && (
-                <div className="text-center p-8 text-muted-foreground">No active alerts. Inventory is healthy.</div>
+              {alerts.length === 0 && (
+                <div className="text-center p-12 border rounded-xl border-dashed">
+                  <div className="flex justify-center mb-3">
+                    <CheckCircle2 className="h-10 w-10 text-emerald-500/20" />
+                  </div>
+                  <p className="text-muted-foreground">No active alerts. Inventory is healthy.</p>
+                </div>
               )}
             </>
           )}
         </TabsContent>
 
         <TabsContent value="resolved" className="mt-4 space-y-3">
-          <div className="text-center p-8 text-muted-foreground">No alerts resolved today.</div>
+          {resolved.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              {resolved.map((item) => (
+                 <Card key={item.id} className="opacity-70">
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                        <div>
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">Stock replenished · {item.stock} in stock</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                 </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center p-8 text-muted-foreground">No alerts resolved recently.</div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

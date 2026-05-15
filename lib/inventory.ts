@@ -57,6 +57,58 @@ export function computeProductStatus(stock: number, minStock: number) {
   return "in-stock"
 }
 
+/**
+ * Checks product stock levels and manages alerts.
+ * Should be called within a Prisma transaction whenever stock changes.
+ */
+export async function updateProductAlerts(tx: any, productId: string) {
+  const product = await tx.product.findUnique({
+    where: { id: productId },
+    select: { stock: true, minStock: true },
+  })
+
+  if (!product) return
+
+  const status = computeProductStatus(product.stock, product.minStock)
+
+  // Find active alerts for this product
+  const activeAlert = await tx.alert.findFirst({
+    where: { productId, status: "active" },
+  })
+
+  if (status === "in-stock") {
+    // If it's now in-stock, resolve any active alerts
+    if (activeAlert) {
+      await tx.alert.update({
+        where: { id: activeAlert.id },
+        data: { status: "resolved" },
+      })
+    }
+  } else {
+    // It's low-stock or critical
+    const severity = status === "critical" ? "critical" : "warning"
+
+    if (activeAlert) {
+      // Update severity if it changed
+      if (activeAlert.severity !== severity) {
+        await tx.alert.update({
+          where: { id: activeAlert.id },
+          data: { severity },
+        })
+      }
+    } else {
+      // Create new alert
+      await tx.alert.create({
+        data: {
+          productId,
+          severity,
+          status: "active"
+        },
+      })
+    }
+  }
+}
+
 export function normalizeProductPayload(input: unknown): InventoryProductPayload {
   if (!input || typeof input !== "object") {
     throw new Error("Product payload is required.")

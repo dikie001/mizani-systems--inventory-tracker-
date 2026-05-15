@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import useSWR from "swr"
 
 import {
   BarChart3,
@@ -84,6 +85,32 @@ export function DashboardSidebar() {
     setOpenMobile(false)
   }
 
+  const { data: counts } = useSWR("/api/alerts/counts", (url) =>
+    fetch(url).then((res) => res.json())
+  )
+
+  const mainNav = mainNavItems.map((item) => {
+    if (item.title === "Orders") {
+      return {
+        ...item,
+        badge:
+          counts?.pendingOrders > 0 ? String(counts.pendingOrders) : null,
+      }
+    }
+    return item
+  })
+
+  const secondaryNav = secondaryNavItems.map((item) => {
+    if (item.title === "Stock Alerts") {
+      return {
+        ...item,
+        badge:
+          counts?.activeAlerts > 0 ? String(counts.activeAlerts) : null,
+      }
+    }
+    return item
+  })
+
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="bg-transparent">
       <SidebarHeader className="h-14 justify-center border-b border-sidebar-border/60 px-2.5 py-0 group-data-[collapsible=icon]:h-14">
@@ -120,7 +147,7 @@ export function DashboardSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {mainNavItems.map((item) => (
+              {mainNav.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
@@ -158,7 +185,7 @@ export function DashboardSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {secondaryNavItems.map((item) => (
+              {secondaryNav.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild

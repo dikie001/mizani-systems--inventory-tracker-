@@ -263,12 +263,16 @@ export default function InventoryPage() {
   const action = searchParams.get("action")
 
   useEffect(() => {
+    const search = searchParams.get("search")
+    if (search) {
+      setSearchQuery(search)
+    }
     if (action === "add") {
       beginCreate()
     } else if (action === "import") {
       setImportOpen(true)
     }
-  }, [action])
+  }, [action, searchParams])
 
 
   const productsUrl = buildProductsUrl({
