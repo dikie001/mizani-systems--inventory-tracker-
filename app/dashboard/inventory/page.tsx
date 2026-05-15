@@ -603,40 +603,45 @@ export default function InventoryPage() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Inventory</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage products, stock levels, imports, exports, and catalog updates.
+          <h1 className="text-3xl font-bold tracking-tight">Inventory</h1>
+          <p className="text-muted-foreground">
+            Monitor stock levels, manage products, and track catalog updates.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => importInputRef.current?.click()}
-            disabled={importing}
-          >
-            {importing ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Upload className="mr-1.5 h-3.5 w-3.5" />
-            )}
-            Import
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-            disabled={exporting || isLoading}
-          >
-            {exporting ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Download className="mr-1.5 h-3.5 w-3.5" />
-            )}
-            Export
-          </Button>
-          <Button size="sm" onClick={beginCreate}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center rounded-lg border bg-background p-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2.5 text-xs"
+              onClick={() => importInputRef.current?.click()}
+              disabled={importing}
+            >
+              {importing ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              Import
+            </Button>
+            <div className="mx-1 h-4 w-[1px] bg-border" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2.5 text-xs"
+              onClick={handleExport}
+              disabled={exporting || isLoading}
+            >
+              {exporting ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Download className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              Export
+            </Button>
+          </div>
+          <Button size="sm" onClick={beginCreate} className="h-10 shadow-sm">
+            <Plus className="mr-1.5 h-4 w-4" />
             Add Product
           </Button>
         </div>
@@ -644,136 +649,169 @@ export default function InventoryPage() {
 
       {notice ? (
         <div
-          className={`rounded-xl border px-4 py-3 text-sm ${
+          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm animate-in fade-in slide-in-from-top-2 duration-300 ${
             notice.type === "success"
-              ? "border-emerald-200 bg-emerald-500/10 text-emerald-700 dark:border-emerald-900 dark:text-emerald-300"
-              : "border-red-200 bg-red-500/10 text-red-700 dark:border-red-900 dark:text-red-300"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/30 dark:bg-emerald-500/5 dark:text-emerald-400"
+              : "border-red-200 bg-red-50 text-red-700 dark:border-red-900/30 dark:bg-red-500/5 dark:text-red-400"
           }`}
         >
+          <div className={`h-2 w-2 rounded-full animate-pulse ${notice.type === "success" ? "bg-emerald-500" : "bg-red-500"}`} />
           {notice.message}
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
-            label: "Products",
+            label: "Total Products",
             value: isLoading ? "-" : String(products?.length ?? 0),
+            description: "Catalog size",
             icon: Box,
-            iconClass: "text-primary",
-            backgroundClass: "bg-primary/10",
+            color: "blue",
           },
           {
             label: "Units On Hand",
             value: isLoading ? "-" : totalUnits.toLocaleString(),
+            description: "Current stock level",
             icon: Package,
-            iconClass: "text-blue-500",
-            backgroundClass: "bg-blue-500/10",
+            color: "emerald",
           },
           {
-            label: "Low Stock",
+            label: "Low Stock Items",
             value: isLoading ? "-" : String(lowStockCount),
+            description: "Needs attention",
             icon: ArrowUpDown,
-            iconClass: "text-amber-500",
-            backgroundClass: "bg-amber-500/10",
+            color: "amber",
           },
           {
-            label: "Critical",
+            label: "Critical Alert",
             value: isLoading ? "-" : String(criticalCount),
+            description: "Out of stock risk",
             icon: AlertTriangle,
-            iconClass: "text-red-500",
-            backgroundClass: "bg-red-500/10",
+            color: "red",
           },
         ].map((metric) => (
-          <Card key={metric.label}>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${metric.backgroundClass}`}
-                >
-                  <metric.icon className={`h-5 w-5 ${metric.iconClass}`} />
+          <Card key={metric.label} className="overflow-hidden border-none shadow-md">
+            <CardContent className="p-0">
+              <div className="flex items-center p-6">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-muted-foreground">{metric.label}</p>
+                  <div className="mt-1 flex items-baseline gap-2">
+                    <h3 className="text-2xl font-bold tracking-tight">{metric.value}</h3>
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                      {metric.description}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{metric.value}</p>
-                  <p className="text-xs text-muted-foreground">{metric.label}</p>
+                <div
+                  className={`flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm
+                    ${
+                      metric.color === "blue"
+                        ? "bg-blue-500/10 text-blue-600 dark:bg-blue-500/20"
+                        : metric.color === "emerald"
+                          ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20"
+                          : metric.color === "amber"
+                            ? "bg-amber-500/10 text-amber-600 dark:bg-amber-500/20"
+                            : "bg-red-500/10 text-red-600 dark:bg-red-500/20"
+                    }
+                  `}
+                >
+                  <metric.icon className="h-6 w-6" />
                 </div>
               </div>
+              <div
+                className={`h-1 w-full 
+                  ${
+                    metric.color === "blue"
+                      ? "bg-blue-500/20"
+                      : metric.color === "emerald"
+                        ? "bg-emerald-500/20"
+                        : metric.color === "amber"
+                          ? "bg-amber-500/20"
+                          : "bg-red-500/20"
+                  }
+                `}
+              />
             </CardContent>
           </Card>
         ))}
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <CardTitle>Product List</CardTitle>
+              <CardTitle className="text-xl">Product Catalog</CardTitle>
               <CardDescription>
                 {isLoading
                   ? "Loading products..."
-                  : `${products?.length ?? 0} products shown. Import expects CSV or JSON with name, sku, category, warehouse, price, stock, minStock, maxStock, and description columns.`}
+                  : `Showing ${products?.length ?? 0} items across all warehouses`}
               </CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <div className="relative group">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                 <Input
-                  placeholder="Search products..."
-                  className="h-8 w-56 pl-8 text-sm"
+                  placeholder="Search SKU or name..."
+                  className="h-10 w-full min-w-[240px] pl-10 text-sm shadow-sm transition-all focus-visible:ring-1 sm:w-64"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                 />
               </div>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="h-8 w-40 text-sm">
-                  <Filter className="mr-1.5 h-3 w-3" />
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.name}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={warehouseFilter} onValueChange={setWarehouseFilter}>
-                <SelectTrigger className="h-8 w-40 text-sm">
-                  <SelectValue placeholder="Warehouse" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Warehouses</SelectItem>
-                  {warehouses.map((warehouse) => (
-                    <SelectItem key={warehouse.id} value={warehouse.name}>
-                      {warehouse.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-8 w-36 text-sm">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="in-stock">In Stock</SelectItem>
-                  <SelectItem value="low-stock">Low Stock</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearchQuery("")
-                  setCategoryFilter("all")
-                  setStatusFilter("all")
-                  setWarehouseFilter("all")
-                }}
-              >
-                Reset
-              </Button>
+              <div className="flex items-center gap-2">
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="h-10 w-[140px] text-sm shadow-sm">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.name}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={warehouseFilter} onValueChange={setWarehouseFilter}>
+                  <SelectTrigger className="h-10 w-[140px] text-sm shadow-sm">
+                    <SelectValue placeholder="Warehouse" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Warehouses</SelectItem>
+                    {warehouses.map((warehouse) => (
+                      <SelectItem key={warehouse.id} value={warehouse.name}>
+                        {warehouse.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="h-10 w-[130px] text-sm shadow-sm">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="in-stock">In Stock</SelectItem>
+                    <SelectItem value="low-stock">Low Stock</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
+                { (searchQuery || categoryFilter !== "all" || statusFilter !== "all" || warehouseFilter !== "all") && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-10 px-3 text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setSearchQuery("")
+                      setCategoryFilter("all")
+                      setStatusFilter("all")
+                      setWarehouseFilter("all")
+                    }}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -789,86 +827,108 @@ export default function InventoryPage() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Warehouse</TableHead>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-[300px]">Product</TableHead>
+                  <TableHead className="hidden md:table-cell">SKU</TableHead>
+                  <TableHead className="hidden lg:table-cell">Category</TableHead>
+                  <TableHead className="hidden xl:table-cell">Warehouse</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">Stock</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Min / Max</TableHead>
-                  <TableHead className="w-10" />
+                  <TableHead className="hidden md:table-cell text-right">Limit</TableHead>
+                  <TableHead className="w-[50px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {products?.map((product) => (
-                  <TableRow key={product.id}>
+                  <TableRow key={product.id} className="group transition-colors hover:bg-muted/30">
                     <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                          <Package className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary shadow-inner transition-transform group-hover:scale-105">
+                          <span className="text-sm font-bold">{product.name.charAt(0).toUpperCase()}</span>
                         </div>
                         <div className="min-w-0">
-                          <div className="font-medium">{product.name}</div>
-                          <div className="max-w-60 truncate text-xs text-muted-foreground">
-                            {product.description || product.id.slice(0, 8)}
+                          <div className="truncate font-semibold tracking-tight text-foreground">{product.name}</div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span className="md:hidden font-mono">{product.sku}</span>
+                            <span className="md:hidden opacity-30">•</span>
+                            <span>{product.category}</span>
                           </div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{product.sku}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="text-xs">
+                    <TableCell className="hidden md:table-cell">
+                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        {product.sku}
+                      </code>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <Badge variant="outline" className="font-normal text-muted-foreground border-muted-foreground/20">
                         {product.category}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="hidden xl:table-cell text-sm text-muted-foreground">
                       {product.warehouse}
                     </TableCell>
-                    <TableCell className="text-right font-mono">
+                    <TableCell className="text-right font-medium">
                       {formatCurrency(product.price)}
                     </TableCell>
-                    <TableCell className="text-right font-mono font-medium">
-                      {product.stock}
+                    <TableCell className="text-right">
+                      <span className={`inline-flex items-center font-bold ${product.stock <= product.minStock ? "text-red-600" : "text-foreground"}`}>
+                        {product.stock}
+                      </span>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="secondary"
-                        className={`text-xs ${statusConfig[product.status].className}`}
-                      >
+                      <div className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-tight
+                        ${
+                          product.status === "in-stock"
+                            ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
+                            : product.status === "low-stock"
+                              ? "bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400"
+                              : "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400"
+                        }
+                      `}>
+                        <div className={`mr-1.5 h-1.5 w-1.5 rounded-full
+                          ${
+                            product.status === "in-stock"
+                              ? "bg-emerald-500"
+                              : product.status === "low-stock"
+                                ? "bg-amber-500"
+                                : "bg-red-500"
+                          }
+                        `} />
                         {statusConfig[product.status].label}
-                      </Badge>
+                      </div>
                     </TableCell>
-                    <TableCell className="text-right font-mono text-xs">
+                    <TableCell className="hidden md:table-cell text-right text-xs text-muted-foreground font-mono">
                       {product.minStock} / {product.maxStock}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon-xs">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setDetailsProductId(product.id)}>
-                            <Eye className="mr-2 h-3.5 w-3.5" />
-                            View details
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => setDetailsProductId(product.id)} className="cursor-pointer">
+                            <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
+                            View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => beginEdit(product)}>
-                            <Edit className="mr-2 h-3.5 w-3.5" />
-                            Edit product
+                          <DropdownMenuItem onClick={() => beginEdit(product)} className="cursor-pointer">
+                            <Edit className="mr-2 h-4 w-4 text-muted-foreground" />
+                            Edit Product
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => beginAdjustment(product)}>
-                            <ArrowUpDown className="mr-2 h-3.5 w-3.5" />
-                            Adjust stock
+                          <DropdownMenuItem onClick={() => beginAdjustment(product)} className="cursor-pointer">
+                            <ArrowUpDown className="mr-2 h-4 w-4 text-muted-foreground" />
+                            Adjust Stock
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
+                            className="text-destructive focus:text-destructive cursor-pointer"
                             onClick={() => handleDelete(product)}
                           >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" />
+                            <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -878,8 +938,17 @@ export default function InventoryPage() {
                 ))}
                 {products?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center">
-                      No products found.
+                    <TableCell colSpan={9} className="h-32 text-center">
+                      <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                        <Package className="h-8 w-8 opacity-20" />
+                        <p>No products found matching your filters.</p>
+                        <Button variant="link" onClick={() => {
+                          setSearchQuery("")
+                          setCategoryFilter("all")
+                          setStatusFilter("all")
+                          setWarehouseFilter("all")
+                        }}>Clear all filters</Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : null}
@@ -898,163 +967,185 @@ export default function InventoryPage() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl border-none shadow-2xl">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-2xl font-bold">
               {formMode === "create" ? "Add New Product" : "Edit Product"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-muted-foreground">
               {formMode === "create"
-                ? "Create a new inventory item with pricing, stock, and warehouse information."
-                : "Update product details, thresholds, and stock values."}
+                ? "Configure your product catalog by adding a new item with pricing and stock details."
+                : "Update product specifications, pricing, and inventory thresholds."}
             </DialogDescription>
           </DialogHeader>
 
-          <form className="space-y-4" onSubmit={handleProductSubmit}>
-            <div className="grid gap-2">
-              <Label htmlFor="product-name">Product Name</Label>
-              <Input
-                id="product-name"
-                name="name"
-                value={formValues.name}
-                onChange={handleFormValueChange}
-                placeholder="Wireless Earbuds Pro"
-                required
-              />
+          <form className="space-y-6 pt-4" onSubmit={handleProductSubmit}>
+            <div className="space-y-4">
+              <div className="grid gap-2">
+                <Label htmlFor="product-name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Product Name</Label>
+                <Input
+                  id="product-name"
+                  name="name"
+                  value={formValues.name}
+                  onChange={handleFormValueChange}
+                  placeholder="e.g. Wireless Noise Cancelling Headphones"
+                  className="h-11 shadow-sm focus-visible:ring-1"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="product-sku" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">SKU / Item Code</Label>
+                  <Input
+                    id="product-sku"
+                    name="sku"
+                    value={formValues.sku}
+                    onChange={handleFormValueChange}
+                    placeholder="WCH-2024-PRO"
+                    className="h-11 font-mono uppercase shadow-sm focus-visible:ring-1"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="product-category" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Category</Label>
+                  <Input
+                    id="product-category"
+                    name="category"
+                    list={categoryListId}
+                    value={formValues.category}
+                    onChange={handleFormValueChange}
+                    placeholder="Electronics"
+                    className="h-11 shadow-sm focus-visible:ring-1"
+                    required
+                  />
+                  <datalist id={categoryListId}>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.name} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="product-warehouse" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Warehouse Location</Label>
+                  <Input
+                    id="product-warehouse"
+                    name="warehouse"
+                    list={warehouseListId}
+                    value={formValues.warehouse}
+                    onChange={handleFormValueChange}
+                    placeholder="Main Facility"
+                    className="h-11 shadow-sm focus-visible:ring-1"
+                    required
+                  />
+                  <datalist id={warehouseListId}>
+                    {warehouses.map((warehouse) => (
+                      <option key={warehouse.id} value={warehouse.name} />
+                    ))}
+                  </datalist>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="product-price" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Unit Price (USD)</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <Input
+                      id="product-price"
+                      name="price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formValues.price}
+                      onChange={handleFormValueChange}
+                      placeholder="0.00"
+                      className="h-11 pl-7 shadow-sm focus-visible:ring-1"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-muted/30 p-4 border border-muted/50">
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Inventory Thresholds</span>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="product-stock" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Current Stock</Label>
+                    <Input
+                      id="product-stock"
+                      name="stock"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={formValues.stock}
+                      onChange={handleFormValueChange}
+                      className="h-9 shadow-sm focus-visible:ring-1 bg-background"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="product-minStock" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Min Threshold</Label>
+                    <Input
+                      id="product-minStock"
+                      name="minStock"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={formValues.minStock}
+                      onChange={handleFormValueChange}
+                      className="h-9 shadow-sm focus-visible:ring-1 bg-background"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="product-maxStock" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Max Capacity</Label>
+                    <Input
+                      id="product-maxStock"
+                      name="maxStock"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={formValues.maxStock}
+                      onChange={handleFormValueChange}
+                      className="h-9 shadow-sm focus-visible:ring-1 bg-background"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="product-description" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description / Notes</Label>
+                <Textarea
+                  id="product-description"
+                  name="description"
+                  value={formValues.description}
+                  onChange={handleFormValueChange}
+                  placeholder="Provide additional details about this item..."
+                  className="min-h-[100px] resize-none shadow-sm focus-visible:ring-1"
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="product-sku">SKU</Label>
-                <Input
-                  id="product-sku"
-                  name="sku"
-                  value={formValues.sku}
-                  onChange={handleFormValueChange}
-                  placeholder="WEP-2024-BK"
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="product-category">Category</Label>
-                <Input
-                  id="product-category"
-                  name="category"
-                  list={categoryListId}
-                  value={formValues.category}
-                  onChange={handleFormValueChange}
-                  placeholder="Electronics"
-                  required
-                />
-                <datalist id={categoryListId}>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.name} />
-                  ))}
-                </datalist>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="product-warehouse">Warehouse</Label>
-                <Input
-                  id="product-warehouse"
-                  name="warehouse"
-                  list={warehouseListId}
-                  value={formValues.warehouse}
-                  onChange={handleFormValueChange}
-                  placeholder="Main"
-                  required
-                />
-                <datalist id={warehouseListId}>
-                  {warehouses.map((warehouse) => (
-                    <option key={warehouse.id} value={warehouse.name} />
-                  ))}
-                </datalist>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="product-price">Price</Label>
-                <Input
-                  id="product-price"
-                  name="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formValues.price}
-                  onChange={handleFormValueChange}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="grid gap-2">
-                <Label htmlFor="product-stock">Stock</Label>
-                <Input
-                  id="product-stock"
-                  name="stock"
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={formValues.stock}
-                  onChange={handleFormValueChange}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="product-minStock">Min Stock</Label>
-                <Input
-                  id="product-minStock"
-                  name="minStock"
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={formValues.minStock}
-                  onChange={handleFormValueChange}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="product-maxStock">Max Stock</Label>
-                <Input
-                  id="product-maxStock"
-                  name="maxStock"
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={formValues.maxStock}
-                  onChange={handleFormValueChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="product-description">Description</Label>
-              <Textarea
-                id="product-description"
-                name="description"
-                value={formValues.description}
-                onChange={handleFormValueChange}
-                placeholder="Brief description, bundle details, or notes..."
-                rows={4}
-              />
-            </div>
-
-            <DialogFooter>
+            <DialogFooter className="gap-2 sm:gap-0 pt-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => setFormOpen(false)}
+                className="h-11"
               >
-                Cancel
+                Discard Changes
               </Button>
-              <Button type="submit" disabled={submittingForm}>
+              <Button type="submit" disabled={submittingForm} className="h-11 px-8 shadow-md">
                 {submittingForm ? (
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                ) : null}
-                {formMode === "create" ? "Create Product" : "Save Changes"}
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 h-4 w-4" />
+                )}
+                {formMode === "create" ? "Create Item" : "Update Catalog"}
               </Button>
             </DialogFooter>
           </form>
@@ -1062,144 +1153,172 @@ export default function InventoryPage() {
       </Dialog>
 
       <Dialog open={!!detailsProductId} onOpenChange={(open) => !open && setDetailsProductId(null)}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl border-none shadow-2xl">
           <DialogHeader>
-            <DialogTitle>Product Details</DialogTitle>
-            <DialogDescription>
-              Review pricing, thresholds, stock, and recent stock movements.
+            <DialogTitle className="text-2xl font-bold">Product Intelligence</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Deep dive into stock levels, historical movements, and catalog data.
             </DialogDescription>
           </DialogHeader>
 
           {loadingSelectedProduct ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <Loader2 className="h-8 w-8 animate-spin text-primary/40" />
+              <p className="text-sm text-muted-foreground font-medium animate-pulse">Retrieving product data...</p>
             </div>
           ) : selectedProductError ? (
-            <div className="rounded-lg border border-red-200 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:text-red-300">
-              {selectedProductError.message || "Failed to load product details."}
+            <div className="rounded-2xl border border-red-200 bg-red-500/5 px-6 py-8 text-center">
+              <AlertTriangle className="h-10 w-10 text-red-500 mx-auto mb-3" />
+              <p className="text-sm font-semibold text-red-700">Failed to load product details</p>
+              <p className="text-xs text-red-600/70 mt-1">{selectedProductError.message || "An unexpected error occurred."}</p>
             </div>
           ) : selectedProduct ? (
-            <div className="space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold">{selectedProduct.name}</h2>
-                  <p className="font-mono text-xs text-muted-foreground">
-                    {selectedProduct.sku}
-                  </p>
+            <div className="space-y-6 pt-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl bg-muted/30 p-5 border border-muted/50">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary shadow-lg text-primary-foreground">
+                    <span className="text-2xl font-black">{selectedProduct.name.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold tracking-tight">{selectedProduct.name}</h2>
+                    <code className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+                      {selectedProduct.sku}
+                    </code>
+                  </div>
                 </div>
-                <Badge
-                  variant="secondary"
-                  className={statusConfig[selectedProduct.status].className}
-                >
+                <div className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider
+                  ${
+                    selectedProduct.status === "in-stock"
+                      ? "bg-emerald-500 text-white"
+                      : selectedProduct.status === "low-stock"
+                        ? "bg-amber-500 text-white"
+                        : "bg-red-500 text-white"
+                  }
+                `}>
                   {statusConfig[selectedProduct.status].label}
-                </Badge>
+                </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border p-4">
-                  <p className="text-xs uppercase text-muted-foreground">Category</p>
-                  <p className="mt-1 font-medium">{selectedProduct.category}</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="group rounded-2xl border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-sm">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Categorization</p>
+                  <p className="mt-2 text-lg font-bold">{selectedProduct.category}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5">Primary classification</p>
                 </div>
-                <div className="rounded-xl border p-4">
-                  <p className="text-xs uppercase text-muted-foreground">Warehouse</p>
-                  <p className="mt-1 font-medium">{selectedProduct.warehouse}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedProduct.warehouseLocation || "No location set"}
+                <div className="group rounded-2xl border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-sm">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Storage Facility</p>
+                  <p className="mt-2 text-lg font-bold">{selectedProduct.warehouse}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5">
+                    {selectedProduct.warehouseLocation || "Section not assigned"}
                   </p>
                 </div>
-                <div className="rounded-xl border p-4">
-                  <p className="text-xs uppercase text-muted-foreground">Price</p>
-                  <p className="mt-1 font-medium">
+                <div className="group rounded-2xl border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-sm">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Market Pricing</p>
+                  <p className="mt-2 text-2xl font-black text-primary">
                     {formatCurrency(selectedProduct.price)}
                   </p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5">Unit cost basis</p>
                 </div>
-                <div className="rounded-xl border p-4">
-                  <p className="text-xs uppercase text-muted-foreground">Stock</p>
-                  <p className="mt-1 font-medium">{selectedProduct.stock} units</p>
-                  <p className="text-xs text-muted-foreground">
-                    Thresholds: {selectedProduct.minStock} min / {selectedProduct.maxStock} max
+                <div className="group rounded-2xl border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-sm">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Inventory Balance</p>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <p className="text-2xl font-black">{selectedProduct.stock}</p>
+                    <span className="text-xs font-medium text-muted-foreground">UNITS</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground/60 mt-1">
+                    Thresholds: <span className="font-mono">{selectedProduct.minStock}</span> to <span className="font-mono">{selectedProduct.maxStock}</span>
                   </p>
                 </div>
               </div>
 
-              <div className="rounded-xl border p-4">
-                <p className="text-xs uppercase text-muted-foreground">Description</p>
-                <p className="mt-1 text-sm text-foreground">
-                  {selectedProduct.description || "No description provided."}
+              <div className="rounded-2xl border bg-background p-5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Product Description</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {selectedProduct.description || "Detailed intelligence description not available for this item."}
                 </p>
               </div>
 
-              <div className="rounded-xl border p-4">
-                <div className="flex items-center justify-between">
+              <div className="rounded-2xl border bg-background overflow-hidden">
+                <div className="flex items-center justify-between border-b bg-muted/30 px-5 py-3">
                   <div>
-                    <p className="text-sm font-medium">Recent Stock Movements</p>
-                    <p className="text-xs text-muted-foreground">
-                      Last updated {formatDate(selectedProduct.updatedAt)}
-                    </p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Stock Activity Log</p>
+                    <p className="text-[10px] text-muted-foreground/60">Historical audit trail</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedProduct.movementCount} total movements
-                  </p>
+                  <Badge variant="outline" className="font-mono text-[10px] border-muted-foreground/20">
+                    {selectedProduct.movementCount} TOTAL
+                  </Badge>
                 </div>
-                <div className="mt-3 space-y-2">
+                <div className="max-h-[240px] overflow-auto divide-y">
                   {selectedProduct.recentMovements?.length ? (
                     selectedProduct.recentMovements.map((movement) => (
                       <div
                         key={movement.id}
-                        className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                        className="flex items-center justify-between px-5 py-3 transition-colors hover:bg-muted/30"
                       >
-                        <div>
-                          <p className="font-medium">{movement.type}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDate(movement.createdAt)}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center
+                            ${movement.quantity > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}
+                          `}>
+                            {movement.quantity > 0 ? <Plus className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4 rotate-180" />}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold">{movement.type}</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {formatDate(movement.createdAt)}
+                            </p>
+                          </div>
                         </div>
                         <div className="text-right">
                           <p
-                            className={`font-mono ${
+                            className={`font-mono text-xs font-black ${
                               movement.quantity > 0
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : "text-red-600 dark:text-red-400"
+                                ? "text-emerald-600"
+                                : "text-red-600"
                             }`}
                           >
                             {movement.quantity > 0 ? "+" : ""}
                             {movement.quantity}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-[10px] uppercase tracking-tighter text-muted-foreground font-bold">
                             {movement.status}
                           </p>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="rounded-lg border border-dashed px-3 py-4 text-center text-sm text-muted-foreground">
-                      No stock movements recorded yet.
+                    <div className="py-12 text-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted mx-auto mb-3">
+                        <Loader2 className="h-6 w-6 text-muted-foreground/20" />
+                      </div>
+                      <p className="text-xs text-muted-foreground">No recent stock movements recorded.</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              <DialogFooter>
+              <DialogFooter className="gap-2 sm:gap-0 pt-2">
                 <Button
                   type="button"
                   variant="outline"
+                  className="h-11 shadow-sm"
                   onClick={() => {
                     setDetailsProductId(null)
                     beginAdjustment(selectedProduct)
                   }}
                 >
-                  <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" />
+                  <ArrowUpDown className="mr-2 h-4 w-4" />
                   Adjust Stock
                 </Button>
                 <Button
                   type="button"
+                  className="h-11 shadow-md"
                   onClick={() => {
                     setDetailsProductId(null)
                     beginEdit(selectedProduct)
                   }}
                 >
-                  <Edit className="mr-1.5 h-3.5 w-3.5" />
-                  Edit Product
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Catalog
                 </Button>
               </DialogFooter>
             </div>
@@ -1216,26 +1335,30 @@ export default function InventoryPage() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md border-none shadow-2xl">
           <DialogHeader>
-            <DialogTitle>Adjust Stock</DialogTitle>
-            <DialogDescription>
-              Use a positive number to add stock or a negative number to reduce it.
+            <DialogTitle className="text-xl font-bold">Stock Adjustment</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Modify inventory levels manually. Use positive for additions, negative for reductions.
             </DialogDescription>
           </DialogHeader>
 
-          <form className="space-y-4" onSubmit={handleAdjustmentSubmit}>
+          <form className="space-y-5 pt-2" onSubmit={handleAdjustmentSubmit}>
             <div className="grid gap-2">
-              <Label htmlFor="adjustment-product">Product</Label>
-              <Input
-                id="adjustment-product"
-                value={adjustmentValues.productName}
-                disabled
-              />
+              <Label htmlFor="adjustment-product" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Selected Item</Label>
+              <div className="flex items-center gap-3 rounded-xl bg-muted/40 p-3 border border-muted/50">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background shadow-sm text-primary">
+                  <Package className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold">{adjustmentValues.productName}</p>
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase">Current Reference Item</p>
+                </div>
+              </div>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="adjustment-type">Movement Type</Label>
+              <Label htmlFor="adjustment-type" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Reason for Adjustment</Label>
               <Select
                 value={adjustmentValues.type}
                 onValueChange={(value) =>
@@ -1245,20 +1368,20 @@ export default function InventoryPage() {
                   }))
                 }
               >
-                <SelectTrigger id="adjustment-type">
+                <SelectTrigger id="adjustment-type" className="h-11 shadow-sm focus:ring-1">
                   <SelectValue placeholder="Select movement type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Manual Adjustment">Manual Adjustment</SelectItem>
-                  <SelectItem value="Restock">Restock</SelectItem>
-                  <SelectItem value="Sale">Sale</SelectItem>
-                  <SelectItem value="Transfer">Transfer</SelectItem>
+                  <SelectItem value="Restock">Restock / Procurement</SelectItem>
+                  <SelectItem value="Sale">Direct Sale / Order</SelectItem>
+                  <SelectItem value="Transfer">Warehouse Transfer</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="adjustment-quantity">Quantity Change</Label>
+              <Label htmlFor="adjustment-quantity" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Quantity Variation</Label>
               <Input
                 id="adjustment-quantity"
                 name="quantity"
@@ -1267,23 +1390,28 @@ export default function InventoryPage() {
                 value={adjustmentValues.quantity}
                 onChange={handleAdjustmentChange}
                 placeholder="e.g. 25 or -4"
+                className="h-11 text-lg font-bold shadow-sm focus:ring-1"
                 required
               />
+              <p className="text-[10px] text-muted-foreground">The final stock will be recalculated immediately after application.</p>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="pt-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => setAdjustmentOpen(false)}
+                className="h-11"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={submittingAdjustment}>
+              <Button type="submit" disabled={submittingAdjustment} className="h-11 px-8 shadow-md">
                 {submittingAdjustment ? (
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                ) : null}
-                Apply Adjustment
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowUpDown className="mr-2 h-4 w-4" />
+                )}
+                Commit Adjustment
               </Button>
             </DialogFooter>
           </form>
