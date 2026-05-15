@@ -105,69 +105,46 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
             title: "Total Products",
             value: statsLoading ? "-" : stats?.totalProducts,
-            change: "+12.5%",
-            trend: "up",
             icon: Package,
-            desc: "vs last month",
+            color: "text-primary",
           },
           {
             title: "Low Stock Alerts",
             value: statsLoading ? "-" : stats?.lowStock,
-            change: "-8.2%",
-            trend: "down",
             icon: AlertTriangle,
-            desc: "vs last month",
+            color: "text-amber-600 dark:text-amber-400",
           },
           {
             title: "Monthly Revenue",
             value: statsLoading
               ? "-"
               : `$${stats?.totalRevenue.toLocaleString()}`,
-            change: "+18.3%",
-            trend: "up",
             icon: DollarSign,
-            desc: "vs last month",
+            color: "text-emerald-600 dark:text-emerald-400",
           },
           {
             title: "Pending Orders",
             value: statsLoading ? "-" : stats?.pendingOrders,
-            change: "+4.1%",
-            trend: "up",
             icon: ShoppingCart,
-            desc: "vs last month",
+            color: "text-blue-600 dark:text-blue-400",
           },
         ].map((kpi) => (
           <Card key={kpi.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardDescription className="text-sm font-medium">
-                {kpi.title}
-              </CardDescription>
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-                <kpi.icon className="h-4 w-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{kpi.value}</div>
-              <div className="mt-1 flex items-center gap-1 text-xs">
-                {kpi.trend === "up" ? (
-                  <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
-                ) : (
-                  <ArrowDownRight className="h-3.5 w-3.5 text-emerald-500" />
-                )}
-                <span className="font-medium text-emerald-500">
-                  {kpi.change}
-                </span>
-                <span className="text-muted-foreground">{kpi.desc}</span>
+            <CardContent className="p-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase">{kpi.title}</p>
+                  <h3 className={`text-lg font-bold ${kpi.color}`}>{kpi.value}</h3>
+                </div>
+                <kpi.icon className="h-3.5 w-3.5 text-muted-foreground/30" />
               </div>
             </CardContent>
           </Card>
         ))}
-      </div>
 
       {/* Charts Row */}
       <div className="grid gap-6 lg:grid-cols-2">

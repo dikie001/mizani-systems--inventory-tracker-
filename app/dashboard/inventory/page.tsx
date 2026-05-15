@@ -665,41 +665,36 @@ export default function InventoryPage() {
           {
             label: "Total Products",
             value: isLoading ? "-" : String(products?.length ?? 0),
-            description: "Catalog size",
             icon: Box,
             color: "text-primary",
           },
           {
             label: "Units On Hand",
             value: isLoading ? "-" : totalUnits.toLocaleString(),
-            description: "Stock volume",
             icon: Package,
             color: "text-emerald-600 dark:text-emerald-400",
           },
           {
             label: "Low Stock Items",
             value: isLoading ? "-" : String(lowStockCount),
-            description: "Needs restock",
             icon: ArrowUpDown,
             color: "text-amber-600 dark:text-amber-400",
           },
           {
             label: "Critical Alert",
             value: isLoading ? "-" : String(criticalCount),
-            description: "Action required",
             icon: AlertTriangle,
             color: "text-destructive",
           },
         ].map((metric) => (
-          <Card key={metric.label} className="overflow-hidden border bg-card shadow-sm transition-all hover:bg-muted/5">
-            <CardContent className="p-4">
+          <Card key={metric.label}>
+            <CardContent className="p-3">
               <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{metric.label}</p>
-                  <h3 className={`text-xl font-bold tracking-tight ${metric.color}`}>{metric.value}</h3>
-                  <p className="text-[10px] text-muted-foreground/60">{metric.description}</p>
+                <div>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase">{metric.label}</p>
+                  <h3 className={`text-lg font-bold ${metric.color}`}>{metric.value}</h3>
                 </div>
-                <metric.icon className="h-3.5 w-3.5 text-muted-foreground/40" />
+                <metric.icon className="h-3.5 w-3.5 text-muted-foreground/30" />
               </div>
             </CardContent>
           </Card>

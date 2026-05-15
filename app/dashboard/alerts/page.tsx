@@ -80,45 +80,38 @@ export default function AlertsPage() {
 
       {/* Summary */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10">
-                <XCircle className="h-5 w-5 text-red-500" />
+        {[
+          {
+            label: "Critical Alerts",
+            value: cLoading ? "-" : criticalAlerts.length,
+            icon: XCircle,
+            color: "text-red-500",
+          },
+          {
+            label: "Low Stock Warnings",
+            value: isLoading ? "-" : lowStockAlerts.length,
+            icon: AlertTriangle,
+            color: "text-amber-500",
+          },
+          {
+            label: "Resolved Today",
+            value: resolvedAlerts.length,
+            icon: CheckCircle2,
+            color: "text-emerald-500",
+          },
+        ].map((metric) => (
+          <Card key={metric.label}>
+            <CardContent className="p-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase">{metric.label}</p>
+                  <h3 className={`text-lg font-bold ${metric.color}`}>{metric.value}</h3>
+                </div>
+                <metric.icon className="h-3.5 w-3.5 text-muted-foreground/30" />
               </div>
-              <div>
-                <p className="text-2xl font-bold">{cLoading ? "-" : criticalAlerts.length}</p>
-                <p className="text-xs text-muted-foreground">Critical Alerts</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{isLoading ? "-" : lowStockAlerts.length}</p>
-                <p className="text-xs text-muted-foreground">Low Stock Warnings</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{resolvedAlerts.length}</p>
-                <p className="text-xs text-muted-foreground">Resolved Today</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Tabs defaultValue="active">
