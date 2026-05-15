@@ -91,11 +91,11 @@ function HeroSection() {
         <div className="relative perspective-1000 transform-gpu">
           <Card className="shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden border-white/10 bg-card/80 backdrop-blur-xl tilt-card">
             <Table>
-              <TableHeader className="border-none">
+              <TableHeader className="bg-white/5 border-b border-white/5">
                 <TableRow className="hover:bg-transparent border-none">
-                  <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] pt-1.5 pb-2 px-6 text-muted-foreground/70">Product Name</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] pt-1.5 pb-2 px-6 text-muted-foreground/70">Price</TableHead>
-                  <TableHead className="text-right text-[10px] font-black uppercase tracking-[0.2em] pt-1.5 pb-2 px-6 text-muted-foreground/70">Stock</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase pt-1.5 pb-2 px-6 text-muted-foreground/70">Product Name</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase pt-1.5 pb-2 px-6 text-muted-foreground/70">Price</TableHead>
+                  <TableHead className="text-right text-[10px] font-black uppercase pt-1.5 pb-2 px-6 text-muted-foreground/70">Stock</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
