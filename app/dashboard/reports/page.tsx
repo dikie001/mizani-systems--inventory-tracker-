@@ -104,8 +104,8 @@ export default function ReportsPage() {
           {revLoading ? (
             <div className="flex justify-center p-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
           ) : (
-            <ChartContainer config={revenueConfig} className="aspect-auto h-[320px] w-full">
-              <AreaChart data={revenueData || []} margin={{ left: 0, right: 0 }}>
+            <ChartContainer config={revenueConfig} className="aspect-auto h-[272px] w-full">
+              <AreaChart data={revenueData || []} margin={{ top: 8, left: 0, right: 8, bottom: 0 }}>
                 <defs>
                   <linearGradient id="fillRev" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="var(--color-revenue)" stopOpacity={0.25} />
@@ -121,8 +121,8 @@ export default function ReportsPage() {
                 <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <ChartLegend content={<ChartLegendContent />} />
-                <Area type="monotone" dataKey="revenue" stroke="var(--color-revenue)" strokeWidth={2} fill="url(#fillRev)" />
-                <Area type="monotone" dataKey="costs" stroke="var(--color-costs)" strokeWidth={2} fill="url(#fillCost)" />
+                <Area type="monotone" dataKey="revenue" stroke="var(--color-revenue)" strokeWidth={1.75} fill="url(#fillRev)" />
+                <Area type="monotone" dataKey="costs" stroke="var(--color-costs)" strokeWidth={1.75} fill="url(#fillCost)" />
               </AreaChart>
             </ChartContainer>
           )}
@@ -137,13 +137,13 @@ export default function ReportsPage() {
             <CardDescription>By units sold this year</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={productConfig} className="aspect-auto h-[260px] w-full">
-              <BarChart data={topProducts} layout="vertical" margin={{ left: 0, right: 0 }}>
+            <ChartContainer config={productConfig} className="aspect-auto h-[228px] w-full">
+              <BarChart data={topProducts} layout="vertical" margin={{ top: 6, left: 0, right: 8, bottom: 6 }} barCategoryGap="30%">
                 <CartesianGrid horizontal={false} strokeDasharray="3 3" />
                 <XAxis type="number" tickLine={false} axisLine={false} />
                 <YAxis type="category" dataKey="product" tickLine={false} axisLine={false} width={90} tickMargin={8} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="units" fill="var(--color-units)" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="units" fill="var(--color-units)" radius={[0, 4, 4, 0]} barSize={16} />
               </BarChart>
             </ChartContainer>
           </CardContent>
@@ -158,10 +158,10 @@ export default function ReportsPage() {
             {catLoading ? (
                <div className="flex justify-center p-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : (
-              <ChartContainer config={pieConfig} className="aspect-square h-[260px] w-full">
+              <ChartContainer config={pieConfig} className="aspect-square h-[236px] w-full">
                 <PieChart>
                   <ChartTooltip content={<ChartTooltipContent nameKey="category" hideLabel />} />
-                  <Pie data={categoryData || []} dataKey="value" nameKey="category" cx="50%" cy="50%" innerRadius={60} outerRadius={100} strokeWidth={2}>
+                  <Pie data={categoryData || []} dataKey="value" nameKey="category" cx="50%" cy="50%" innerRadius={56} outerRadius={92} strokeWidth={1.5}>
                     {(categoryData || []).map((entry, index) => (
                       <Cell key={entry.category} fill={pieColors[index % pieColors.length]} />
                     ))}

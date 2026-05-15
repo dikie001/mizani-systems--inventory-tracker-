@@ -102,10 +102,10 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {revLoading ? (
-              <div className="flex h-[280px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              <div className="flex h-[240px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : (
-              <ChartContainer config={revenueChartConfig} className="aspect-auto h-[280px] w-full">
-                <AreaChart data={revenueData || []} margin={{ left: 0, right: 0 }}>
+              <ChartContainer config={revenueChartConfig} className="aspect-auto h-[240px] w-full">
+                <AreaChart data={revenueData || []} margin={{ top: 8, left: 0, right: 8, bottom: 0 }}>
                   <defs>
                     <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="var(--color-revenue)" stopOpacity={0.3} />
@@ -128,7 +128,7 @@ export default function DashboardPage() {
                       />
                     }
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="var(--color-revenue)" strokeWidth={2} fill="url(#fillRevenue)" />
+                  <Area type="monotone" dataKey="revenue" stroke="var(--color-revenue)" strokeWidth={1.75} fill="url(#fillRevenue)" />
                 </AreaChart>
               </ChartContainer>
             )}
@@ -147,10 +147,10 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {catLoading ? (
-              <div className="flex h-[280px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              <div className="flex h-[236px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : (
-              <ChartContainer config={categoryChartConfig} className="aspect-auto h-[280px] w-full">
-                <BarChart data={categoryData || []} margin={{ left: 0, right: 0 }} layout="vertical">
+              <ChartContainer config={categoryChartConfig} className="aspect-auto h-[236px] w-full">
+                <BarChart data={categoryData || []} margin={{ top: 6, left: 0, right: 8, bottom: 6 }} layout="vertical" barCategoryGap="30%">
                   <CartesianGrid horizontal={false} strokeDasharray="3 3" />
                   <XAxis type="number" tickLine={false} axisLine={false} />
                   <YAxis type="category" dataKey="category" tickLine={false} axisLine={false} tickMargin={8} width={80} />
@@ -166,7 +166,7 @@ export default function DashboardPage() {
                       />
                     }
                   />
-                  <Bar dataKey="items" fill="var(--color-items)" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="items" fill="var(--color-items)" radius={[0, 4, 4, 0]} barSize={16} />
                 </BarChart>
               </ChartContainer>
             )}

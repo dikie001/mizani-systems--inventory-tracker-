@@ -10,7 +10,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       style={
         {
           "--sidebar-width": "16.5rem",
-          "--sidebar-width-icon": "4rem",
+          "--sidebar-width-icon": "4.5rem",
         } as React.CSSProperties
       }
     >
