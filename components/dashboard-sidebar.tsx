@@ -82,7 +82,7 @@ export function DashboardSidebar() {
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="bg-transparent">
-      <SidebarHeader className="h-16 justify-center border-b border-sidebar-border/80 px-3 py-0 group-data-[collapsible=icon]:px-2">
+      <SidebarHeader className="h-16 justify-center border-b border-sidebar-border/80 px-3 py-0 group-data-[collapsible=icon]:h-16 group-data-[collapsible=icon]:px-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -107,8 +107,8 @@ export function DashboardSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="gap-4 px-3 py-4 group-data-[collapsible=icon]:px-2">
-        <SidebarGroup className="px-0 py-0">
+      <SidebarContent className="gap-4 px-3 py-4 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2">
+        <SidebarGroup className="px-0 py-0 group-data-[collapsible=icon]:gap-2">
           <SidebarGroupLabel className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-sidebar-foreground/40">
             Workspace
           </SidebarGroupLabel>
@@ -146,7 +146,7 @@ export function DashboardSidebar() {
 
         <Separator className="mx-3 w-auto bg-sidebar-border/70 group-data-[collapsible=icon]:hidden" />
 
-        <SidebarGroup className="px-0 py-0">
+        <SidebarGroup className="px-0 py-0 group-data-[collapsible=icon]:gap-2">
           <SidebarGroupLabel className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-sidebar-foreground/40">
             More
           </SidebarGroupLabel>
@@ -183,7 +183,7 @@ export function DashboardSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="mt-auto border-t border-sidebar-border/80 px-3 py-3 group-data-[collapsible=icon]:px-2">
+      <SidebarFooter className="mt-auto border-t border-sidebar-border/80 px-3 py-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
