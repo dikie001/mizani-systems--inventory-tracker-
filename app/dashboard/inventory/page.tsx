@@ -1,13 +1,13 @@
 "use client"
 
-import { ChangeEvent, FormEvent, useId, useRef, useState } from "react"
+import { ChangeEvent, FormEvent, useId, useRef, useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import useSWR from "swr"
 import {
   AlertCircle,
   AlertTriangle,
   ArrowUpDown,
   Box,
-
   Download,
   Edit,
   Eye,
@@ -23,7 +23,7 @@ import {
   ShieldAlert,
   Trash2,
   TrendingDown,
-
+  Upload,
   XCircle,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -255,6 +255,20 @@ export default function InventoryPage() {
   )
   const [submittingAdjustment, setSubmittingAdjustment] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const [importFile, setImportFile] = useState<File | null>(null)
+
+  const searchParams = useSearchParams()
+  const action = searchParams.get("action")
+
+  useEffect(() => {
+    if (action === "add") {
+      beginCreate()
+    } else if (action === "import") {
+      setImportOpen(true)
+    }
+  }, [action])
 
 
   const productsUrl = buildProductsUrl({
@@ -536,6 +550,40 @@ export default function InventoryPage() {
     }
   }
 
+  const handleImportSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!importFile) return
+
+    setImporting(true)
+    setNotice(null)
+
+    try {
+      const content = await importFile.text()
+      const format = importFile.name.endsWith(".json") ? "json" : "csv"
+
+      const response = await fetch("/api/products/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ content, format }),
+      })
+
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.error || "Import failed.")
+
+      setImportOpen(false)
+      setImportFile(null)
+      setNotice({ type: "success", message: payload.message })
+      await refreshInventory()
+    } catch (err) {
+      setNotice({
+        type: "error",
+        message: err instanceof Error ? err.message : "Import failed.",
+      })
+    } finally {
+      setImporting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
 
@@ -548,7 +596,15 @@ export default function InventoryPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setImportOpen(true)} 
+            className="h-12 px-5"
+          >
+            <Upload className="mr-1.5 h-4 w-4" />
+            Import
+          </Button>
           <Button size="sm" onClick={beginCreate} className="h-12 px-5 shadow-sm transition-all hover:shadow-md">
             <Plus className="mr-1.5 h-4 w-4" />
             Add Product
@@ -1268,6 +1324,52 @@ export default function InventoryPage() {
                   <ArrowUpDown className="mr-2 h-4 w-4" />
                 )}
                 Commit Adjustment
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="sm:max-w-md border-none shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Bulk Import Products</DialogTitle>
+            <DialogDescription>
+              Upload a CSV or JSON file to bulk create or update your inventory catalog.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleImportSubmit} className="space-y-6 pt-4">
+            <div className="grid gap-2">
+              <Label htmlFor="import-file" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Inventory File (CSV or JSON)
+              </Label>
+              <Input
+                id="import-file"
+                type="file"
+                accept=".csv,.json"
+                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                className="h-12 pt-2.5 bg-muted/20 border-dashed border-2 hover:bg-muted/30 transition-all cursor-pointer"
+                required
+              />
+              <p className="text-[10px] text-muted-foreground italic">
+                Tip: SKUs are used to match existing products for updates.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setImportOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={importing || !importFile}>
+                {importing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="mr-2 h-4 w-4" />
+                )}
+                Start Import
               </Button>
             </DialogFooter>
           </form>

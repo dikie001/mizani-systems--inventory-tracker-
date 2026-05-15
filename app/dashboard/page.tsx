@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import useSWR from "swr"
 import { useSession } from "next-auth/react"
 import {
@@ -389,8 +390,8 @@ export default function DashboardPage() {
               <CardTitle>Recent Activity</CardTitle>
               <CardDescription>Latest inventory movements</CardDescription>
             </div>
-            <Button variant="outline" size="sm">
-              View all
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/dashboard/inventory">View all</Link>
             </Button>
           </div>
         </CardHeader>
@@ -508,9 +509,11 @@ export default function DashboardPage() {
             )}
           </CardContent>
           <CardFooter>
-            <Button variant="outline" size="sm" className="w-full">
-              <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
-              Create restock order
+            <Button variant="outline" size="sm" className="w-full" asChild>
+              <Link href="/dashboard/orders">
+                <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
+                Create restock order
+              </Link>
             </Button>
           </CardFooter>
         </Card>
@@ -527,37 +530,44 @@ export default function DashboardPage() {
                   icon: Plus,
                   label: "Add Product",
                   desc: "Create new inventory item",
+                  href: "/dashboard/inventory?action=add",
                 },
                 {
                   icon: Upload,
                   label: "Bulk Import",
                   desc: "Upload CSV or Excel",
+                  href: "/dashboard/inventory?action=import",
                 },
                 {
                   icon: FileText,
                   label: "Generate Report",
                   desc: "Export analytics data",
+                  href: "/dashboard/reports",
                 },
                 {
                   icon: Users,
                   label: "Manage Team",
                   desc: "Roles & permissions",
+                  href: "/dashboard/settings",
                 },
               ].map((action) => (
                 <Button
                   key={action.label}
                   variant="outline"
                   className="flex h-auto flex-col items-center gap-2 p-4"
+                  asChild
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <action.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xs font-medium">{action.label}</div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {action.desc}
+                  <Link href={action.href}>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                      <action.icon className="h-5 w-5 text-primary" />
                     </div>
-                  </div>
+                    <div className="text-center">
+                      <div className="text-xs font-medium">{action.label}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {action.desc}
+                      </div>
+                    </div>
+                  </Link>
                 </Button>
               ))}
             </div>
