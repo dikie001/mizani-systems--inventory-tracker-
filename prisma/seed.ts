@@ -10,7 +10,7 @@ async function main() {
   await prisma.order.deleteMany()
   await prisma.product.deleteMany()
   await prisma.category.deleteMany()
-  await prisma.warehouse.deleteMany()
+
   await prisma.account.deleteMany()
   await prisma.session.deleteMany()
   await prisma.user.deleteMany()
@@ -39,21 +39,18 @@ async function main() {
     catMap.set(name, c.id)
   }
 
-  // 3. Create Warehouses
-  const mainWh = await prisma.warehouse.create({ data: { name: "Main", location: "New York" } })
-  const westWh = await prisma.warehouse.create({ data: { name: "West", location: "Los Angeles" } })
-  const eastWh = await prisma.warehouse.create({ data: { name: "East", location: "Miami" } })
+
 
   // 4. Create Products
   const productsData = [
-    { name: "Wireless Earbuds Pro", sku: "WEP-2024-BK", categoryId: catMap.get("Electronics"), price: 79.99, stock: 342, status: "in-stock", warehouseId: mainWh.id },
-    { name: "Organic Coffee Beans 1kg", sku: "OCB-1KG-AR", categoryId: catMap.get("Food & Bev"), price: 24.50, stock: 189, status: "in-stock", warehouseId: mainWh.id },
-    { name: "Running Shoes V2", sku: "RSV2-42-BL", categoryId: catMap.get("Sports"), price: 129.99, stock: 67, status: "low-stock", warehouseId: westWh.id },
-    { name: "Smart Watch Elite", sku: "SWE-2024-SL", categoryId: catMap.get("Electronics"), price: 299.99, stock: 156, status: "in-stock", warehouseId: mainWh.id },
-    { name: "Yoga Mat Premium", sku: "YMP-BL-6MM", categoryId: catMap.get("Sports"), price: 45.00, stock: 8, status: "critical", warehouseId: eastWh.id },
-    { name: "USB-C Hub Adapter", sku: "UCH-7P-GR", categoryId: catMap.get("Electronics"), price: 49.99, stock: 12, status: "low-stock", warehouseId: mainWh.id },
-    { name: "Face Serum 30ml", sku: "FS-30-HY", categoryId: catMap.get("Beauty"), price: 34.99, stock: 15, status: "low-stock", warehouseId: mainWh.id },
-    { name: "Bamboo Cutting Board", sku: "BCB-LG-NT", categoryId: catMap.get("Home"), price: 28.00, stock: 5, status: "critical", warehouseId: westWh.id },
+    { name: "Wireless Earbuds Pro", sku: "WEP-2024-BK", categoryId: catMap.get("Electronics"), price: 79.99, stock: 342, status: "in-stock" },
+    { name: "Organic Coffee Beans 1kg", sku: "OCB-1KG-AR", categoryId: catMap.get("Food & Bev"), price: 24.50, stock: 189, status: "in-stock" },
+    { name: "Running Shoes V2", sku: "RSV2-42-BL", categoryId: catMap.get("Sports"), price: 129.99, stock: 67, status: "low-stock" },
+    { name: "Smart Watch Elite", sku: "SWE-2024-SL", categoryId: catMap.get("Electronics"), price: 299.99, stock: 156, status: "in-stock" },
+    { name: "Yoga Mat Premium", sku: "YMP-BL-6MM", categoryId: catMap.get("Sports"), price: 45.00, stock: 8, status: "critical" },
+    { name: "USB-C Hub Adapter", sku: "UCH-7P-GR", categoryId: catMap.get("Electronics"), price: 49.99, stock: 12, status: "low-stock" },
+    { name: "Face Serum 30ml", sku: "FS-30-HY", categoryId: catMap.get("Beauty"), price: 34.99, stock: 15, status: "low-stock" },
+    { name: "Bamboo Cutting Board", sku: "BCB-LG-NT", categoryId: catMap.get("Home"), price: 28.00, stock: 5, status: "critical" },
   ]
 
   const createdProducts = []

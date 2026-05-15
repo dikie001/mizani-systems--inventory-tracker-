@@ -96,6 +96,8 @@ export default function DashboardPage() {
 
   const lowStockItems = Array.isArray(lowStockData) ? lowStockData : []
   const recentActivity = Array.isArray(activityData) ? activityData : []
+  const categories = Array.isArray(categoryData) ? categoryData : []
+  const revenue = Array.isArray(revenueData) ? revenueData : []
 
   return (
     <div className="space-y-6">
@@ -185,7 +187,7 @@ export default function DashboardPage() {
                 className="aspect-auto h-[252px] w-full"
               >
                 <AreaChart
-                  data={revenueData || []}
+                  data={revenue}
                   margin={{ top: 12, left: 6, right: 14, bottom: 20 }}
                 >
                   <defs>
@@ -291,7 +293,7 @@ export default function DashboardPage() {
                 className="aspect-auto h-[248px] w-full"
               >
                 <BarChart
-                  data={categoryData || []}
+                  data={categories}
                   margin={{ top: 12, left: 10, right: 14, bottom: 20 }}
                   layout="vertical"
                   barCategoryGap="30%"
