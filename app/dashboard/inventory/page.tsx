@@ -693,24 +693,28 @@ function InventoryPageContent() {
                   : `Showing ${products?.length ?? 0} items`}
               </CardDescription>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2.5">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
+                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/40" />
                 <Input
-                  placeholder="Search SKU or name..."
-                  className="h-9 w-[180px] pl-8 text-xs bg-muted/30 border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/20 transition-all sm:w-[220px]"
+                  placeholder="Search products..."
+                  className="h-9 w-[220px] pl-9 text-[11px] bg-muted/20 border-white/5 rounded-xl shadow-none focus-visible:ring-1 focus-visible:ring-white/10 transition-all placeholder:text-muted-foreground/30"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                 />
               </div>
               
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="h-9 w-[130px] text-xs bg-muted/30 border-none shadow-none focus:ring-0">
-                  <Filter className="mr-2 h-3 w-3 opacity-60" />
-                  <SelectValue placeholder="Category" />
+                <SelectTrigger className="h-9 w-[140px] text-[11px] bg-muted/20 border-white/5 rounded-xl shadow-none focus:ring-0 px-3">
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-3.5 w-3.5 text-foreground/80" />
+                    <span className="font-semibold">
+                      <SelectValue placeholder="All Types" />
+                    </span>
+                  </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.name}>
                       {category.name}
@@ -720,8 +724,10 @@ function InventoryPageContent() {
               </Select>
 
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-9 w-[110px] text-xs bg-muted/30 border-none shadow-none focus:ring-0">
-                  <SelectValue placeholder="Status" />
+                <SelectTrigger className="h-9 w-[110px] text-[11px] bg-muted/20 border-white/5 rounded-xl shadow-none focus:ring-0">
+                  <span className="font-semibold text-foreground/80">
+                    <SelectValue placeholder="Status" />
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
@@ -731,21 +737,19 @@ function InventoryPageContent() {
                 </SelectContent>
               </Select>
 
-              <div className="h-4 w-[1px] bg-border/40 mx-1 hidden sm:block" />
-
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-9 px-3 text-xs border-muted-foreground/20 hover:bg-muted/50 transition-all"
+                className="h-9 px-4 text-[11px] font-bold border-white/5 rounded-xl bg-muted/10 hover:bg-muted/30 transition-all"
                 onClick={handleExport}
                 disabled={exporting || isLoading}
               >
                 {exporting ? (
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
                 ) : (
-                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                  <Download className="mr-1.5 h-3 w-3" />
                 )}
-                <span className="hidden sm:inline">Export</span>
+                Export
               </Button>
             </div>
           </div>
