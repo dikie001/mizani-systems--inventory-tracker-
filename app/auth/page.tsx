@@ -1,0 +1,190 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
+import { ArrowLeft, LoaderCircle } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 48 48" aria-hidden="true" className="h-4 w-4 shrink-0 text-foreground">
+      <path fill="currentColor" d="M24 9.5c3.54 0 6.71 1.22 9.23 3.6l6.9-6.9C35.99 2.66 30.52 0 24 0 14.62 0 6.53 5.38 2.62 13.22l8.04 6.26C12.55 13.59 17.77 9.5 24 9.5Z" />
+      <path fill="currentColor" opacity="0.92" d="M46.5 24.5c0-1.55-.15-3.05-.42-4.5H24v9h12.93c-.6 3.16-2.45 5.84-5.11 7.64l7.9 6.13C43.98 38.1 46.5 31.93 46.5 24.5Z" />
+      <path fill="currentColor" opacity="0.7" d="M10.66 28.98A14.5 14.5 0 0 1 9.5 24c0-1.7.3-3.33.84-4.82L2.3 12.92A24 24 0 0 0 0 24c0 3.86.92 7.51 2.54 10.74l8.12-5.76Z" />
+      <path fill="currentColor" opacity="0.84" d="M24 48c6.48 0 11.94-2.12 15.92-5.77l-7.9-6.13c-2.2 1.48-5.01 2.35-8.02 2.35-6.16 0-11.35-4.15-13.2-9.76l-8.1 5.98C6.56 42.73 14.67 48 24 48Z" />
+    </svg>
+  )
+}
+
+function getAuthErrorMessage(error: string | null) {
+  switch (error) {
+    case "AccessDenied":
+      return "Google sign-in was denied. Please try again and grant access."
+    case "OAuthAccountNotLinked":
+      return "This email is already linked to a different sign-in method."
+    case "Configuration":
+      return "Google sign-in is not configured correctly yet."
+    default:
+      return error ? "Google sign-in could not be completed. Please try again." : null
+  }
+}
+
+export default function AuthPage() {
+  const router = useRouter()
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const popupCheckRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    const error = new URLSearchParams(window.location.search).get("error")
+    if (!window.opener || !error) {
+      setErrorMessage(getAuthErrorMessage(error))
+      return
+    }
+
+    window.opener.postMessage(
+      {
+        type: "google-auth:result",
+        error,
+      },
+      window.location.origin,
+    )
+    window.close()
+  }, [])
+
+  useEffect(() => {
+    function handleMessage(event: MessageEvent) {
+      if (event.origin !== window.location.origin) {
+        return
+      }
+
+      const payload = event.data
+      if (!payload || payload.type !== "google-auth:result") {
+        return
+      }
+
+      if (popupCheckRef.current) {
+        window.clearInterval(popupCheckRef.current)
+        popupCheckRef.current = null
+      }
+
+      if (payload.error) {
+        setIsGoogleLoading(false)
+        setErrorMessage(getAuthErrorMessage(payload.error))
+        return
+      }
+
+      const callbackUrl =
+        typeof payload.callbackUrl === "string" && payload.callbackUrl.length > 0
+          ? payload.callbackUrl
+          : "/dashboard"
+
+      setErrorMessage(null)
+      router.replace(callbackUrl)
+      router.refresh()
+    }
+
+    window.addEventListener("message", handleMessage)
+    return () => {
+      window.removeEventListener("message", handleMessage)
+      if (popupCheckRef.current) {
+        window.clearInterval(popupCheckRef.current)
+      }
+    }
+  }, [router])
+
+  async function handleGoogleSignIn() {
+    setIsGoogleLoading(true)
+    setErrorMessage(null)
+
+    const popupUrl = new URL("/auth/google", window.location.origin)
+    popupUrl.searchParams.set("callbackUrl", "/dashboard")
+
+    const width = 520
+    const height = 640
+    const left = window.screenX + Math.max(0, (window.outerWidth - width) / 2)
+    const top = window.screenY + Math.max(0, (window.outerHeight - height) / 2)
+
+    const popup = window.open(
+      popupUrl.toString(),
+      "google-auth-popup",
+      `popup=yes,width=${width},height=${height},left=${left},top=${top}`,
+    )
+
+    if (!popup) {
+      await signIn("google", { callbackUrl: "/dashboard" })
+      return
+    }
+
+    popup.focus()
+
+    popupCheckRef.current = window.setInterval(() => {
+      if (!popup.closed) {
+        return
+      }
+
+      if (popupCheckRef.current) {
+        window.clearInterval(popupCheckRef.current)
+        popupCheckRef.current = null
+      }
+
+      setIsGoogleLoading(false)
+    }, 500)
+  }
+
+  return (
+    <main className="flex min-h-svh items-center justify-center bg-background px-6 py-6">
+      <div className="w-full max-w-sm sm:max-w-md">
+        <Button asChild variant="ghost" size="icon" className="mb-4 h-9 w-9 rounded-full">
+          <Link href="/">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+
+        <Card className="rounded-2xl border bg-card text-card-foreground shadow-sm">
+          <CardHeader className="items-center gap-3 px-6 pt-6 text-center">
+          
+            <div className="space-y-1">
+              <CardTitle className="text-2xl tracking-tight">
+                Continue to StockVault
+              </CardTitle>
+            </div>
+          </CardHeader>
+
+          <CardContent className="px-6 pt-0 pb-6">
+            <Button
+              className="h-11 w-full rounded-xl"
+              onClick={handleGoogleSignIn}
+              disabled={isGoogleLoading}
+            >
+              {isGoogleLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+              {isGoogleLoading ? "Opening Google..." : "Continue with Google"}
+            </Button>
+
+            {errorMessage ? (
+              <p className="mt-3 text-center text-sm text-destructive">
+                {errorMessage}
+              </p>
+            ) : null}
+
+          
+
+            <p className="mt-4 text-center text-xs leading-5 text-muted-foreground">
+              By continuing, you agree to our Terms and Privacy Policy.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </main>
+  )
+}
+
