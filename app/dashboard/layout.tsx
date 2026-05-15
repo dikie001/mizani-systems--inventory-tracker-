@@ -8,10 +8,35 @@ export const metadata: Metadata = {
     "Manage your inventory, track orders, and monitor key metrics from your StockVault dashboard.",
 }
 
-export default function DashboardLayout({
+import { auth } from "@/auth"
+import { redirect } from "next/navigation"
+import prisma from "@/lib/prisma"
+
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await auth()
+  
+  if (!session?.user?.email) {
+    redirect("/auth")
+  }
+
+  // Robust check to ensure user has a workspace
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: {
+      currentWorkspaceId: true,
+      memberships: {
+        take: 1
+      }
+    }
+  })
+
+  if (!user?.currentWorkspaceId && (!user?.memberships || user.memberships.length === 0)) {
+    redirect("/onboarding")
+  }
+
   return <DashboardShell>{children}</DashboardShell>
 }
