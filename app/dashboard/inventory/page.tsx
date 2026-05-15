@@ -7,7 +7,7 @@ import {
   AlertTriangle,
   ArrowUpDown,
   Box,
-  Download,
+
   Edit,
   Eye,
   Filter,
@@ -22,7 +22,7 @@ import {
   ShieldAlert,
   Trash2,
   TrendingDown,
-  Upload,
+
   XCircle,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -239,7 +239,7 @@ function formatDate(value: string) {
 export default function InventoryPage() {
   const categoryListId = useId()
   const warehouseListId = useId()
-  const importInputRef = useRef<HTMLInputElement>(null)
+
 
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
@@ -259,8 +259,7 @@ export default function InventoryPage() {
     emptyStockAdjustment(),
   )
   const [submittingAdjustment, setSubmittingAdjustment] = useState(false)
-  const [exporting, setExporting] = useState(false)
-  const [importing, setImporting] = useState(false)
+
 
   const productsUrl = buildProductsUrl({
     searchQuery,
@@ -447,109 +446,7 @@ export default function InventoryPage() {
     }
   }
 
-  const handleExport = async () => {
-    setExporting(true)
-    setNotice(null)
 
-    try {
-      const response = await fetch(
-        `/api/products/export${productsUrl.replace("/api/products", "")}`,
-      )
-
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null)
-        throw new Error(
-          payload && typeof payload.error === "string"
-            ? payload.error
-            : "Unable to export products.",
-        )
-      }
-
-      const blob = await response.blob()
-      const downloadUrl = window.URL.createObjectURL(blob)
-      const link = document.createElement("a")
-      link.href = downloadUrl
-      link.download = "inventory-products.csv"
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      window.URL.revokeObjectURL(downloadUrl)
-
-      setNotice({
-        type: "success",
-        message: "Inventory export is ready.",
-      })
-    } catch (exportError) {
-      setNotice({
-        type: "error",
-        message:
-          exportError instanceof Error
-            ? exportError.message
-            : "Unable to export products.",
-      })
-    } finally {
-      setExporting(false)
-    }
-  }
-
-  const handleImportSelected = async (
-    event: ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0]
-    event.target.value = ""
-
-    if (!file) {
-      return
-    }
-
-    setImporting(true)
-    setNotice(null)
-
-    try {
-      const content = await file.text()
-      const format = file.name.toLowerCase().endsWith(".json") ? "json" : "csv"
-
-      const response = await fetch("/api/products/import", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ format, content }),
-      })
-
-      const payload = await response.json().catch(() => null)
-      if (!response.ok) {
-        throw new Error(
-          payload && typeof payload.error === "string"
-            ? payload.error
-            : "Unable to import products.",
-        )
-      }
-
-      const importedSummary =
-        payload &&
-        typeof payload.created === "number" &&
-        typeof payload.updated === "number"
-          ? `Import complete: ${payload.created} created, ${payload.updated} updated.`
-          : "Import complete."
-
-      setNotice({
-        type: "success",
-        message: importedSummary,
-      })
-      await refreshInventory()
-    } catch (importError) {
-      setNotice({
-        type: "error",
-        message:
-          importError instanceof Error
-            ? importError.message
-            : "Unable to import products.",
-      })
-    } finally {
-      setImporting(false)
-    }
-  }
 
   const handleAdjustmentSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -600,13 +497,7 @@ export default function InventoryPage() {
 
   return (
     <div className="space-y-6">
-      <input
-        ref={importInputRef}
-        type="file"
-        accept=".csv,.json"
-        className="hidden"
-        onChange={handleImportSelected}
-      />
+
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -616,37 +507,7 @@ export default function InventoryPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center rounded-lg border bg-background p-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2.5 text-xs"
-              onClick={() => importInputRef.current?.click()}
-              disabled={importing}
-            >
-              {importing ? (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Upload className="mr-1.5 h-3.5 w-3.5" />
-              )}
-              Import
-            </Button>
-            <div className="mx-1 h-4 w-[1px] bg-border" />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2.5 text-xs"
-              onClick={handleExport}
-              disabled={exporting || isLoading}
-            >
-              {exporting ? (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Download className="mr-1.5 h-3.5 w-3.5" />
-              )}
-              Export
-            </Button>
-          </div>
+
           <Button size="sm" onClick={beginCreate} className="h-10 shadow-sm">
             <Plus className="mr-1.5 h-4 w-4" />
             Add Product
@@ -788,12 +649,7 @@ export default function InventoryPage() {
                   : `Showing ${products?.length ?? 0} items across all warehouses`}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="h-9">
-                <Download className="mr-1.5 h-3.5 w-3.5" />
-                Export
-              </Button>
-            </div>
+
           </div>
         </CardHeader>
         <CardContent>
