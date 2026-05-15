@@ -102,12 +102,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {revLoading ? (
-              <div className="flex h-[220px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              <div className="flex h-[240px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : (
-              <ChartContainer config={revenueChartConfig} className="aspect-auto h-[220px] w-full">
+              <ChartContainer config={revenueChartConfig} className="aspect-auto h-[240px] w-full">
                 <AreaChart
                   data={revenueData || []}
-                  margin={{ top: 4, left: -12, right: 0, bottom: 2 }}
+                  margin={{ top: 10, left: 4, right: 12, bottom: 12 }}
                 >
                   <defs>
                     <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -120,25 +120,26 @@ export default function DashboardPage() {
                     dataKey="month"
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={6}
-                    padding={{ left: 6, right: 6 }}
+                    tickMargin={8}
+                    padding={{ left: 10, right: 10 }}
                     label={{
                       value: "Month",
                       position: "insideBottom",
-                      offset: -2,
+                      offset: -6,
                       fill: "var(--muted-foreground)",
                     }}
                   />
                   <YAxis
-                    width={48}
+                    width={56}
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={6}
+                    tickMargin={8}
                     tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                     label={{
                       value: "Revenue",
                       angle: -90,
                       position: "insideLeft",
+                      offset: -2,
                       fill: "var(--muted-foreground)",
                     }}
                   />
@@ -174,25 +175,25 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {catLoading ? (
-              <div className="flex h-[224px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              <div className="flex h-[236px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : (
-              <ChartContainer config={categoryChartConfig} className="aspect-auto h-[224px] w-full">
+              <ChartContainer config={categoryChartConfig} className="aspect-auto h-[236px] w-full">
                 <BarChart
                   data={categoryData || []}
-                  margin={{ top: 4, left: 6, right: 8, bottom: 2 }}
+                  margin={{ top: 10, left: 8, right: 12, bottom: 12 }}
                   layout="vertical"
-                  barCategoryGap="24%"
+                  barCategoryGap="30%"
                 >
                   <CartesianGrid horizontal={false} strokeDasharray="3 3" />
                   <XAxis
                     type="number"
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={6}
+                    tickMargin={8}
                     label={{
                       value: "Total items",
                       position: "insideBottom",
-                      offset: -2,
+                      offset: -6,
                       fill: "var(--muted-foreground)",
                     }}
                   />
@@ -202,11 +203,12 @@ export default function DashboardPage() {
                     tick={false}
                     axisLine={false}
                     tickLine={false}
-                    width={26}
+                    width={34}
                     label={{
                       value: "Categories",
                       angle: -90,
                       position: "insideLeft",
+                      offset: -2,
                       fill: "var(--muted-foreground)",
                     }}
                   />
@@ -231,7 +233,7 @@ export default function DashboardPage() {
                     <LabelList
                       dataKey="category"
                       position="insideLeft"
-                      offset={10}
+                      offset={12}
                       fill="rgba(28, 18, 36, 0.92)"
                       fontSize={11}
                       fontWeight={600}
