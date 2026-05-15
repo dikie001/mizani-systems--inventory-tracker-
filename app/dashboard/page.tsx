@@ -94,8 +94,8 @@ export default function DashboardPage() {
     fetcher
   )
 
-  const lowStockItems = lowStockData || []
-  const recentActivity = activityData || []
+  const lowStockItems = Array.isArray(lowStockData) ? lowStockData : []
+  const recentActivity = Array.isArray(activityData) ? activityData : []
 
   return (
     <div className="space-y-6">
