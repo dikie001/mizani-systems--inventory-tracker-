@@ -102,12 +102,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {revLoading ? (
-              <div className="flex h-[240px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              <div className="flex h-[252px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : (
-              <ChartContainer config={revenueChartConfig} className="aspect-auto h-[240px] w-full">
+              <ChartContainer config={revenueChartConfig} className="aspect-auto h-[252px] w-full">
                 <AreaChart
                   data={revenueData || []}
-                  margin={{ top: 10, left: 4, right: 12, bottom: 12 }}
+                  margin={{ top: 12, left: 6, right: 14, bottom: 20 }}
                 >
                   <defs>
                     <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -120,20 +120,23 @@ export default function DashboardPage() {
                     dataKey="month"
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={8}
-                    padding={{ left: 10, right: 10 }}
+                    tick={{ fontSize: 13 }}
+                    tickMargin={10}
+                    padding={{ left: 12, right: 12 }}
                     label={{
                       value: "Month",
-                      position: "insideBottom",
-                      offset: -6,
+                      position: "bottom",
+                      offset: 8,
                       fill: "var(--muted-foreground)",
+                      style: { fontSize: 13, fontWeight: 500 },
                     }}
                   />
                   <YAxis
                     width={56}
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={8}
+                    tick={{ fontSize: 13 }}
+                    tickMargin={10}
                     tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                     label={{
                       value: "Revenue",
@@ -141,6 +144,7 @@ export default function DashboardPage() {
                       position: "insideLeft",
                       offset: -2,
                       fill: "var(--muted-foreground)",
+                      style: { fontSize: 13, fontWeight: 500 },
                     }}
                   />
                   <ChartTooltip
@@ -175,12 +179,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {catLoading ? (
-              <div className="flex h-[236px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              <div className="flex h-[248px] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : (
-              <ChartContainer config={categoryChartConfig} className="aspect-auto h-[236px] w-full">
+              <ChartContainer config={categoryChartConfig} className="aspect-auto h-[248px] w-full">
                 <BarChart
                   data={categoryData || []}
-                  margin={{ top: 10, left: 8, right: 12, bottom: 12 }}
+                  margin={{ top: 12, left: 10, right: 14, bottom: 20 }}
                   layout="vertical"
                   barCategoryGap="30%"
                 >
@@ -189,12 +193,14 @@ export default function DashboardPage() {
                     type="number"
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={8}
+                    tick={{ fontSize: 13 }}
+                    tickMargin={10}
                     label={{
                       value: "Total items",
-                      position: "insideBottom",
-                      offset: -6,
+                      position: "bottom",
+                      offset: 8,
                       fill: "var(--muted-foreground)",
+                      style: { fontSize: 13, fontWeight: 500 },
                     }}
                   />
                   <YAxis
@@ -210,6 +216,7 @@ export default function DashboardPage() {
                       position: "insideLeft",
                       offset: -2,
                       fill: "var(--muted-foreground)",
+                      style: { fontSize: 13, fontWeight: 500 },
                     }}
                   />
                   <ChartTooltip
