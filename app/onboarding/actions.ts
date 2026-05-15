@@ -17,6 +17,18 @@ export async function createWorkspace(data: {
 
   const slug = data.name.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "")
 
+  // Ensure user exists in DB and get their correct ID
+  // Sometimes session.user.id is stale or incorrect after DB resets
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email! }
+  })
+
+  if (!user) {
+    throw new Error("User record not found in database. Please sign out and sign in again.")
+  }
+
+  const userId = user.id
+
   try {
     const workspace = await prisma.$transaction(async (tx) => {
       // Create the workspace
@@ -36,14 +48,14 @@ export async function createWorkspace(data: {
       await tx.workspaceMember.create({
         data: {
           workspaceId: newWorkspace.id,
-          userId: session.user.id,
+          userId: userId,
           role: "OWNER",
         },
       })
 
       // Update the user's current workspace
       await tx.user.update({
-        where: { id: session.user.id },
+        where: { id: userId },
         data: { currentWorkspaceId: newWorkspace.id },
       })
 
