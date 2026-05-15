@@ -278,9 +278,9 @@ function FeaturesSection() {
     },
     {
       icon: Layers,
-      title: "Multi-warehouse",
+      title: "Unified Catalog",
       description:
-        "Manage inventory across multiple locations with unified tracking and transfer management.",
+        "Manage your entire product inventory with a central tracking system and unified catalog management.",
     },
     {
       icon: TrendingUp,
@@ -314,8 +314,8 @@ function FeaturesSection() {
             Everything you need to manage inventory
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Powerful tools designed for teams of every size — from startup
-            warehouses to enterprise supply chains.
+            Powerful tools designed for teams of every size — from startups
+            to enterprise supply chains.
           </p>
         </div>
 
@@ -428,7 +428,6 @@ function PricingSection() {
       description: "For small teams just getting started",
       features: [
         "Up to 500 SKUs",
-        "1 warehouse",
         "Basic analytics",
         "Email support",
         "CSV import/export",
@@ -443,7 +442,6 @@ function PricingSection() {
       description: "For growing businesses that need more",
       features: [
         "Unlimited SKUs",
-        "5 warehouses",
         "Advanced analytics & charts",
         "Low-stock alerts",
         "API access",
@@ -458,7 +456,6 @@ function PricingSection() {
       description: "For large-scale operations",
       features: [
         "Everything in Pro",
-        "Unlimited warehouses",
         "Demand forecasting (AI)",
         "SSO & RBAC",
         "Dedicated account manager",

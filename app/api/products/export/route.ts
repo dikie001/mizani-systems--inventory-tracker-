@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const search = searchParams.get("search")
     const category = searchParams.get("category")
     const status = searchParams.get("status")
-    const warehouse = searchParams.get("warehouse")
+
 
     const where: Prisma.ProductWhereInput = {}
 
@@ -41,17 +41,13 @@ export async function GET(request: Request) {
       where.status = status
     }
 
-    if (warehouse && warehouse !== "all") {
-      where.warehouse = {
-        name: warehouse,
-      }
-    }
+
 
     const products = await prisma.product.findMany({
       where,
       include: {
         category: true,
-        warehouse: true,
+
       },
       orderBy: { createdAt: "desc" },
     })
