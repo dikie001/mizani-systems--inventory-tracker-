@@ -682,66 +682,9 @@ function InventoryPageContent() {
         ))}
       </div>
 
-      {/* Filters Card */}
-      <Card className="bg-card shadow-sm border-muted/20">
-        <CardContent className="flex flex-wrap items-center gap-4 py-2">
-          <div className="relative flex-1 min-w-[280px]">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
-            <Input
-              placeholder="Search SKU or name..."
-              className="h-12 pl-10 text-sm bg-muted/20 border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:bg-muted/30 transition-all"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="h-12 w-[160px] text-sm font-medium bg-muted/20 border-none shadow-none focus:ring-0 hover:bg-muted/30 transition-all">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.name}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-12 w-[150px] text-sm font-medium bg-muted/20 border-none shadow-none focus:ring-0 hover:bg-muted/30 transition-all">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="in-stock">In Stock</SelectItem>
-                <SelectItem value="low-stock">Low Stock</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
-              </SelectContent>
-            </Select>
-            { (searchQuery || categoryFilter !== "all" || statusFilter !== "all") && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-12 px-4 text-muted-foreground hover:text-foreground text-[10px] font-bold uppercase tracking-wider hover:bg-muted/20 transition-all"
-                onClick={() => {
-                  setSearchQuery("")
-                  setCategoryFilter("all")
-                  setStatusFilter("all")
-
-                }}
-              >
-                Reset
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <CardTitle className="text-xl">Product Catalog</CardTitle>
               <CardDescription>
@@ -750,11 +693,50 @@ function InventoryPageContent() {
                   : `Showing ${products?.length ?? 0} items`}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
+                <Input
+                  placeholder="Search SKU or name..."
+                  className="h-9 w-[180px] pl-8 text-xs bg-muted/30 border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/20 transition-all sm:w-[220px]"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                />
+              </div>
+              
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="h-9 w-[130px] text-xs bg-muted/30 border-none shadow-none focus:ring-0">
+                  <Filter className="mr-2 h-3 w-3 opacity-60" />
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.name}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-9 w-[110px] text-xs bg-muted/30 border-none shadow-none focus:ring-0">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="in-stock">In Stock</SelectItem>
+                  <SelectItem value="low-stock">Low Stock</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div className="h-4 w-[1px] bg-border/40 mx-1 hidden sm:block" />
+
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-9 hover:bg-muted/50 transition-all"
+                className="h-9 px-3 text-xs border-muted-foreground/20 hover:bg-muted/50 transition-all"
                 onClick={handleExport}
                 disabled={exporting || isLoading}
               >
@@ -763,7 +745,7 @@ function InventoryPageContent() {
                 ) : (
                   <Download className="mr-1.5 h-3.5 w-3.5" />
                 )}
-                Export
+                <span className="hidden sm:inline">Export</span>
               </Button>
             </div>
           </div>
