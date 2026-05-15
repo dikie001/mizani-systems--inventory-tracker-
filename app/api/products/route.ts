@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   const search = searchParams.get("search")
   const category = searchParams.get("category")
   const status = searchParams.get("status")
-  const warehouse = searchParams.get("warehouse")
+
 
   const where: Prisma.ProductWhereInput = {}
 
@@ -41,11 +41,7 @@ export async function GET(request: Request) {
     where.status = status
   }
 
-  if (warehouse && warehouse !== "all") {
-    where.warehouse = {
-      name: warehouse,
-    }
-  }
+
 
   try {
     const products = await prisma.product.findMany({
@@ -89,11 +85,7 @@ export async function POST(request: Request) {
         create: { name: payload.category },
       })
 
-      const warehouse = await tx.warehouse.upsert({
-        where: { name: payload.warehouse },
-        update: {},
-        create: { name: payload.warehouse },
-      })
+
 
       const createdProduct = await tx.product.create({
         data: {
@@ -106,7 +98,7 @@ export async function POST(request: Request) {
           maxStock: payload.maxStock,
           status: computeProductStatus(payload.stock, payload.minStock),
           categoryId: category.id,
-          warehouseId: warehouse.id,
+
         },
         include: productQueryInclude(),
       })

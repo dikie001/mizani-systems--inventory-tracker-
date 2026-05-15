@@ -4,7 +4,7 @@ export const productExportHeaders = [
   "name",
   "sku",
   "category",
-  "warehouse",
+
   "price",
   "stock",
   "minStock",
@@ -18,7 +18,7 @@ export type InventoryProductPayload = {
   name: string
   sku: string
   category: string
-  warehouse: string
+
   price: number
   stock: number
   minStock: number
@@ -31,11 +31,7 @@ type ProductWithRelations = Product & {
     id: string
     name: string
   }
-  warehouse: {
-    id: string
-    name: string
-    location: string | null
-  }
+
   stockMovements?: Array<{
     id: string
     type: string
@@ -70,7 +66,7 @@ export function normalizeProductPayload(input: unknown): InventoryProductPayload
   const name = requireString(data.name, "Product name")
   const sku = requireString(data.sku, "SKU").toUpperCase()
   const category = requireString(data.category, "Category")
-  const warehouse = requireString(data.warehouse ?? "Main", "Warehouse")
+
   const price = requireNumber(data.price, "Price")
   const stock = requireInteger(data.stock ?? 0, "Stock")
   const minStock = requireInteger(data.minStock ?? 10, "Minimum stock")
@@ -97,7 +93,7 @@ export function normalizeProductPayload(input: unknown): InventoryProductPayload
     name,
     sku,
     category,
-    warehouse,
+
     price,
     stock,
     minStock,
@@ -114,9 +110,7 @@ export function formatProduct(product: ProductWithRelations) {
     description: product.description,
     category: product.category.name,
     categoryId: product.categoryId,
-    warehouse: product.warehouse.name,
-    warehouseId: product.warehouseId,
-    warehouseLocation: product.warehouse.location,
+
     price: product.price,
     stock: product.stock,
     minStock: product.minStock,
@@ -144,7 +138,7 @@ export function createProductCsv(products: ProductWithRelations[]) {
         product.name,
         product.sku,
         product.category.name,
-        product.warehouse.name,
+
         formatCsvValue(product.price),
         formatCsvValue(product.stock),
         formatCsvValue(product.minStock),
@@ -175,7 +169,7 @@ export function parseProductImport(input: { content?: unknown; format?: unknown 
 export function productQueryInclude(includeMovements = false) {
   return {
     category: true,
-    warehouse: true,
+
     _count: {
       select: {
         orderItems: true,

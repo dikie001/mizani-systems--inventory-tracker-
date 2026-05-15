@@ -77,11 +77,7 @@ export async function PUT(request: Request, context: RouteContext) {
         create: { name: payload.category },
       })
 
-      const warehouse = await tx.warehouse.upsert({
-        where: { name: payload.warehouse },
-        update: {},
-        create: { name: payload.warehouse },
-      })
+
 
       const updatedProduct = await tx.product.update({
         where: { id },
@@ -95,7 +91,7 @@ export async function PUT(request: Request, context: RouteContext) {
           maxStock: payload.maxStock,
           status: computeProductStatus(payload.stock, payload.minStock),
           categoryId: category.id,
-          warehouseId: warehouse.id,
+
         },
         include: productQueryInclude(true),
       })

@@ -80,16 +80,6 @@ model Category {
   updatedAt DateTime @updatedAt
 }
 
-model Warehouse {
-  id       String    @id @default(cuid())
-  name     String    @unique
-  location String?
-  products Product[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 model Product {
   id          String   @id @default(cuid())
   name        String
@@ -103,9 +93,6 @@ model Product {
 
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id])
-
-  warehouseId String
-  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
 
   orderItems     OrderItem[]
   stockMovements StockMovement[]

@@ -30,11 +30,7 @@ export async function POST(request: Request) {
           create: { name: item.category },
         })
 
-        const warehouse = await tx.warehouse.upsert({
-          where: { name: item.warehouse },
-          update: {},
-          create: { name: item.warehouse },
-        })
+
 
         const existingProduct = await tx.product.findUnique({
           where: { sku: item.sku },
@@ -56,7 +52,7 @@ export async function POST(request: Request) {
               maxStock: item.maxStock,
               status: computeProductStatus(item.stock, item.minStock),
               categoryId: category.id,
-              warehouseId: warehouse.id,
+
             },
           })
 
@@ -96,7 +92,7 @@ export async function POST(request: Request) {
             maxStock: item.maxStock,
             status: computeProductStatus(item.stock, item.minStock),
             categoryId: category.id,
-            warehouseId: warehouse.id,
+
           },
         })
 

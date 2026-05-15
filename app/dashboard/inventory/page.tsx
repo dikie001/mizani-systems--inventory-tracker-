@@ -75,9 +75,7 @@ type InventoryProduct = {
   description: string | null
   category: string
   categoryId: string
-  warehouse: string
-  warehouseId: string
-  warehouseLocation: string | null
+
   price: number
   stock: number
   minStock: number
@@ -100,7 +98,7 @@ type InventoryMovement = {
 
 type InventoryMeta = {
   categories: Array<{ id: string; name: string }>
-  warehouses: Array<{ id: string; name: string; location: string | null }>
+
 }
 
 type NoticeState = {
@@ -112,7 +110,7 @@ type ProductFormValues = {
   name: string
   sku: string
   category: string
-  warehouse: string
+
   price: string
   stock: string
   minStock: string
@@ -160,11 +158,10 @@ const statusConfig: Record<
   },
 }
 
-const emptyProductForm = (warehouse = "Main"): ProductFormValues => ({
+const emptyProductForm = (): ProductFormValues => ({
   name: "",
   sku: "",
   category: "",
-  warehouse,
   price: "",
   stock: "0",
   minStock: "10",
@@ -183,7 +180,6 @@ function buildProductsUrl(filters: {
   searchQuery: string
   categoryFilter: string
   statusFilter: string
-  warehouseFilter: string
 }) {
   const params = new URLSearchParams()
 
@@ -199,9 +195,7 @@ function buildProductsUrl(filters: {
     params.set("status", filters.statusFilter)
   }
 
-  if (filters.warehouseFilter !== "all") {
-    params.set("warehouse", filters.warehouseFilter)
-  }
+
 
   const query = params.toString()
   return query ? `/api/products?${query}` : "/api/products"
@@ -212,7 +206,7 @@ function productToFormValues(product: InventoryProduct): ProductFormValues {
     name: product.name,
     sku: product.sku,
     category: product.category,
-    warehouse: product.warehouse,
+
     price: String(product.price),
     stock: String(product.stock),
     minStock: String(product.minStock),
@@ -238,13 +232,13 @@ function formatDate(value: string) {
 
 export default function InventoryPage() {
   const categoryListId = useId()
-  const warehouseListId = useId()
+
 
 
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [warehouseFilter, setWarehouseFilter] = useState("all")
+
   const [notice, setNotice] = useState<NoticeState>(null)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
   const [formOpen, setFormOpen] = useState(false)
@@ -265,7 +259,7 @@ export default function InventoryPage() {
     searchQuery,
     categoryFilter,
     statusFilter,
-    warehouseFilter,
+
   })
 
   const {
@@ -286,7 +280,7 @@ export default function InventoryPage() {
   )
 
   const categories = meta?.categories ?? []
-  const warehouses = meta?.warehouses ?? []
+
   const totalUnits =
     products?.reduce((total, product) => total + product.stock, 0) ?? 0
   const lowStockCount =
@@ -298,7 +292,7 @@ export default function InventoryPage() {
     setNotice(null)
     setFormMode("create")
     setEditingProductId(null)
-    setFormValues(emptyProductForm(warehouses[0]?.name ?? "Main"))
+    setFormValues(emptyProductForm())
     setFormOpen(true)
   }
 
@@ -380,7 +374,7 @@ export default function InventoryPage() {
 
       setFormOpen(false)
       setEditingProductId(null)
-      setFormValues(emptyProductForm(warehouses[0]?.name ?? "Main"))
+      setFormValues(emptyProductForm())
       setNotice({
         type: "success",
         message:
@@ -595,19 +589,7 @@ export default function InventoryPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={warehouseFilter} onValueChange={setWarehouseFilter}>
-              <SelectTrigger className="h-10 w-[140px] text-sm font-medium bg-muted/20 border-none shadow-none focus:ring-0">
-                <SelectValue placeholder="Warehouse" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Warehouses</SelectItem>
-                {warehouses.map((warehouse) => (
-                  <SelectItem key={warehouse.id} value={warehouse.name}>
-                    {warehouse.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="h-10 w-[130px] text-sm font-medium bg-muted/20 border-none shadow-none focus:ring-0">
                 <SelectValue placeholder="Status" />
@@ -619,7 +601,7 @@ export default function InventoryPage() {
                 <SelectItem value="critical">Critical</SelectItem>
               </SelectContent>
             </Select>
-            { (searchQuery || categoryFilter !== "all" || statusFilter !== "all" || warehouseFilter !== "all") && (
+            { (searchQuery || categoryFilter !== "all" || statusFilter !== "all") && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -628,7 +610,7 @@ export default function InventoryPage() {
                   setSearchQuery("")
                   setCategoryFilter("all")
                   setStatusFilter("all")
-                  setWarehouseFilter("all")
+
                 }}
               >
                 Reset
@@ -646,7 +628,7 @@ export default function InventoryPage() {
               <CardDescription>
                 {isLoading
                   ? "Loading products..."
-                  : `Showing ${products?.length ?? 0} items across all warehouses`}
+                  : `Showing ${products?.length ?? 0} items`}
               </CardDescription>
             </div>
 
@@ -668,7 +650,7 @@ export default function InventoryPage() {
                   <TableHead className="w-[300px]">Product</TableHead>
                   <TableHead className="hidden md:table-cell">SKU</TableHead>
                   <TableHead className="hidden lg:table-cell">Category</TableHead>
-                  <TableHead className="hidden xl:table-cell">Warehouse</TableHead>
+
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">Stock</TableHead>
                   <TableHead>Status</TableHead>
@@ -704,9 +686,7 @@ export default function InventoryPage() {
                         {product.category}
                       </Badge>
                     </TableCell>
-                    <TableCell className="hidden xl:table-cell text-sm text-muted-foreground">
-                      {product.warehouse}
-                    </TableCell>
+
                     <TableCell className="text-right font-medium">
                       {formatCurrency(product.price)}
                     </TableCell>
@@ -783,7 +763,7 @@ export default function InventoryPage() {
                           setSearchQuery("")
                           setCategoryFilter("all")
                           setStatusFilter("all")
-                          setWarehouseFilter("all")
+
                         }}>Clear all filters</Button>
                       </div>
                     </TableCell>
@@ -865,24 +845,7 @@ export default function InventoryPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="product-warehouse" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Warehouse Location</Label>
-                  <Input
-                    id="product-warehouse"
-                    name="warehouse"
-                    list={warehouseListId}
-                    value={formValues.warehouse}
-                    onChange={handleFormValueChange}
-                    placeholder="Main Facility"
-                    className="h-11 shadow-sm focus-visible:ring-1"
-                    required
-                  />
-                  <datalist id={warehouseListId}>
-                    {warehouses.map((warehouse) => (
-                      <option key={warehouse.id} value={warehouse.name} />
-                    ))}
-                  </datalist>
-                </div>
+
                 <div className="grid gap-2">
                   <Label htmlFor="product-price" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Unit Price (USD)</Label>
                   <div className="relative">
@@ -1042,13 +1005,7 @@ export default function InventoryPage() {
                   <p className="mt-2 text-lg font-bold">{selectedProduct.category}</p>
                   <p className="text-xs text-muted-foreground/60 mt-0.5">Primary classification</p>
                 </div>
-                <div className="group rounded-2xl border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-sm">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Storage Facility</p>
-                  <p className="mt-2 text-lg font-bold">{selectedProduct.warehouse}</p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">
-                    {selectedProduct.warehouseLocation || "Section not assigned"}
-                  </p>
-                </div>
+
                 <div className="group rounded-2xl border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-sm">
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Market Pricing</p>
                   <p className="mt-2 text-2xl font-black text-primary">
@@ -1212,7 +1169,7 @@ export default function InventoryPage() {
                   <SelectItem value="Manual Adjustment">Manual Adjustment</SelectItem>
                   <SelectItem value="Restock">Restock / Procurement</SelectItem>
                   <SelectItem value="Sale">Direct Sale / Order</SelectItem>
-                  <SelectItem value="Transfer">Warehouse Transfer</SelectItem>
+
                 </SelectContent>
               </Select>
             </div>

@@ -9,18 +9,12 @@ export async function GET() {
   }
 
   try {
-    const [categories, warehouses] = await Promise.all([
-      prisma.category.findMany({
-        orderBy: { name: "asc" },
-        select: { id: true, name: true },
-      }),
-      prisma.warehouse.findMany({
-        orderBy: { name: "asc" },
-        select: { id: true, name: true, location: true },
-      }),
-    ])
+    const categories = await prisma.category.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    })
 
-    return NextResponse.json({ categories, warehouses })
+    return NextResponse.json({ categories })
   } catch (error) {
     console.error("Failed to fetch inventory metadata:", error)
     return NextResponse.json(
