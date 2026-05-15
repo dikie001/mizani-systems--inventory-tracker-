@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import useSWR from "swr"
 import { useSession } from "next-auth/react"
 import {
@@ -73,6 +74,7 @@ const categoryChartConfig: ChartConfig = {
 
 export default function DashboardPage() {
   const { data: session } = useSession()
+  const [revMetric, setRevMetric] = useState<"revenue" | "orders">("revenue")
   const { data: stats, isLoading: statsLoading } = useSWR(
     "/api/dashboard/stats",
     fetcher
@@ -166,7 +168,11 @@ export default function DashboardPage() {
                   Monthly revenue and order trends
                 </CardDescription>
               </div>
-              <Tabs defaultValue="revenue" className="w-auto">
+              <Tabs
+                value={revMetric}
+                onValueChange={(v) => setRevMetric(v as "revenue" | "orders")}
+                className="w-auto"
+              >
                 <TabsList className="h-8">
                   <TabsTrigger value="revenue" className="text-xs">
                     Revenue
@@ -190,11 +196,11 @@ export default function DashboardPage() {
               >
                 <AreaChart
                   data={revenue}
-                  margin={{ top: 12, left: 6, right: 14, bottom: 20 }}
+                  margin={{ top: 12, left: 6, right: 4, bottom: 20 }}
                 >
                   <defs>
                     <linearGradient
-                      id="fillRevenue"
+                      id="fillMetric"
                       x1="0"
                       y1="0"
                       x2="0"
@@ -202,12 +208,12 @@ export default function DashboardPage() {
                     >
                       <stop
                         offset="0%"
-                        stopColor="var(--color-revenue)"
+                        stopColor={revMetric === "revenue" ? "var(--color-revenue)" : "var(--color-orders)"}
                         stopOpacity={0.3}
                       />
                       <stop
                         offset="100%"
-                        stopColor="var(--color-revenue)"
+                        stopColor={revMetric === "revenue" ? "var(--color-revenue)" : "var(--color-orders)"}
                         stopOpacity={0.02}
                       />
                     </linearGradient>
@@ -234,9 +240,13 @@ export default function DashboardPage() {
                     axisLine={false}
                     tick={{ fontSize: 13 }}
                     tickMargin={10}
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    tickFormatter={(value) => 
+                      revMetric === "revenue" 
+                        ? `$${(value / 1000).toFixed(0)}k` 
+                        : value
+                    }
                     label={{
-                      value: "Revenue",
+                      value: revMetric === "revenue" ? "Revenue" : "Orders",
                       angle: -90,
                       position: "insideLeft",
                       offset: -2,
@@ -265,10 +275,10 @@ export default function DashboardPage() {
                   />
                   <Area
                     type="monotone"
-                    dataKey="revenue"
-                    stroke="var(--color-revenue)"
+                    dataKey={revMetric}
+                    stroke={revMetric === "revenue" ? "var(--color-revenue)" : "var(--color-orders)"}
                     strokeWidth={1.75}
-                    fill="url(#fillRevenue)"
+                    fill="url(#fillMetric)"
                   />
                 </AreaChart>
               </ChartContainer>
