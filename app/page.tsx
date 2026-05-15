@@ -95,16 +95,17 @@ function HeroSection() {
                 <TableRow className="hover:bg-transparent border-none">
                   <TableHead className="text-[10px] font-black uppercase pt-1.5 pb-2 px-6 text-muted-foreground/70">Product Name</TableHead>
                   <TableHead className="text-[10px] font-black uppercase pt-1.5 pb-2 px-6 text-muted-foreground/70">Price</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase pt-1.5 pb-2 px-6 text-muted-foreground/70">Status</TableHead>
                   <TableHead className="text-right text-[10px] font-black uppercase pt-1.5 pb-2 px-6 text-muted-foreground/70">Stock</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {[
-                  { name: "Adidas Ultraboost", price: "$159", stock: "240 pcs" },
-                  { name: "Adidas Predator", price: "$129", stock: "220 pcs" },
-                  { name: "Nike Air Force 1", price: "$110", stock: "201 pcs" },
-                  { name: "Puma Suede", price: "$89", stock: "185 pcs" },
-                  { name: "Reebok Classic", price: "$75", stock: "150 pcs" },
+                  { name: "Adidas Ultraboost", price: "$159", status: "In Stock", stock: "240 pcs" },
+                  { name: "Adidas Predator", price: "$129", status: "In Stock", stock: "220 pcs" },
+                  { name: "Nike Air Force 1", price: "$110", status: "Low Stock", stock: "201 pcs" },
+                  { name: "Puma Suede", price: "$89", status: "Out of Stock", stock: "0 pcs" },
+                  { name: "Reebok Classic", price: "$75", status: "In Stock", stock: "150 pcs" },
                 ].map((item) => (
                   <TableRow key={item.name} className="hover:bg-white/5 transition-colors border-white/5">
                     <TableCell className="py-2 px-6">
@@ -117,6 +118,18 @@ function HeroSection() {
                     </TableCell>
                     <TableCell className="py-2 px-6">
                       <span className="font-mono text-xs font-bold text-emerald-500/80">{item.price}</span>
+                    </TableCell>
+                    <TableCell className="py-2 px-6">
+                      <Badge 
+                        variant="outline" 
+                        className={`text-[9px] px-1.5 py-0 rounded-full border-none font-bold uppercase ${
+                          item.status === "In Stock" ? "bg-emerald-500/10 text-emerald-500" :
+                          item.status === "Low Stock" ? "bg-amber-500/10 text-amber-500" :
+                          "bg-red-500/10 text-red-500"
+                        }`}
+                      >
+                        {item.status}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right py-2 px-6">
                       <span className="font-mono text-sm font-semibold text-muted-foreground/80">{item.stock}</span>
