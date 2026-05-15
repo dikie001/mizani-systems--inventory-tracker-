@@ -114,23 +114,34 @@ function HeroSection() {
 
         <div className="relative hidden lg:block">
           <div className="relative animate-float translate-x-12">
-             <Card className="bg-card border-border shadow-2xl rounded-xl overflow-hidden w-[400px]">
-                <div className="p-4 border-b flex items-center justify-between bg-muted/30">
-                   <div className="text-[10px] font-bold text-muted-foreground uppercase">Product Name</div>
-                   <div className="text-[10px] font-bold text-muted-foreground uppercase">Stock</div>
+             <Card className="bg-card border-border shadow-2xl rounded-xl overflow-hidden w-[450px]">
+                <div className="px-5 py-4 border-b grid grid-cols-6 gap-4 bg-muted/20">
+                   <div className="col-span-3 text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest">Product Name</div>
+                   <div className="col-span-1 text-right text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest">Sold</div>
+                   <div className="col-span-1 text-right text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest">Amount</div>
+                   <div className="col-span-1 text-right text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest">Stock</div>
                 </div>
-                <div className="p-4 space-y-4">
+                <div className="p-5 space-y-6">
                    {[
-                     { name: "Adidas Ultraboost", stock: "240 pcs", amount: "$1750" },
-                     { name: "Adidas Predator", stock: "220 pcs", amount: "$1854" },
-                     { name: "Nike Air Force 1", stock: "201 pcs", amount: "$1285" },
+                     { name: "Adidas Ultraboost", sku: "AU-240-PRO", sold: "195", amount: "$1,750", stock: "240" },
+                     { name: "Adidas Predator", sku: "AP-220-V2", sold: "150", amount: "$1,854", stock: "220" },
+                     { name: "Nike Air Force 1", sku: "NA-201-CLR", sold: "123", amount: "$1,285", stock: "201" },
                    ].map((item, i) => (
-                     <div key={i} className="flex items-center justify-between">
-                       <div className="flex items-center gap-3">
-                         <div className="h-6 w-8 bg-muted rounded" />
-                         <span className="text-[10px] font-medium text-foreground">{item.name}</span>
+                     <div key={i} className="grid grid-cols-6 gap-4 items-center group cursor-default">
+                       <div className="col-span-3 flex items-center gap-3">
+                         <div className="h-9 w-9 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-black text-sm shadow-inner transition-transform group-hover:scale-105">
+                           {item.name.charAt(0)}
+                         </div>
+                         <div className="min-w-0">
+                           <div className="text-[11px] font-bold text-foreground truncate tracking-tight">{item.name}</div>
+                           <div className="text-[9px] font-mono text-muted-foreground tracking-tighter uppercase">{item.sku}</div>
+                         </div>
                        </div>
-                       <div className="text-[10px] text-muted-foreground">{item.stock}</div>
+                       <div className="col-span-1 text-right text-[10px] font-medium text-muted-foreground">{item.sold} pcs</div>
+                       <div className="col-span-1 text-right text-[10px] font-bold text-foreground">{item.amount}</div>
+                       <div className="col-span-1 text-right">
+                         <span className="text-[11px] font-black text-foreground">{item.stock}</span>
+                       </div>
                      </div>
                    ))}
                 </div>
