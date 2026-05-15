@@ -3,6 +3,7 @@
 import { ChangeEvent, FormEvent, useId, useRef, useState } from "react"
 import useSWR from "swr"
 import {
+  AlertCircle,
   AlertTriangle,
   ArrowUpDown,
   Box,
@@ -10,13 +11,19 @@ import {
   Edit,
   Eye,
   Filter,
+  Flame,
+  Layers,
   Loader2,
   MoreHorizontal,
   Package,
   Plus,
   Search,
+  ShoppingCart,
+  ShieldAlert,
   Trash2,
+  TrendingDown,
   Upload,
+  XCircle,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -663,28 +670,28 @@ export default function InventoryPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
-            label: "Total Products",
-            value: isLoading ? "-" : String(products?.length ?? 0),
-            icon: Box,
-            color: "text-primary",
+            label: "Critical Alerts",
+            value: isLoading ? "-" : String(criticalCount),
+            icon: Flame,
+            color: "text-rose-600 dark:text-rose-400",
           },
           {
-            label: "Units On Hand",
+            label: "Low Stock Warnings",
+            value: isLoading ? "-" : String(lowStockCount),
+            icon: AlertCircle,
+            color: "text-orange-600 dark:text-orange-400",
+          },
+          {
+            label: "Total Inventory",
             value: isLoading ? "-" : totalUnits.toLocaleString(),
+            icon: Box,
+            color: "text-blue-600 dark:text-blue-400",
+          },
+          {
+            label: "Catalog Items",
+            value: isLoading ? "-" : String(products?.length ?? 0),
             icon: Package,
             color: "text-emerald-600 dark:text-emerald-400",
-          },
-          {
-            label: "Low Stock Items",
-            value: isLoading ? "-" : String(lowStockCount),
-            icon: ArrowUpDown,
-            color: "text-amber-600 dark:text-amber-400",
-          },
-          {
-            label: "Critical Alert",
-            value: isLoading ? "-" : String(criticalCount),
-            icon: AlertTriangle,
-            color: "text-destructive",
           },
         ].map((metric) => (
           <Card key={metric.label}>
@@ -694,7 +701,7 @@ export default function InventoryPage() {
                   <p className="text-[10px] font-medium text-muted-foreground uppercase">{metric.label}</p>
                   <h3 className={`text-lg font-bold ${metric.color}`}>{metric.value}</h3>
                 </div>
-                <metric.icon className="h-3.5 w-3.5 text-muted-foreground/30" />
+                <metric.icon className={`h-4 w-4 ${metric.color} opacity-70`} />
               </div>
             </CardContent>
           </Card>

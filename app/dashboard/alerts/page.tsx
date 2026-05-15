@@ -2,8 +2,8 @@
 
 import useSWR from "swr"
 import {
-  AlertTriangle, ArrowUpRight, Bell, CheckCircle2, Package,
-  ShoppingCart, TrendingDown, XCircle, Loader2
+  AlertCircle, AlertTriangle, ArrowUpRight, Bell, CheckCircle2, Package,
+  ShoppingCart, TrendingDown, XCircle, Loader2, ShieldAlert, Flame, Layers, Box
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -84,20 +84,20 @@ export default function AlertsPage() {
           {
             label: "Critical Alerts",
             value: cLoading ? "-" : criticalAlerts.length,
-            icon: XCircle,
-            color: "text-red-500",
+            icon: Flame,
+            color: "text-rose-600 dark:text-rose-400",
           },
           {
             label: "Low Stock Warnings",
             value: isLoading ? "-" : lowStockAlerts.length,
-            icon: AlertTriangle,
-            color: "text-amber-500",
+            icon: AlertCircle,
+            color: "text-orange-600 dark:text-orange-400",
           },
           {
             label: "Resolved Today",
             value: resolvedAlerts.length,
             icon: CheckCircle2,
-            color: "text-emerald-500",
+            color: "text-emerald-600 dark:text-emerald-400",
           },
         ].map((metric) => (
           <Card key={metric.label}>
@@ -107,7 +107,7 @@ export default function AlertsPage() {
                   <p className="text-[10px] font-medium text-muted-foreground uppercase">{metric.label}</p>
                   <h3 className={`text-lg font-bold ${metric.color}`}>{metric.value}</h3>
                 </div>
-                <metric.icon className="h-3.5 w-3.5 text-muted-foreground/30" />
+                <metric.icon className={`h-4 w-4 ${metric.color} opacity-70`} />
               </div>
             </CardContent>
           </Card>

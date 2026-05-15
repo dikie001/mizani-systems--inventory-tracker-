@@ -3,19 +3,20 @@
 import useSWR from "swr"
 import { useSession } from "next-auth/react"
 import {
-  AlertTriangle,
+  AlertCircle,
   ArrowDownRight,
   ArrowUpRight,
+  BarChart3,
   Box,
   DollarSign,
+  Layers,
+  Loader2,
   Package,
   Plus,
+  ShieldAlert,
   ShoppingCart,
-  FileText,
-  Upload,
-  Users,
   TrendingUp,
-  Loader2,
+  Users,
 } from "lucide-react"
 import {
   Area,
@@ -109,28 +110,28 @@ export default function DashboardPage() {
           {
             title: "Total Products",
             value: statsLoading ? "-" : stats?.totalProducts,
-            icon: Package,
-            color: "text-primary",
+            icon: Layers,
+            color: "text-blue-600 dark:text-blue-400",
           },
           {
             title: "Low Stock Alerts",
             value: statsLoading ? "-" : stats?.lowStock,
-            icon: AlertTriangle,
-            color: "text-amber-600 dark:text-amber-400",
+            icon: AlertCircle,
+            color: "text-orange-600 dark:text-orange-400",
           },
           {
             title: "Monthly Revenue",
             value: statsLoading
               ? "-"
               : `$${stats?.totalRevenue.toLocaleString()}`,
-            icon: DollarSign,
+            icon: BarChart3,
             color: "text-emerald-600 dark:text-emerald-400",
           },
           {
             title: "Pending Orders",
             value: statsLoading ? "-" : stats?.pendingOrders,
             icon: ShoppingCart,
-            color: "text-blue-600 dark:text-blue-400",
+            color: "text-indigo-600 dark:text-indigo-400",
           },
         ].map((kpi) => (
           <Card key={kpi.title}>
@@ -140,7 +141,7 @@ export default function DashboardPage() {
                   <p className="text-[10px] font-medium text-muted-foreground uppercase">{kpi.title}</p>
                   <h3 className={`text-lg font-bold ${kpi.color}`}>{kpi.value}</h3>
                 </div>
-                <kpi.icon className="h-3.5 w-3.5 text-muted-foreground/30" />
+                <kpi.icon className={`h-4 w-4 ${kpi.color} opacity-70`} />
               </div>
             </CardContent>
           </Card>
