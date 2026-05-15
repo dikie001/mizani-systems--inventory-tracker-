@@ -49,3 +49,98 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
+
+export async function POST(request: Request) {
+  const session = await auth()
+  if (!session || !session.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
+    const body = await request.json()
+    const { customer, items } = body
+
+    if (!customer || !items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      let totalAmount = 0
+      const orderItemsToCreate = []
+
+      for (const item of items) {
+        const product = await tx.product.findUnique({
+          where: { id: item.productId }
+        })
+
+        if (!product) {
+          throw new Error(`Product ${item.productId} not found`)
+        }
+
+        if (product.stock < item.quantity) {
+          throw new Error(`Insufficient stock for ${product.name}`)
+        }
+
+        totalAmount += product.price * item.quantity
+
+        orderItemsToCreate.push({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: product.price
+        })
+
+        // Update product stock
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: { decrement: item.quantity }
+          }
+        })
+
+        // Create stock movement
+        await tx.stockMovement.create({
+          data: {
+            productId: item.productId,
+            userId: session.user.id as string,
+            type: "Sale",
+            quantity: -item.quantity,
+            status: "completed"
+          }
+        })
+      }
+
+      // Create the order
+      const order = await tx.order.create({
+        data: {
+          customer,
+          total: totalAmount,
+          status: "pending",
+          payment: "unpaid",
+          orderItems: {
+            create: orderItemsToCreate
+          }
+        },
+        include: {
+          orderItems: true
+        }
+      })
+
+      // Audit log
+      await tx.auditLog.create({
+        data: {
+          action: `Created order ${order.id}`,
+          entity: "Order",
+          type: "create",
+          userId: session.user.id as string
+        }
+      })
+
+      return order
+    })
+
+    return NextResponse.json(result)
+  } catch (error: any) {
+    console.error("Order creation failed:", error)
+    return NextResponse.json({ error: error.message || "Failed to create order" }, { status: 500 })
+  }
+}

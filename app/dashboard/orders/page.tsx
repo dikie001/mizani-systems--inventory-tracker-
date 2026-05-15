@@ -21,6 +21,10 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 
+// New Dialogs
+import { CreateOrderDialog } from "@/components/orders/create-order-dialog"
+import { OrderDetailsDialog } from "@/components/orders/order-details-dialog"
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 const statusConfig: Record<string, { style: string; label: string }> = {
@@ -38,8 +42,14 @@ const paymentConfig: Record<string, { style: string; label: string }> = {
 }
 
 export default function OrdersPage() {
+  const { mutate } = useSWRConfig()
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  
+  // Dialog States
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
 
   let url = `/api/orders?`
   if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`
@@ -49,6 +59,42 @@ export default function OrdersPage() {
 
   const totalRevenue = orders?.filter((o) => o.payment === "paid").reduce((s, o) => s + o.total, 0) || 0
 
+  const handleCancelOrder = async (id: string) => {
+    if (!confirm("Are you sure you want to cancel this order? This will restore product stock.")) return
+
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelled" }),
+      })
+
+      if (!res.ok) throw new Error("Failed to cancel order")
+
+      toast.success("Order cancelled and stock restored")
+      mutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
+    } catch (error: any) {
+      toast.error(error.message)
+    }
+  }
+
+  const handleUpdateStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      })
+
+      if (!res.ok) throw new Error("Failed to update status")
+
+      toast.success(`Order marked as ${status}`)
+      mutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
+    } catch (error: any) {
+      toast.error(error.message)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -56,7 +102,9 @@ export default function OrdersPage() {
           <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
           <p className="text-sm text-muted-foreground">Track and manage customer orders</p>
         </div>
-        <Button size="sm"><ShoppingCart className="mr-1.5 h-3.5 w-3.5" />Create Order</Button>
+        <Button size="sm" onClick={() => setIsCreateOpen(true)}>
+          <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />Create Order
+        </Button>
       </div>
 
       {/* KPI Row */}
@@ -137,13 +185,13 @@ export default function OrdersPage() {
                     <TableCell className="text-right font-mono">{order.items}</TableCell>
                     <TableCell className="text-right font-mono">${order.total.toFixed(2)}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className={`text-xs ${statusConfig[order.status].style}`}>
-                        {statusConfig[order.status].label}
+                      <Badge variant="secondary" className={`text-xs ${statusConfig[order.status]?.style}`}>
+                        {statusConfig[order.status]?.label}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className={`text-xs ${paymentConfig[order.payment].style}`}>
-                        {paymentConfig[order.payment].label}
+                      <Badge variant="secondary" className={`text-xs ${paymentConfig[order.payment]?.style}`}>
+                        {paymentConfig[order.payment]?.label}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{order.date}</TableCell>
@@ -151,10 +199,23 @@ export default function OrdersPage() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon-xs"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem><Eye className="mr-2 h-3.5 w-3.5" />View details</DropdownMenuItem>
-                          <DropdownMenuItem><Truck className="mr-2 h-3.5 w-3.5" />Track shipment</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => { setSelectedOrderId(order.id); setIsDetailsOpen(true); }}><Eye className="mr-2 h-3.5 w-3.5" />View details</DropdownMenuItem>
+                          
+                          {order.status === "pending" && (
+                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "shipped")}><Truck className="mr-2 h-3.5 w-3.5" />Mark Shipped</DropdownMenuItem>
+                          )}
+                          {order.status === "shipped" && (
+                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "delivered")}><Package className="mr-2 h-3.5 w-3.5" />Mark Delivered</DropdownMenuItem>
+                          )}
+                          
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive focus:text-destructive">Cancel order</DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-destructive focus:text-destructive"
+                            disabled={order.status === "cancelled"}
+                            onClick={() => handleCancelOrder(order.id)}
+                          >
+                            <Trash2 className="mr-2 h-3.5 w-3.5" /> Cancel order
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -162,7 +223,7 @@ export default function OrdersPage() {
                 ))}
                 {orders?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">No orders found.</TableCell>
+                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground italic">No orders found.</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -170,6 +231,11 @@ export default function OrdersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      <CreateOrderDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
+      <OrderDetailsDialog orderId={selectedOrderId} open={isDetailsOpen} onOpenChange={setIsDetailsOpen} />
     </div>
   )
 }
+
