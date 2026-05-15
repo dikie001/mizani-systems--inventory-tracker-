@@ -710,19 +710,19 @@ export default function InventoryPage() {
 
       {/* Filters Card */}
       <Card className="bg-card">
-        <CardContent className="flex flex-wrap items-center gap-4 py-3">
+        <CardContent className="flex flex-wrap items-center gap-4 py-2">
           <div className="relative flex-1 min-w-[280px]">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
             <Input
               placeholder="Search SKU or name..."
-              className="h-10 pl-10 text-sm bg-muted/20 border-none shadow-none focus-visible:ring-1"
+              className="h-9 pl-9 text-sm bg-muted/20 border-none shadow-none focus-visible:ring-0"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="h-10 w-[140px] text-sm bg-muted/20 border-none shadow-none">
+              <SelectTrigger className="h-9 w-[135px] text-xs font-medium bg-muted/20 border-none shadow-none focus:ring-0">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -735,7 +735,7 @@ export default function InventoryPage() {
               </SelectContent>
             </Select>
             <Select value={warehouseFilter} onValueChange={setWarehouseFilter}>
-              <SelectTrigger className="h-10 w-[140px] text-sm bg-muted/20 border-none shadow-none">
+              <SelectTrigger className="h-9 w-[135px] text-xs font-medium bg-muted/20 border-none shadow-none focus:ring-0">
                 <SelectValue placeholder="Warehouse" />
               </SelectTrigger>
               <SelectContent>
@@ -748,7 +748,7 @@ export default function InventoryPage() {
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-10 w-[130px] text-sm bg-muted/20 border-none shadow-none">
+              <SelectTrigger className="h-9 w-[120px] text-xs font-medium bg-muted/20 border-none shadow-none focus:ring-0">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -762,7 +762,7 @@ export default function InventoryPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-10 px-3 text-muted-foreground hover:text-foreground"
+                className="h-9 px-3 text-muted-foreground hover:text-foreground text-[10px] font-bold uppercase tracking-wider"
                 onClick={() => {
                   setSearchQuery("")
                   setCategoryFilter("all")
@@ -770,7 +770,7 @@ export default function InventoryPage() {
                   setWarehouseFilter("all")
                 }}
               >
-                Clear
+                Reset
               </Button>
             )}
           </div>
