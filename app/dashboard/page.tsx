@@ -4,11 +4,13 @@ import useSWR from "swr"
 import { useSession } from "next-auth/react"
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowDownRight,
   ArrowUpRight,
   BarChart3,
   Box,
   DollarSign,
+  FileText,
   Layers,
   Loader2,
   Package,
@@ -16,6 +18,7 @@ import {
   ShieldAlert,
   ShoppingCart,
   TrendingUp,
+  Upload,
   Users,
 } from "lucide-react"
 import {

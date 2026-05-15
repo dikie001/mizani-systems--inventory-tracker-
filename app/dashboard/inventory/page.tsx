@@ -8,6 +8,7 @@ import {
   ArrowUpDown,
   Box,
 
+  Download,
   Edit,
   Eye,
   Filter,
@@ -253,6 +254,7 @@ export default function InventoryPage() {
     emptyStockAdjustment(),
   )
   const [submittingAdjustment, setSubmittingAdjustment] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
 
   const productsUrl = buildProductsUrl({
@@ -442,6 +444,51 @@ export default function InventoryPage() {
 
 
 
+  const handleExport = async () => {
+    setExporting(true)
+    setNotice(null)
+
+    try {
+      const response = await fetch(
+        `/api/products/export${productsUrl.replace("/api/products", "")}`,
+      )
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(
+          payload && typeof payload.error === "string"
+            ? payload.error
+            : "Unable to export products.",
+        )
+      }
+
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = downloadUrl
+      link.download = "inventory-products.csv"
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(downloadUrl)
+
+      setNotice({
+        type: "success",
+        message: "Inventory export is ready.",
+      })
+    } catch (exportError) {
+      setNotice({
+        type: "error",
+        message:
+          exportError instanceof Error
+            ? exportError.message
+            : "Unable to export products.",
+      })
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const handleAdjustmentSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSubmittingAdjustment(true)
@@ -502,7 +549,7 @@ export default function InventoryPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
 
-          <Button size="sm" onClick={beginCreate} className="h-10 shadow-sm">
+          <Button size="sm" onClick={beginCreate} className="h-12 px-5 shadow-sm transition-all hover:shadow-md">
             <Plus className="mr-1.5 h-4 w-4" />
             Add Product
           </Button>
@@ -570,14 +617,14 @@ export default function InventoryPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
             <Input
               placeholder="Search SKU or name..."
-              className="h-10 pl-9 text-sm bg-muted/20 border-none shadow-none focus-visible:ring-0"
+              className="h-12 pl-10 text-sm bg-muted/20 border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:bg-muted/30 transition-all"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="h-10 w-[140px] text-sm font-medium bg-muted/20 border-none shadow-none focus:ring-0">
+              <SelectTrigger className="h-12 w-[160px] text-sm font-medium bg-muted/20 border-none shadow-none focus:ring-0 hover:bg-muted/30 transition-all">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -591,7 +638,7 @@ export default function InventoryPage() {
             </Select>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-10 w-[130px] text-sm font-medium bg-muted/20 border-none shadow-none focus:ring-0">
+              <SelectTrigger className="h-12 w-[150px] text-sm font-medium bg-muted/20 border-none shadow-none focus:ring-0 hover:bg-muted/30 transition-all">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -605,7 +652,7 @@ export default function InventoryPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-10 px-3 text-muted-foreground hover:text-foreground text-[10px] font-bold uppercase tracking-wider"
+                className="h-12 px-4 text-muted-foreground hover:text-foreground text-[10px] font-bold uppercase tracking-wider hover:bg-muted/20 transition-all"
                 onClick={() => {
                   setSearchQuery("")
                   setCategoryFilter("all")
@@ -631,7 +678,22 @@ export default function InventoryPage() {
                   : `Showing ${products?.length ?? 0} items`}
               </CardDescription>
             </div>
-
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-9 hover:bg-muted/50 transition-all"
+                onClick={handleExport}
+                disabled={exporting || isLoading}
+              >
+                {exporting ? (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                )}
+                Export
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
