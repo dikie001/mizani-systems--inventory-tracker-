@@ -708,72 +708,74 @@ export default function InventoryPage() {
         ))}
       </div>
 
-      {/* Filters Bar */}
-      <div className="flex flex-wrap items-center gap-4 py-2">
-        <div className="relative flex-1 min-w-[280px]">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search SKU or name..."
-            className="h-10 pl-10 text-sm shadow-sm"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="h-10 w-[140px] text-sm shadow-sm bg-card">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.name}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={warehouseFilter} onValueChange={setWarehouseFilter}>
-            <SelectTrigger className="h-10 w-[140px] text-sm shadow-sm bg-card">
-              <SelectValue placeholder="Warehouse" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Warehouses</SelectItem>
-              {warehouses.map((warehouse) => (
-                <SelectItem key={warehouse.id} value={warehouse.name}>
-                  {warehouse.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-10 w-[130px] text-sm shadow-sm bg-card">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="in-stock">In Stock</SelectItem>
-              <SelectItem value="low-stock">Low Stock</SelectItem>
-              <SelectItem value="critical">Critical</SelectItem>
-            </SelectContent>
-          </Select>
-          { (searchQuery || categoryFilter !== "all" || statusFilter !== "all" || warehouseFilter !== "all") && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-10 px-3 text-muted-foreground hover:text-foreground"
-              onClick={() => {
-                setSearchQuery("")
-                setCategoryFilter("all")
-                setStatusFilter("all")
-                setWarehouseFilter("all")
-              }}
-            >
-              Clear
-            </Button>
-          )}
-        </div>
-      </div>
+      {/* Filters Card */}
+      <Card className="bg-card">
+        <CardContent className="flex flex-wrap items-center gap-4 py-3">
+          <div className="relative flex-1 min-w-[280px]">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search SKU or name..."
+              className="h-10 pl-10 text-sm bg-muted/20 border-none shadow-none focus-visible:ring-1"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="h-10 w-[140px] text-sm bg-muted/20 border-none shadow-none">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.name}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={warehouseFilter} onValueChange={setWarehouseFilter}>
+              <SelectTrigger className="h-10 w-[140px] text-sm bg-muted/20 border-none shadow-none">
+                <SelectValue placeholder="Warehouse" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Warehouses</SelectItem>
+                {warehouses.map((warehouse) => (
+                  <SelectItem key={warehouse.id} value={warehouse.name}>
+                    {warehouse.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-10 w-[130px] text-sm bg-muted/20 border-none shadow-none">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="in-stock">In Stock</SelectItem>
+                <SelectItem value="low-stock">Low Stock</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+            { (searchQuery || categoryFilter !== "all" || statusFilter !== "all" || warehouseFilter !== "all") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 px-3 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  setSearchQuery("")
+                  setCategoryFilter("all")
+                  setStatusFilter("all")
+                  setWarehouseFilter("all")
+                }}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="pb-3">
