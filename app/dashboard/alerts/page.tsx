@@ -17,7 +17,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import Link from "next/link"
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+const fetcher = async (url: string) => {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error("Request failed")
+  }
+  return response.json()
+}
 
 function AlertCard({ item, onDismiss }: { item: any; onDismiss: (id: string) => void }) {
   const max = item.maxStock || 100
@@ -67,8 +73,8 @@ export default function AlertsPage() {
   const { data: activeAlerts, isLoading } = useSWR<any[]>('/api/alerts?status=active', fetcher)
   const { data: resolvedAlerts, isLoading: rLoading } = useSWR<any[]>('/api/alerts?status=resolved', fetcher)
 
-  const alerts = activeAlerts || []
-  const resolved = resolvedAlerts || []
+  const alerts = Array.isArray(activeAlerts) ? activeAlerts : []
+  const resolved = Array.isArray(resolvedAlerts) ? resolvedAlerts : []
   
   const criticalAlerts = alerts.filter(a => a.severity === 'critical')
   const lowStockAlerts = alerts.filter(a => a.severity === 'warning')

@@ -86,7 +86,7 @@ export function DashboardSidebar() {
   }
 
   const { data: counts } = useSWR("/api/alerts/counts", (url) =>
-    fetch(url).then((res) => res.json())
+    fetch(url).then((res) => (res.ok ? res.json() : null))
   )
 
   const mainNav = mainNavItems.map((item) => {
