@@ -121,13 +121,63 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground selection:bg-primary selection:text-primary-foreground;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
-    cursor: pointer;
+    @apply cursor-pointer;
   }
   html {
-    @apply font-sans;
+    @apply scroll-smooth font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply border border-white/10 bg-white/5 backdrop-blur-xl transition-all duration-300;
+  }
+
+  .glass-dark {
+    @apply border border-white/5 bg-black/40 backdrop-blur-2xl transition-all duration-300;
+  }
+
+  .bg-grid {
+    background-image: radial-gradient(circle, var(--color-border) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary via-chart-2 to-chart-1 bg-clip-text text-transparent;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .animate-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.8s ease-out,
+      transform 0.8s ease-out;
+  }
+
+  .animate-reveal.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .blob {
+    @apply absolute -z-10 h-[300px] w-[300px] rounded-full blur-[100px];
   }
 }
