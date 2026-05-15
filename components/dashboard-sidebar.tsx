@@ -89,7 +89,7 @@ export function DashboardSidebar() {
               size="lg"
               asChild
               tooltip="Mizani"
-              className="h-9 rounded-lg px-2 text-sidebar-foreground group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:border group-data-[collapsible=icon]:border-sidebar-border/50 group-data-[collapsible=icon]:bg-sidebar-accent/30 group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/40 transition-all duration-200"
+              className="h-9 rounded-lg px-2 text-sidebar-foreground transition-all duration-200 group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:border group-data-[collapsible=icon]:border-sidebar-border/50 group-data-[collapsible=icon]:bg-sidebar-accent/30 group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/40"
             >
               <Link href="/dashboard">
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm shadow-emerald-950/10">
@@ -115,7 +115,7 @@ export function DashboardSidebar() {
             Workspace
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1.5">
+            <SidebarMenu className="gap-1">
               {mainNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
@@ -123,7 +123,7 @@ export function DashboardSidebar() {
                     isActive={isNavItemActive(pathname, item.href)}
                     tooltip={item.title}
                     size="lg"
-                    className="min-h-10 rounded-xl px-3 text-[13px] font-medium text-sidebar-foreground/80 transition-colors duration-200 group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:px-0 data-[active=true]:bg-emerald-50 data-[active=true]:text-emerald-950 data-[active=true]:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.12)] dark:data-[active=true]:bg-emerald-950/30 dark:data-[active=true]:text-emerald-50"
+                    className="h-9 rounded-lg px-2.5 text-[12px] font-medium text-sidebar-foreground/75 transition-all duration-200 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-emerald-50 data-[active=true]:text-emerald-950 data-[active=true]:shadow-sm dark:data-[active=true]:bg-emerald-950/40 dark:data-[active=true]:text-emerald-100"
                   >
                     <Link href={item.href}>
                       <item.icon className="h-4 w-4 text-sidebar-foreground/55 group-data-[active=true]/menu-button:text-emerald-700 dark:group-data-[active=true]/menu-button:text-emerald-300" />
@@ -161,7 +161,7 @@ export function DashboardSidebar() {
                     isActive={isNavItemActive(pathname, item.href)}
                     tooltip={item.title}
                     size="lg"
-                    className="h-9 rounded-lg px-2.5 text-[12px] font-medium text-sidebar-foreground/75 transition-all duration-200 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:px-0 data-[active=true]:bg-emerald-50 data-[active=true]:text-emerald-950 data-[active=true]:shadow-sm dark:data-[active=true]:bg-emerald-950/40 dark:data-[active=true]:text-emerald-100"
+                    className="h-9 rounded-lg px-2.5 text-[12px] font-medium text-sidebar-foreground/75 transition-all duration-200 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-emerald-50 data-[active=true]:text-emerald-950 data-[active=true]:shadow-sm dark:data-[active=true]:bg-emerald-950/40 dark:data-[active=true]:text-emerald-100"
                   >
                     <Link href={item.href}>
                       <item.icon className="h-4 w-4 text-sidebar-foreground/55 group-data-[active=true]/menu-button:text-emerald-700 dark:group-data-[active=true]/menu-button:text-emerald-300" />
@@ -193,7 +193,7 @@ export function DashboardSidebar() {
               isActive={isNavItemActive(pathname, "/dashboard/settings")}
               tooltip="Settings"
               size="lg"
-              className="h-9 rounded-lg border border-sidebar-border/50 bg-sidebar-accent/25 px-2.5 text-[12px] font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:border-sidebar-border/40 hover:bg-sidebar-accent/50 data-[active=true]:bg-sidebar-accent/60 data-[active=true]:text-sidebar-foreground data-[active=true]:border-sidebar-accent/50"
+              className="h-9 rounded-lg border border-sidebar-border/50 bg-sidebar-accent/25 px-2.5 text-[12px] font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:border-sidebar-border/40 group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/50 data-[active=true]:border-sidebar-accent/50 data-[active=true]:bg-sidebar-accent/60 data-[active=true]:text-sidebar-foreground"
             >
               <Link href="/dashboard/settings">
                 <Settings className="h-4 w-4 text-sidebar-foreground/65 transition-transform duration-300 group-hover/menu-button:rotate-90 group-data-[active=true]/menu-button:rotate-90" />

@@ -131,8 +131,8 @@ export function DashboardHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/85 md:px-5">
-      <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="mr-1 h-5" />
+      <SidebarTrigger className="-ml-1 transition-all duration-200 ease-linear peer-data-[state=expanded]:peer-data-[collapsible=icon]:fixed peer-data-[state=expanded]:peer-data-[collapsible=icon]:left-[calc(var(--sidebar-width)-2.5rem)] peer-data-[state=expanded]:peer-data-[collapsible=icon]:top-3 peer-data-[state=expanded]:peer-data-[collapsible=icon]:z-40" />
+      <Separator orientation="vertical" className="mr-1 h-5 peer-data-[state=expanded]:peer-data-[collapsible=icon]:hidden" />
 
       <nav
         aria-label="Breadcrumb"
