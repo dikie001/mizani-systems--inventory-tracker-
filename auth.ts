@@ -8,39 +8,46 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   callbacks: {
     ...authConfig.callbacks,
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       if (!user.email) {
         return false
       }
 
-      const syncedUser = await prisma.user.upsert({
-        where: { email: user.email },
-        create: {
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        },
-        update: {
-          name: user.name,
-          image: user.image,
-        },
-        select: {
-          id: true,
-          role: true,
-          status: true,
-        },
-      })
+      if (account?.provider === "google") {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+          include: { accounts: true },
+        })
 
-      user.id = syncedUser.id
-      user.role = syncedUser.role
-      user.status = syncedUser.status
+        if (existingUser) {
+          const alreadyLinked = existingUser.accounts.some(
+            (a) => a.provider === "google"
+          )
+
+          if (!alreadyLinked) {
+            // Check if user has explicitly allowed linking via the link page
+            if (existingUser.allowGoogleLink) {
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: { allowGoogleLink: false },
+              })
+              return true
+            }
+
+            // Redirect to a linking page instead of crashing
+            return `/auth/link-account?email=${encodeURIComponent(user.email)}`
+          }
+        }
+      }
 
       return true
     },
-    async jwt({ token, user }) {
-      if (user?.email) {
+    async jwt({ token, user, trigger, session }) {
+      if (user?.email || (token.sub && !token.workspaceId)) {
         const dbUser = await prisma.user.findUnique({
-          where: { email: user.email },
+          where: token.sub 
+            ? { id: token.sub } 
+            : { email: (user?.email || token.email) as string },
           select: {
             id: true,
             email: true,
@@ -50,10 +57,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             status: true,
             currentWorkspaceId: true,
             memberships: {
-              where: {
-                workspaceId: { not: null }
-              },
-              include: {
+              select: {
+                workspaceId: true,
                 workspace: {
                   select: {
                     name: true
@@ -77,6 +82,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.workspaceId = dbUser.currentWorkspaceId || currentMembership?.workspaceId
           token.workspaceName = currentMembership?.workspace?.name
         }
+      }
+
+      if (trigger === "update" && session) {
+        if (session.workspaceId) token.workspaceId = session.workspaceId
+        if (session.workspaceName) token.workspaceName = session.workspaceName
       }
 
       return token

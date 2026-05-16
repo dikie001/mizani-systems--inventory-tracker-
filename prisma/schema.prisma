@@ -29,6 +29,8 @@ model User {
   stockMovements StockMovement[]
   auditLogs      AuditLog[]
 
+  allowGoogleLink Boolean @default(false)
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

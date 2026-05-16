@@ -1,8 +1,14 @@
 import type { NextAuthConfig } from "next-auth"
 import Google from "next-auth/providers/google"
+import Credentials from "next-auth/providers/credentials"
 
 export const authConfig: NextAuthConfig = {
-  providers: [Google({})],
+  providers: [
+    Google({
+      allowDangerousEmailAccountLinking: false,
+    }),
+    Credentials({}),
+  ],
   trustHost: true,
   pages: {
     signIn: "/auth",
@@ -24,7 +30,7 @@ export const authConfig: NextAuthConfig = {
         if (!hasWorkspace) return Response.redirect(new URL("/onboarding", nextUrl))
       }
       
-      if (isLoggedIn && nextUrl.pathname === "/auth") {
+      if (isLoggedIn && (nextUrl.pathname === "/auth" || nextUrl.pathname === "/")) {
         return Response.redirect(new URL(hasWorkspace ? "/dashboard" : "/onboarding", nextUrl))
       }
 
