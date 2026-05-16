@@ -24,7 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-function Navbar() {
+function Navbar({ session }: { session: any }) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
@@ -40,19 +40,27 @@ function Navbar() {
           <Link href="#about" className="hover:text-primary">About</Link>
         </nav>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/auth">Sign In</Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/auth">Get Started</Link>
-          </Button>
+          {session ? (
+            <Button size="sm" asChild>
+              <Link href="/dashboard">Sign In</Link>
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/auth">Sign In</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/auth">Get Started</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>
   )
 }
 
-function HeroSection() {
+function HeroSection({ session }: { session: any }) {
   return (
     <section className="pt-16 pb-24 md:pt-20 md:pb-32 bg-background relative overflow-hidden">
       <div className="container mx-auto px-6 grid gap-12 lg:grid-cols-2 items-center relative z-10">
@@ -66,7 +74,9 @@ function HeroSection() {
           </p>
           <div className="flex flex-wrap gap-4">
             <Button size="lg" className="px-8 rounded-full" asChild>
-              <Link href="/auth">Start Free Trial</Link>
+              <Link href={session ? "/dashboard" : "/auth"}>
+                {session ? "Open Dashboard" : "Start Free Trial"}
+              </Link>
             </Button>
             <Button size="lg" variant="outline" className="px-8 rounded-full">
               How It Works
@@ -313,11 +323,11 @@ function Footer() {
   )
 }
 
-export default function LandingClient() {
+export default function LandingClient({ session }: { session: any }) {
   return (
     <div className="min-h-screen bg-background font-sans antialiased">
-      <Navbar />
-      <HeroSection />
+      <Navbar session={session} />
+      <HeroSection session={session} />
       <FeatureSection />
       <ManageSection />
       <PricingSection />

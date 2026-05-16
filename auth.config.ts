@@ -14,28 +14,18 @@ export const authConfig: NextAuthConfig = {
       const isDashboard = nextUrl.pathname.startsWith("/dashboard")
       const isOnboarding = nextUrl.pathname === "/onboarding"
       
-      const isLandingPage = nextUrl.pathname === "/"
+      if (isOnboarding) {
+        if (!isLoggedIn) return false // Force redirect to /auth
+        if (hasWorkspace) return Response.redirect(new URL("/dashboard", nextUrl))
+      }
       
       if (isDashboard) {
-        if (isLoggedIn) {
-          if (!hasWorkspace) return Response.redirect(new URL("/onboarding", nextUrl))
-          return true
-        }
-        return false // Redirect unauthenticated users to login page
-      } 
+        if (!isLoggedIn) return false
+        if (!hasWorkspace) return Response.redirect(new URL("/onboarding", nextUrl))
+      }
       
-      if (isLoggedIn) {
-        if (isLandingPage || nextUrl.pathname === "/auth") {
-          return Response.redirect(new URL(hasWorkspace ? "/dashboard" : "/onboarding", nextUrl))
-        }
-        if (isOnboarding && hasWorkspace) {
-          return Response.redirect(new URL("/dashboard", nextUrl))
-        }
-      } else {
-        // Not logged in
-        if (isOnboarding) {
-          return Response.redirect(new URL("/auth", nextUrl))
-        }
+      if (isLoggedIn && nextUrl.pathname === "/auth") {
+        return Response.redirect(new URL(hasWorkspace ? "/dashboard" : "/onboarding", nextUrl))
       }
 
       return true
