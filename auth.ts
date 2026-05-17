@@ -13,33 +13,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return false
       }
 
-      if (account?.provider === "google") {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
-          include: { accounts: true },
-        })
-
-        if (existingUser) {
-          const alreadyLinked = existingUser.accounts.some(
-            (a) => a.provider === "google"
-          )
-
-          if (!alreadyLinked) {
-            // Check if user has explicitly allowed linking via the link page
-            if (existingUser.allowGoogleLink) {
-              await prisma.user.update({
-                where: { id: existingUser.id },
-                data: { allowGoogleLink: false },
-              })
-              return true
-            }
-
-            // Redirect to a linking page instead of crashing
-            return `/auth/link-account?email=${encodeURIComponent(user.email)}`
-          }
-        }
-      }
-
       return true
     },
     async jwt({ token, user, trigger, session }) {
