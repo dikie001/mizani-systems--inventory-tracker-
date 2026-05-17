@@ -795,16 +795,14 @@ function InventoryPageContent() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent">
+                <TableRow className="hover:bg-transparent border-b">
                   <TableHead className="w-[50px] text-center">#</TableHead>
-                  <TableHead className="w-[280px]">Product</TableHead>
-                  <TableHead className="hidden md:table-cell">SKU</TableHead>
-                  <TableHead className="hidden lg:table-cell">Category</TableHead>
-
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="text-right">Stock</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden md:table-cell text-right">Limit</TableHead>
+                  <TableHead>Product</TableHead>
+                  <TableHead className="hidden md:table-cell w-[140px]">SKU</TableHead>
+                  <TableHead className="hidden lg:table-cell w-[140px]">Category</TableHead>
+                  <TableHead className="w-[110px] text-right">Price</TableHead>
+                  <TableHead className="w-[140px] text-right">Stock Level</TableHead>
+                  <TableHead className="w-[110px] pl-6">Status</TableHead>
                   <TableHead className="w-[50px]" />
                 </TableRow>
               </TableHeader>
@@ -829,51 +827,43 @@ function InventoryPageContent() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell py-2.5">
+                    <TableCell className="hidden md:table-cell py-2.5 w-[140px]">
                       <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                         {product.sku}
                       </code>
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell py-2.5">
+                    <TableCell className="hidden lg:table-cell py-2.5 w-[140px]">
                       <Badge variant="outline" className="font-normal text-muted-foreground border-muted-foreground/20 text-xs">
                         {product.category}
                       </Badge>
                     </TableCell>
-
-                    <TableCell className="text-right font-medium py-2.5">
+                    <TableCell className="text-right font-medium py-2.5 w-[110px]">
                       {formatCurrency(product.price)}
                     </TableCell>
-                    <TableCell className="text-right py-2.5">
-                      <span className={`inline-flex items-center font-bold ${product.stock <= product.minStock ? "text-red-600" : "text-foreground"}`}>
-                        {product.stock}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-2.5">
-                      <div className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-tight
-                        ${
-                          product.status === "in-stock"
-                            ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
-                            : product.status === "low-stock"
-                              ? "bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400"
-                              : "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400"
-                        }
-                      `}>
-                        <div className={`mr-1.5 h-1.5 w-1.5 rounded-full
-                          ${
-                            product.status === "in-stock"
-                              ? "bg-emerald-500"
-                              : product.status === "low-stock"
-                                ? "bg-amber-500"
-                                : "bg-red-500"
-                          }
-                        `} />
-                        {statusConfig[product.status].label}
+                    <TableCell className="text-right py-2.5 w-[140px]">
+                      <div className="flex flex-col items-end gap-0.5">
+                        <span className={`text-sm font-semibold ${product.stock <= product.minStock ? "text-red-500 font-bold" : "text-foreground"}`}>
+                          {product.stock} remaining
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          Min alert: {product.minStock}
+                        </span>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-right text-xs text-muted-foreground font-mono py-2.5">
-                      {product.minStock} / {product.maxStock}
+                    <TableCell className="py-2.5 w-[110px] pl-6">
+                      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border
+                        ${
+                          product.status === "in-stock"
+                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400"
+                            : product.status === "low-stock"
+                              ? "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400"
+                              : "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400"
+                        }
+                      `}>
+                        {statusConfig[product.status].label}
+                      </span>
                     </TableCell>
-                    <TableCell className="py-2.5">
+                    <TableCell className="py-2.5 w-[50px]">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -908,7 +898,7 @@ function InventoryPageContent() {
                 ))}
                 {products?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="h-32 text-center">
+                    <TableCell colSpan={8} className="h-32 text-center">
                       <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                         <Package className="h-8 w-8 opacity-20" />
                         <p>No products found matching your filters.</p>
@@ -916,7 +906,6 @@ function InventoryPageContent() {
                           setSearchQuery("")
                           setCategoryFilter("all")
                           setStatusFilter("all")
-
                         }}>Clear all filters</Button>
                       </div>
                     </TableCell>
