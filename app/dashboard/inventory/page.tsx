@@ -1,7 +1,7 @@
 "use client"
 
 import { ChangeEvent, FormEvent, useId, useRef, useState, useEffect, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import useSWR, { useSWRConfig } from "swr"
 import {
   AlertCircle,
@@ -324,6 +324,7 @@ function InventoryPageContent() {
   const [importFile, setImportFile] = useState<File | null>(null)
 
   const searchParams = useSearchParams()
+  const router = useRouter()
   const action = searchParams.get("action")
 
   useEffect(() => {
@@ -1618,6 +1619,9 @@ function InventoryPageContent() {
                       if (product) {
                         beginRecordSale(product)
                       }
+                    } else if (value === "Order") {
+                      setAdjustmentOpen(false)
+                      router.push("/dashboard/orders?action=create")
                     } else {
                       setAdjustmentValues((current) => ({
                         ...current,
@@ -1632,7 +1636,8 @@ function InventoryPageContent() {
                   <SelectContent>
                     <SelectItem value="Manual Adjustment">Manual Adjustment</SelectItem>
                     <SelectItem value="Restock">Restock / Procurement</SelectItem>
-                    <SelectItem value="Sale">Direct Sale / Order</SelectItem>
+                    <SelectItem value="Sale">Direct Sale (POS)</SelectItem>
+                    <SelectItem value="Order">Customer Order</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

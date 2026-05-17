@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import useSWR, { useSWRConfig } from "swr"
 import { toast } from "sonner"
 import {
@@ -51,6 +51,17 @@ export default function OrdersPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get("action") === "create") {
+        setIsCreateOpen(true)
+        const newUrl = window.location.pathname
+        window.history.replaceState({}, "", newUrl)
+      }
+    }
+  }, [])
 
   let url = `/api/orders?`
   if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`
