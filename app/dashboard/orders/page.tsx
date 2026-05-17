@@ -256,41 +256,47 @@ export default function OrdersPage() {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => { setSelectedOrderId(order.id); setIsDetailsOpen(true); }}><Eye className="mr-2 h-3.5 w-3.5" />View details</DropdownMenuItem>
-                          
-                          <DropdownMenuSeparator />
+                        <DropdownMenuContent align="end" className="w-48 p-1.5 space-y-0.5">
                           {/* Order Status Transitions */}
                           {order.status === "pending" && (
-                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "processing")}><Clock className="mr-2 h-3.5 w-3.5" />Mark Processing</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "processing")} className="cursor-pointer">
+                              <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                              <span>Mark Processing</span>
+                            </DropdownMenuItem>
                           )}
                           {order.status === "processing" && (
-                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "shipped")}><Truck className="mr-2 h-3.5 w-3.5" />Mark Shipped</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "shipped")} className="cursor-pointer">
+                              <Truck className="mr-2 h-4 w-4 text-muted-foreground" />
+                              <span>Mark Shipped</span>
+                            </DropdownMenuItem>
                           )}
                           {order.status === "shipped" && (
-                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "delivered")}><Package className="mr-2 h-3.5 w-3.5" />Mark Delivered</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "delivered")} className="cursor-pointer">
+                              <Package className="mr-2 h-4 w-4 text-muted-foreground" />
+                              <span>Mark Delivered</span>
+                            </DropdownMenuItem>
                           )}
 
                           {/* Payment status transitions */}
                           {order.payment === "unpaid" ? (
-                            <DropdownMenuItem onClick={() => handleUpdatePayment(order.id, "paid")} className="text-emerald-600 dark:text-emerald-400 font-medium">
-                              <DollarSign className="mr-2 h-3.5 w-3.5" />
+                            <DropdownMenuItem onClick={() => handleUpdatePayment(order.id, "paid")} className="text-emerald-600 dark:text-emerald-400 font-medium cursor-pointer">
+                              <DollarSign className="mr-2 h-4 w-4" />
                               <span>Mark Paid</span>
                             </DropdownMenuItem>
                           ) : (
-                            <DropdownMenuItem onClick={() => handleUpdatePayment(order.id, "unpaid")} className="text-muted-foreground">
-                              <DollarSign className="mr-2 h-3.5 w-3.5" />
+                            <DropdownMenuItem onClick={() => handleUpdatePayment(order.id, "unpaid")} className="text-muted-foreground cursor-pointer">
+                              <DollarSign className="mr-2 h-4 w-4" />
                               <span>Mark Unpaid</span>
                             </DropdownMenuItem>
                           )}
                           
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
-                            className="text-destructive focus:text-destructive"
+                            className="text-destructive focus:text-destructive cursor-pointer"
                             disabled={order.status === "cancelled"}
                             onClick={() => handleCancelOrder(order.id)}
                           >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" />
+                            <Trash2 className="mr-2 h-4 w-4" />
                             <span>Cancel order</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
