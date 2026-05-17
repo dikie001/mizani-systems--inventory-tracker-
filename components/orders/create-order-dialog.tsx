@@ -268,11 +268,10 @@ export function CreateOrderDialog({
                 )}
               </TableBody>
             </Table>
-          </div>
-
-          <div className="flex justify-between items-center py-3 px-4 border-t bg-muted/20 rounded-b-xl">
-             <span className="font-semibold text-muted-foreground uppercase tracking-wider text-xs">Order Summary Total</span>
-             <span className="font-bold text-2xl font-mono tracking-tight text-primary">${total.toFixed(2)}</span>
+            <div className="flex justify-between items-center py-2.5 px-4 border-t bg-muted/20">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total</span>
+              <span className="font-mono font-extrabold text-base text-primary">${total.toFixed(2)}</span>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t">
