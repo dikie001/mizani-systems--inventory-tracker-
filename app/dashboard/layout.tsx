@@ -25,6 +25,11 @@ export default async function DashboardLayout({
     redirect("/auth")
   }
 
+  const superAdminEmail = process.env.SUPER_ADMIN_EMAIL
+  if (superAdminEmail && session.user.email.toLowerCase() === superAdminEmail.toLowerCase()) {
+    redirect("/super-admin")
+  }
+
   // Robust check to ensure user has a workspace
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
