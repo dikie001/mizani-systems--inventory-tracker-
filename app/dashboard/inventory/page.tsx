@@ -943,7 +943,7 @@ function InventoryPageContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="product-price">Unit Price (USD) *</Label>
                 <div className="relative">
@@ -975,9 +975,6 @@ function InventoryPageContent() {
                   required
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="product-minStock">Min Threshold *</Label>
                 <Input
@@ -987,19 +984,6 @@ function InventoryPageContent() {
                   min="0"
                   step="1"
                   value={formValues.minStock}
-                  onChange={handleFormValueChange}
-                  required
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="product-maxStock">Max Capacity *</Label>
-                <Input
-                  id="product-maxStock"
-                  name="maxStock"
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={formValues.maxStock}
                   onChange={handleFormValueChange}
                   required
                 />
