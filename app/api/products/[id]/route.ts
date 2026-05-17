@@ -64,7 +64,12 @@ export async function PUT(request: Request, context: RouteContext) {
       }
 
       const conflictingProduct = await tx.product.findUnique({
-        where: { sku: payload.sku },
+        where: {
+          workspaceId_sku: {
+            workspaceId: existingProduct.workspaceId,
+            sku: payload.sku,
+          }
+        },
         select: { id: true },
       })
 
