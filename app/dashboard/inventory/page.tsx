@@ -1188,7 +1188,7 @@ function InventoryPageContent() {
               <p className="text-xs font-semibold text-red-700">Failed to load product details</p>
             </div>
           ) : selectedProduct ? (
-            <div className="space-y-4">
+            <div className="space-y-4 pt-3">
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-2 bg-muted/30 p-3 rounded-xl border border-muted/50 text-center">
                 <div className="flex flex-col justify-center">
