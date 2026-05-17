@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const imageKitFormData = new FormData()
     imageKitFormData.append("file", base64File)
     imageKitFormData.append("fileName", file.name)
-    imageKitFormData.append("folder", "/products")
+    imageKitFormData.append("folder", "/mizani_systems/products")
 
     const privateKey = process.env.IMAGE_KIT_SECRET_KEY || ""
     const authHeader = `Basic ${Buffer.from(privateKey + ":").toString("base64")}`

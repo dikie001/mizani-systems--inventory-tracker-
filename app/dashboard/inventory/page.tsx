@@ -324,36 +324,54 @@ function InventoryPageContent() {
   const [historyPage, setHistoryPage] = useState(1)
   const [historyProduct, setHistoryProduct] = useState<InventoryProduct | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
-  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
     setUploadingImage(true)
+    setUploadProgress(0)
+
     const formData = new FormData()
     formData.append("file", file)
 
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      })
+    const xhr = new XMLHttpRequest()
 
-      if (!response.ok) {
-        throw new Error("Failed to upload image")
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        const percentage = Math.round((event.loaded * 100) / event.total)
+        setUploadProgress(percentage)
       }
+    })
 
-      const data = await response.json()
-      setFormValues((current) => ({
-        ...current,
-        image: data.url,
-      }))
-      toast.success("Product image uploaded successfully!")
-    } catch (error: any) {
-      toast.error(error.message || "Failed to upload image")
-    } finally {
+    xhr.addEventListener("load", () => {
       setUploadingImage(false)
-    }
+      setUploadProgress(0)
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const data = JSON.parse(xhr.responseText)
+          setFormValues((current) => ({
+            ...current,
+            image: data.url,
+          }))
+          toast.success("Product image uploaded successfully!")
+        } catch (err) {
+          toast.error("Failed to parse upload response.")
+        }
+      } else {
+        toast.error("Failed to upload image. Please try again.")
+      }
+    })
+
+    xhr.addEventListener("error", () => {
+      setUploadingImage(false)
+      setUploadProgress(0)
+      toast.error("Upload encountered an error.")
+    })
+
+    xhr.open("POST", "/api/upload")
+    xhr.send(formData)
   }
 
   const [exporting, setExporting] = useState(false)
@@ -1311,9 +1329,15 @@ function InventoryPageContent() {
               ) : (
                 <label className="relative group border-2 border-dashed border-border hover:border-primary/40 rounded-xl bg-muted/5 hover:bg-muted/15 p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-200 min-h-[120px] max-h-[140px]">
                   {uploadingImage ? (
-                    <div className="flex flex-col items-center gap-2 text-muted-foreground animate-pulse">
+                    <div className="flex flex-col items-center gap-2.5 text-muted-foreground w-full px-4">
                       <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                      <span className="text-[10px] font-medium">Uploading image...</span>
+                      <span className="text-[10px] font-medium text-foreground/80">Uploading image... {uploadProgress}%</span>
+                      <div className="w-full h-1 bg-muted rounded-full overflow-hidden border border-border/10">
+                        <div
+                          className="h-full bg-gradient-to-r from-primary to-indigo-500 transition-all duration-300 ease-out rounded-full"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
                     </div>
                   ) : (
                     <>
