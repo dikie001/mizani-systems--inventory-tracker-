@@ -14,6 +14,7 @@ import {
   Settings,
   ShoppingCart,
   TrendingUp,
+  Shield,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -194,6 +195,37 @@ export function DashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {session?.user?.role === "super_admin" && (
+          <>
+            <Separator className="mx-3 w-auto bg-sidebar-border/70 group-data-[collapsible=icon]:hidden" />
+            <SidebarGroup className="px-0 py-0 group-data-[collapsible=icon]:gap-2">
+              <SidebarGroupLabel className="px-2.5 pb-1.5 text-[9px] font-semibold tracking-normal text-sidebar-foreground/35 uppercase">
+                Admin
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="gap-1.5">
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname.startsWith("/super-admin")}
+                      tooltip="Super Admin"
+                      size="lg"
+                      className="h-9 rounded-lg px-2.5 text-[12px] font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/10 hover:text-red-500 transition-all duration-200 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:px-0"
+                    >
+                      <Link href="/super-admin" onClick={handleNavClick}>
+                        <Shield className="h-4 w-4 text-red-500 group-data-[collapsible=icon]:text-red-500" />
+                        <span className="group-data-[collapsible=icon]:hidden">
+                          Super Admin
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="mt-auto border-t border-sidebar-border/60 px-2.5 py-2.5 group-data-[collapsible=icon]:px-1.5 group-data-[collapsible=icon]:py-2">

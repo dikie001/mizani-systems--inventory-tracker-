@@ -6,6 +6,74 @@ import { authConfig } from "./auth.config"
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
+  events: {
+    async signIn({ user, isNewUser }) {
+      if (!user?.email) return
+
+      try {
+        const superAdminEmail = process.env.SUPER_ADMIN_EMAIL
+        const isSuperAdmin = user.email.toLowerCase() === superAdminEmail.toLowerCase()
+
+        // 1. Increment loginCount and upgrade role if super admin
+        await prisma.user.update({
+          where: { email: user.email },
+          data: {
+            loginCount: { increment: 1 },
+            ...(isSuperAdmin ? { role: "super_admin" } : {})
+          }
+        })
+
+        // 2. Create Audit Log for login
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email },
+          select: { id: true, currentWorkspaceId: true }
+        })
+
+        if (dbUser) {
+          await prisma.auditLog.create({
+            data: {
+              action: isNewUser ? "User Registered and Signed In" : "User Signed In via Google",
+              entity: "Auth",
+              type: "auth",
+              userId: dbUser.id,
+              workspaceId: dbUser.currentWorkspaceId || null,
+            }
+          })
+        }
+      } catch (err) {
+        console.error("Error in signIn event:", err)
+      }
+    },
+    async signOut(message) {
+      // In Auth.js v5 events, signOut message contains token and/or session
+      const token = (message as any).token
+      const session = (message as any).session
+      const email = session?.user?.email || token?.email
+      
+      if (!email) return
+
+      try {
+        const dbUser = await prisma.user.findUnique({
+          where: { email },
+          select: { id: true, currentWorkspaceId: true }
+        })
+
+        if (dbUser) {
+          await prisma.auditLog.create({
+            data: {
+              action: "User Signed Out",
+              entity: "Auth",
+              type: "auth",
+              userId: dbUser.id,
+              workspaceId: dbUser.currentWorkspaceId || null,
+            }
+          })
+        }
+      } catch (err) {
+        console.error("Error in signOut event:", err)
+      }
+    }
+  },
   callbacks: {
     ...authConfig.callbacks,
     async signIn({ user, account }) {
