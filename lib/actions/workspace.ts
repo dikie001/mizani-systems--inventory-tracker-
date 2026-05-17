@@ -57,9 +57,24 @@ export async function switchWorkspace(workspaceId: string) {
   }
 
   try {
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { name: true }
+    })
+
     await prisma.user.update({
       where: { id: session.user.id },
       data: { currentWorkspaceId: workspaceId }
+    })
+
+    await prisma.auditLog.create({
+      data: {
+        action: `Switched to workspace: ${workspace?.name || 'Unknown'}`,
+        entity: "Workspace",
+        type: "settings",
+        userId: session.user.id,
+        workspaceId,
+      }
     })
 
     revalidatePath("/")
@@ -124,6 +139,17 @@ export async function createWorkspace(data: {
         data: { currentWorkspaceId: newWorkspace.id },
       })
 
+      // Add audit log inside transaction
+      await tx.auditLog.create({
+        data: {
+          action: `Created workspace: ${newWorkspace.name}`,
+          entity: "Workspace",
+          type: "create",
+          userId: userId,
+          workspaceId: newWorkspace.id,
+        }
+      })
+
       return newWorkspace
     })
 
@@ -156,9 +182,19 @@ export async function updateWorkspace(workspaceId: string, data: { name?: string
   }
 
   try {
-    await prisma.workspace.update({
+    const updated = await prisma.workspace.update({
       where: { id: workspaceId },
       data
+    })
+
+    await prisma.auditLog.create({
+      data: {
+        action: `Updated workspace: ${updated.name} (${Object.keys(data).join(", ")})`,
+        entity: "Workspace",
+        type: "settings",
+        userId: session.user.id,
+        workspaceId,
+      }
     })
 
     revalidatePath("/")

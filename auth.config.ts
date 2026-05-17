@@ -18,6 +18,18 @@ export const authConfig: NextAuthConfig = {
       const isLoggedIn = !!auth?.user
       const isDashboard = nextUrl.pathname.startsWith("/dashboard")
       const isOnboarding = nextUrl.pathname === "/onboarding"
+      const isSuperAdminRoute = nextUrl.pathname.startsWith("/super-admin")
+      
+      if (isSuperAdminRoute) {
+        if (!isLoggedIn) {
+          return false // Force redirect to /auth
+        }
+        const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "omondidickens255@gmail.com"
+        const isSuperAdmin = auth.user.email?.toLowerCase() === superAdminEmail.toLowerCase()
+        if (!isSuperAdmin) {
+          return Response.redirect(new URL("/dashboard", nextUrl))
+        }
+      }
       
       if (isOnboarding && !isLoggedIn) {
         return false // Force redirect to /auth
