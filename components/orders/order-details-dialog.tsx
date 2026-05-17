@@ -60,7 +60,7 @@ export function OrderDetailsDialog({
     fetcher
   )
   const { data: workspace } = useSWR("/api/workspaces/current", fetcher)
-  const currency = workspace?.currency || "KES"
+  const currency = (workspace as any)?.currency || "KES"
 
   if (!orderId) return null
 
