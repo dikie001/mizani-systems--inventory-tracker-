@@ -100,8 +100,7 @@ export default function OnboardingClient() {
       if (result.success) {
         await update({ workspaceId: result.workspaceId, workspaceName: result.workspaceName })
         toast.success("Workspace created successfully!")
-        router.push("/dashboard")
-        router.refresh()
+        window.location.href = "/dashboard"
       } else {
         toast.error(result.error || "Failed to create workspace")
       }
@@ -110,7 +109,7 @@ export default function OnboardingClient() {
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, update, router])
+  }, [formData, update])
 
   const handleNext = useCallback(() => {
     if (!canAdvance) return
