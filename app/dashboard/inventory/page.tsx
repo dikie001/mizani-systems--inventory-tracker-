@@ -862,12 +862,12 @@ function InventoryPageContent() {
                             </span>
                           </TooltipTrigger>
                           <TooltipContent side="top">
-                            <div className="flex flex-col gap-0.5 text-xs">
-                              <span className="font-semibold text-muted-foreground/80">
-                                Total: {formatCurrency(product.price * product.stock)}
+                            <div className="flex flex-col gap-0.5 text-xs text-center">
+                              <span className="font-semibold text-foreground">
+                                {formatCurrency(product.price * product.stock)}
                               </span>
-                              <span className="font-medium text-foreground">
-                                {formatCurrency(product.price)} each
+                              <span className="text-[10px] text-muted-foreground">
+                                {formatCurrency(product.price)} / unit
                               </span>
                             </div>
                           </TooltipContent>
