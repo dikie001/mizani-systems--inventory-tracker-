@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import useSWR from "swr"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -36,7 +37,9 @@ export default function SuperAdminPage() {
     refreshInterval: 10000 // Refresh stats every 10 seconds for real-time vibe
   })
   
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "workspaces" | "audit">("overview")
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const activeTab = (searchParams.get("tab") || "overview") as "overview" | "users" | "workspaces" | "audit"
   const [auditSearch, setAuditSearch] = useState("")
   const [auditFilterType, setAuditFilterType] = useState<string>("all")
   const [auditPage, setAuditPage] = useState(1)
@@ -98,7 +101,7 @@ export default function SuperAdminPage() {
   )
 
   const handleTabChange = (tab: "overview" | "users" | "workspaces" | "audit") => {
-    setActiveTab(tab)
+    router.push(`/super-admin?tab=${tab}`)
     setAuditPage(1) // Reset page on tab change
   }
 
