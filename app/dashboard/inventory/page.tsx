@@ -323,7 +323,7 @@ function InventoryPageContent() {
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyPage, setHistoryPage] = useState(1)
   const [historyProduct, setHistoryProduct] = useState<InventoryProduct | null>(null)
-  const [uploadingImage, setUploadingImage] = useState(false)
+  const [uploadStage, setUploadStage] = useState<"idle" | "compressing" | "uploading">("idle")
   const [uploadProgress, setUploadProgress] = useState(0)
 
   const compressImage = (file: File, targetSizeKb: number = 100): Promise<File> => {
@@ -392,11 +392,13 @@ function InventoryPageContent() {
     const originalFile = e.target.files?.[0]
     if (!originalFile) return
 
-    setUploadingImage(true)
+    setUploadStage("compressing")
     setUploadProgress(0)
 
     try {
       const file = await compressImage(originalFile, 100)
+
+      setUploadStage("uploading")
 
       const formData = new FormData()
       formData.append("file", file)
@@ -411,7 +413,7 @@ function InventoryPageContent() {
       })
 
       xhr.addEventListener("load", () => {
-        setUploadingImage(false)
+        setUploadStage("idle")
         setUploadProgress(0)
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
@@ -430,7 +432,7 @@ function InventoryPageContent() {
       })
 
       xhr.addEventListener("error", () => {
-        setUploadingImage(false)
+        setUploadStage("idle")
         setUploadProgress(0)
         toast.error("Upload encountered an error.")
       })
@@ -438,7 +440,7 @@ function InventoryPageContent() {
       xhr.open("POST", "/api/upload")
       xhr.send(formData)
     } catch (err) {
-      setUploadingImage(false)
+      setUploadStage("idle")
       setUploadProgress(0)
       toast.error("Image compression failed.")
     }
@@ -1398,10 +1400,18 @@ function InventoryPageContent() {
                 </div>
               ) : (
                 <label className="relative group border-2 border-dashed border-border hover:border-primary/40 rounded-xl bg-muted/5 hover:bg-muted/15 p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-200 min-h-[120px] max-h-[140px]">
-                  {uploadingImage ? (
+                  {uploadStage === "compressing" ? (
+                    <div className="flex flex-col items-center gap-2.5 text-muted-foreground w-full px-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
+                      <span className="text-[10px] font-semibold text-indigo-500 animate-pulse">Optimizing & Compressing...</span>
+                      <div className="w-full h-1 bg-muted rounded-full overflow-hidden border border-border/10">
+                        <div className="h-full bg-indigo-500 w-1/2 animate-[pulse_1.5s_infinite] rounded-full" />
+                      </div>
+                    </div>
+                  ) : uploadStage === "uploading" ? (
                     <div className="flex flex-col items-center gap-2.5 text-muted-foreground w-full px-4">
                       <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                      <span className="text-[10px] font-medium text-foreground/80">Uploading image... {uploadProgress}%</span>
+                      <span className="text-[10px] font-medium text-foreground/80">Uploading to CDN... {uploadProgress}%</span>
                       <div className="w-full h-1 bg-muted rounded-full overflow-hidden border border-border/10">
                         <div
                           className="h-full bg-gradient-to-r from-primary to-indigo-500 transition-all duration-300 ease-out rounded-full"
@@ -1424,7 +1434,7 @@ function InventoryPageContent() {
                     type="file"
                     accept="image/*"
                     onChange={handleImageUpload}
-                    disabled={uploadingImage}
+                    disabled={uploadStage !== "idle"}
                     className="hidden"
                   />
                 </label>
@@ -1458,7 +1468,7 @@ function InventoryPageContent() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={submittingForm}>
+              <Button type="submit" disabled={submittingForm || uploadStage !== "idle"}>
                 {submittingForm ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
