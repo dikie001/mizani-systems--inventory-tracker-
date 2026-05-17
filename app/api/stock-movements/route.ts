@@ -61,8 +61,13 @@ export async function POST(request: Request) {
     const type = typeof body.type === "string" && body.type.trim().length > 0
       ? body.type.trim()
       : "Manual Adjustment"
-    const quantity =
+    let quantity =
       typeof body.quantity === "number" ? body.quantity : Number(body.quantity)
+
+    // A sale must always deduct stock
+    if (type.toLowerCase().includes("sale") && quantity > 0) {
+      quantity = -quantity
+    }
 
     if (!productId) {
       return NextResponse.json(

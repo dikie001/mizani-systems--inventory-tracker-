@@ -2,7 +2,7 @@
 
 import { ChangeEvent, FormEvent, useId, useRef, useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import useSWR from "swr"
+import useSWR, { useSWRConfig } from "swr"
 import {
   AlertCircle,
   AlertTriangle,
@@ -277,6 +277,7 @@ export default function InventoryPage() {
 
 function InventoryPageContent() {
   const categoryListId = useId()
+  const { mutate } = useSWRConfig()
 
 
 
@@ -310,6 +311,7 @@ function InventoryPageContent() {
     reference: "Direct Sale",
   })
   const [submittingSale, setSubmittingSale] = useState(false)
+  const [returnToDetailsProductId, setReturnToDetailsProductId] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -454,6 +456,7 @@ function InventoryPageContent() {
     if (detailsProductId) {
       await mutateSelectedProduct()
     }
+    mutate((key: any) => typeof key === "string" && key.startsWith("/api/products"))
   }
 
   const handleProductSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -497,6 +500,10 @@ function InventoryPageContent() {
             : "Product updated successfully.",
       })
       await refreshInventory()
+      if (returnToDetailsProductId) {
+        setDetailsProductId(returnToDetailsProductId)
+        setReturnToDetailsProductId(null)
+      }
     } catch (submitError) {
       setNotice({
         type: "error",
@@ -635,6 +642,10 @@ function InventoryPageContent() {
         message: "Stock adjusted successfully.",
       })
       await refreshInventory()
+      if (returnToDetailsProductId) {
+        setDetailsProductId(returnToDetailsProductId)
+        setReturnToDetailsProductId(null)
+      }
     } catch (adjustmentError) {
       setNotice({
         type: "error",
@@ -698,6 +709,10 @@ function InventoryPageContent() {
         message: `Recorded sale of ${quantityToDeduct} units successfully.`,
       })
       await refreshInventory()
+      if (returnToDetailsProductId) {
+        setDetailsProductId(returnToDetailsProductId)
+        setReturnToDetailsProductId(null)
+      }
     } catch (saleError) {
       setNotice({
         type: "error",
@@ -1218,7 +1233,18 @@ function InventoryPageContent() {
             </div>
 
             <div className="flex justify-end gap-3 pt-3 border-t">
-              <Button type="button" variant="outline" onClick={() => setFormOpen(false)} disabled={submittingForm}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setFormOpen(false)
+                  if (returnToDetailsProductId) {
+                    setDetailsProductId(returnToDetailsProductId)
+                    setReturnToDetailsProductId(null)
+                  }
+                }}
+                disabled={submittingForm}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={submittingForm}>
@@ -1359,6 +1385,7 @@ function InventoryPageContent() {
                   type="button"
                   variant="outline"
                   onClick={() => {
+                    setReturnToDetailsProductId(selectedProduct.id)
                     setDetailsProductId(null)
                     beginAdjustment(selectedProduct)
                   }}
@@ -1370,6 +1397,7 @@ function InventoryPageContent() {
                   type="button"
                   variant="outline"
                   onClick={() => {
+                    setReturnToDetailsProductId(selectedProduct.id)
                     setDetailsProductId(null)
                     beginEdit(selectedProduct)
                   }}
@@ -1380,6 +1408,7 @@ function InventoryPageContent() {
                 <Button
                   type="button"
                   onClick={() => {
+                    setReturnToDetailsProductId(selectedProduct.id)
                     setDetailsProductId(null)
                     beginRecordSale(selectedProduct)
                   }}
@@ -1408,100 +1437,103 @@ function InventoryPageContent() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Record Product Sale</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-2xl font-bold">Record Product Sale</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
               Deduct inventory levels immediately by logging a customer sale.
             </DialogDescription>
           </DialogHeader>
 
-          <form className="space-y-5 pt-2" onSubmit={handleSaleSubmit}>
-            <div className="grid gap-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Product Context</Label>
-              <div className="flex items-center justify-between rounded-xl bg-muted/40 p-3.5 border border-muted/50">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background shadow-sm text-primary">
-                    <Package className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold truncate max-w-[200px]">{saleValues.productName}</p>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase">Reference Product</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold font-mono">{saleValues.currentStock}</p>
-                  <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">Available Stock</p>
-                </div>
+          <form className="space-y-4 pt-2" onSubmit={handleSaleSubmit}>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="sale-product-name">Reference Product</Label>
+                <Input id="sale-product-name" value={saleValues.productName} disabled className="bg-muted/50" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="sale-current-stock">Available Stock</Label>
+                <Input id="sale-current-stock" value={saleValues.currentStock} disabled className="bg-muted/50 font-mono font-bold" />
               </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="sale-quantity" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Quantity Sold *</Label>
-              <Input
-                id="sale-quantity"
-                type="number"
-                min="1"
-                max={saleValues.currentStock}
-                step="1"
-                value={saleValues.quantity}
-                onChange={(e) => setSaleValues(current => ({ ...current, quantity: e.target.value }))}
-                placeholder="e.g. 5"
-                className="h-11 text-lg font-bold shadow-sm focus:ring-1"
-                required
-              />
-              {saleValues.quantity && Number(saleValues.quantity) > saleValues.currentStock && (
-                <p className="text-xs text-red-500 font-semibold">
-                  Warning: Cannot sell more than available stock ({saleValues.currentStock} units).
-                </p>
-              )}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="sale-quantity">Quantity Sold *</Label>
+                <Input
+                  id="sale-quantity"
+                  type="number"
+                  min="1"
+                  max={saleValues.currentStock}
+                  step="1"
+                  value={saleValues.quantity}
+                  onChange={(e) => setSaleValues(current => ({ ...current, quantity: e.target.value }))}
+                  placeholder="e.g. 5"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="sale-reference">Sale Reference / Channel</Label>
+                <Select
+                  value={saleValues.reference}
+                  onValueChange={(value) =>
+                    setSaleValues((current) => ({
+                      ...current,
+                      reference: value,
+                    }))
+                  }
+                >
+                  <SelectTrigger id="sale-reference">
+                    <SelectValue placeholder="Select sale channel" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Direct Sale">Direct Sale (POS)</SelectItem>
+                    <SelectItem value="Online Order">Online Order</SelectItem>
+                    <SelectItem value="Retail Sale">Retail / Counter Sale</SelectItem>
+                    <SelectItem value="Wholesale">Wholesale Distribution</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="sale-reference" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sale Reference / Channel</Label>
-              <Select
-                value={saleValues.reference}
-                onValueChange={(value) =>
-                  setSaleValues((current) => ({
-                    ...current,
-                    reference: value,
-                  }))
-                }
-              >
-                <SelectTrigger id="sale-reference" className="h-11 shadow-sm focus:ring-1">
-                  <SelectValue placeholder="Select sale channel" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Direct Sale">Direct Sale (POS)</SelectItem>
-                  <SelectItem value="Online Order">Online Order</SelectItem>
-                  <SelectItem value="Retail Sale">Retail / Counter Sale</SelectItem>
-                  <SelectItem value="Wholesale">Wholesale Distribution</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {saleValues.quantity && Number(saleValues.quantity) > saleValues.currentStock && (
+              <p className="text-xs text-red-500 font-semibold mt-1">
+                Warning: Cannot sell more than available stock ({saleValues.currentStock} units).
+              </p>
+            )}
 
-            <DialogFooter className="pt-2">
+            <div className="flex justify-end gap-3 pt-3 border-t">
               <Button
                 type="button"
-                variant="ghost"
-                onClick={() => setSaleOpen(false)}
-                className="h-11"
+                variant="outline"
+                onClick={() => {
+                  setSaleOpen(false)
+                  if (returnToDetailsProductId) {
+                    setDetailsProductId(returnToDetailsProductId)
+                    setReturnToDetailsProductId(null)
+                  }
+                }}
+                disabled={submittingSale}
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
                 disabled={submittingSale || !saleValues.quantity || Number(saleValues.quantity) <= 0 || Number(saleValues.quantity) > saleValues.currentStock} 
-                className="h-11 px-8 shadow-md"
               >
                 {submittingSale ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Recording...
+                  </>
                 ) : (
-                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  <>
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    Confirm Sale
+                  </>
                 )}
-                Confirm Sale
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
@@ -1515,53 +1547,45 @@ function InventoryPageContent() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Stock Adjustment</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-2xl font-bold">Stock Adjustment</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
               Modify inventory levels manually. Use positive for additions, negative for reductions.
             </DialogDescription>
           </DialogHeader>
 
-          <form className="space-y-5 pt-2" onSubmit={handleAdjustmentSubmit}>
-            <div className="grid gap-2">
-              <Label htmlFor="adjustment-product" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Selected Item</Label>
-              <div className="flex items-center gap-3 rounded-xl bg-muted/40 p-3 border border-muted/50">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background shadow-sm text-primary">
-                  <Package className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold">{adjustmentValues.productName}</p>
-                  <p className="text-[10px] font-mono text-muted-foreground uppercase">Current Reference Item</p>
-                </div>
+          <form className="space-y-4 pt-2" onSubmit={handleAdjustmentSubmit}>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="adjustment-product-name">Selected Item</Label>
+                <Input id="adjustment-product-name" value={adjustmentValues.productName} disabled className="bg-muted/50" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="adjustment-type">Reason for Adjustment</Label>
+                <Select
+                  value={adjustmentValues.type}
+                  onValueChange={(value) =>
+                    setAdjustmentValues((current) => ({
+                      ...current,
+                      type: value,
+                    }))
+                  }
+                >
+                  <SelectTrigger id="adjustment-type">
+                    <SelectValue placeholder="Select movement type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Manual Adjustment">Manual Adjustment</SelectItem>
+                    <SelectItem value="Restock">Restock / Procurement</SelectItem>
+                    <SelectItem value="Sale">Direct Sale / Order</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="adjustment-type" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Reason for Adjustment</Label>
-              <Select
-                value={adjustmentValues.type}
-                onValueChange={(value) =>
-                  setAdjustmentValues((current) => ({
-                    ...current,
-                    type: value,
-                  }))
-                }
-              >
-                <SelectTrigger id="adjustment-type" className="h-11 shadow-sm focus:ring-1">
-                  <SelectValue placeholder="Select movement type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Manual Adjustment">Manual Adjustment</SelectItem>
-                  <SelectItem value="Restock">Restock / Procurement</SelectItem>
-                  <SelectItem value="Sale">Direct Sale / Order</SelectItem>
-
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="adjustment-quantity" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Quantity Variation</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="adjustment-quantity">Quantity Variation *</Label>
               <Input
                 id="adjustment-quantity"
                 name="quantity"
@@ -1570,30 +1594,42 @@ function InventoryPageContent() {
                 value={adjustmentValues.quantity}
                 onChange={handleAdjustmentChange}
                 placeholder="e.g. 25 or -4"
-                className="h-11 text-lg font-bold shadow-sm focus:ring-1"
                 required
               />
-              <p className="text-[10px] text-muted-foreground">The final stock will be recalculated immediately after application.</p>
+              <p className="text-[10px] text-muted-foreground leading-normal mt-1">
+                The final stock will be recalculated immediately after application.
+              </p>
             </div>
 
-            <DialogFooter className="pt-2">
+            <div className="flex justify-end gap-3 pt-3 border-t">
               <Button
                 type="button"
-                variant="ghost"
-                onClick={() => setAdjustmentOpen(false)}
-                className="h-11"
+                variant="outline"
+                onClick={() => {
+                  setAdjustmentOpen(false)
+                  if (returnToDetailsProductId) {
+                    setDetailsProductId(returnToDetailsProductId)
+                    setReturnToDetailsProductId(null)
+                  }
+                }}
+                disabled={submittingAdjustment}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={submittingAdjustment} className="h-11 px-8 shadow-md">
+              <Button type="submit" disabled={submittingAdjustment}>
                 {submittingAdjustment ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Adjusting...
+                  </>
                 ) : (
-                  <ArrowUpDown className="mr-2 h-4 w-4" />
+                  <>
+                    <ArrowUpDown className="w-4 h-4 mr-2" />
+                    Commit Adjustment
+                  </>
                 )}
-                Commit Adjustment
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
