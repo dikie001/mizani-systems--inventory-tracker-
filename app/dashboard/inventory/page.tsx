@@ -279,6 +279,7 @@ function InventoryPageContent() {
   const [detailsProductId, setDetailsProductId] = useState<string | null>(null)
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [categorySearch, setCategorySearch] = useState("")
+  const [categoryAdding, setCategoryAdding] = useState(false)
   const [adjustmentOpen, setAdjustmentOpen] = useState(false)
   const [adjustmentValues, setAdjustmentValues] = useState<StockAdjustmentValues>(
     emptyStockAdjustment(),
@@ -312,13 +313,8 @@ function InventoryPageContent() {
 
   })
 
-  const {
-    data: products,
-    error,
-    isLoading,
-    mutate: mutateProducts,
-  } = useSWR<InventoryProduct[]>(productsUrl, fetcher)
-  const { data: meta } = useSWR<InventoryMeta>("/api/inventory/meta", fetcher)
+  const { data: products, error, isLoading, mutate: mutateProducts } = useSWR<InventoryProduct[]>(productsUrl, fetcher)
+  const { data: meta, mutate: mutateMeta } = useSWR<InventoryMeta>("/api/inventory/meta", fetcher)
   const {
     data: selectedProduct,
     error: selectedProductError,
@@ -365,6 +361,35 @@ function InventoryPageContent() {
       quantity: "",
     })
     setAdjustmentOpen(true)
+  }
+
+  const handleCreateCategory = async () => {
+    if (!categorySearch.trim() || categoryAdding) return
+    const name = categorySearch.trim()
+    setCategoryAdding(true)
+    try {
+      const response = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      })
+      if (!response.ok) {
+        throw new Error("Failed to create category")
+      }
+      const newCat = await response.json()
+      setFormValues((current) => ({ ...current, category: newCat.name }))
+      await mutateMeta()
+      setCategorySearch("")
+      setCategoryOpen(false)
+    } catch (err) {
+      console.error(err)
+      setNotice({
+        type: "error",
+        message: "Failed to save category to database.",
+      })
+    } finally {
+      setCategoryAdding(false)
+    }
   }
 
   const handleFormValueChange = (
@@ -983,41 +1008,33 @@ function InventoryPageContent() {
                         ))
                       )}
                     </div>
-                    <div className="border-t p-2 bg-muted/20">
-                      <div className="flex items-center gap-2">
-                        <Input
-                          placeholder="New category name..."
-                          className="h-8 text-xs bg-background"
-                          value={categorySearch}
-                          onChange={(e) => setCategorySearch(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault()
-                              if (categorySearch.trim()) {
-                                setFormValues(current => ({ ...current, category: categorySearch.trim() }))
-                                setCategorySearch("")
-                                setCategoryOpen(false)
-                              }
-                            }
-                          }}
-                        />
-                        <Button
-                          type="button"
-                          size="sm"
-                          className="h-8 text-xs font-semibold shrink-0"
-                          disabled={!categorySearch.trim()}
-                          onClick={() => {
-                            if (categorySearch.trim()) {
-                              setFormValues(current => ({ ...current, category: categorySearch.trim() }))
-                              setCategorySearch("")
-                              setCategoryOpen(false)
-                            }
-                          }}
-                        >
-                          <Plus className="mr-1 h-3 w-3" />
-                          Add
-                        </Button>
-                      </div>
+                    <div className="border-t p-2 bg-muted/20 flex flex-col gap-2">
+                      <Input
+                        placeholder="New category name..."
+                        className="h-8 text-xs bg-background w-full"
+                        value={categorySearch}
+                        onChange={(e) => setCategorySearch(e.target.value)}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            await handleCreateCategory()
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-8 text-xs font-semibold w-full"
+                        disabled={!categorySearch.trim() || categoryAdding}
+                        onClick={handleCreateCategory}
+                      >
+                        {categoryAdding ? (
+                          <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Plus className="mr-1 h-3.5 w-3.5" />
+                        )}
+                        Create Category
+                      </Button>
                     </div>
                   </PopoverContent>
                 </Popover>
