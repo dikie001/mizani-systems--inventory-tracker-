@@ -54,6 +54,7 @@ export async function POST(request: Request) {
       productId?: string
       quantity?: number | string
       type?: string
+      notes?: string
     }
 
     const productId =
@@ -61,6 +62,9 @@ export async function POST(request: Request) {
     const type = typeof body.type === "string" && body.type.trim().length > 0
       ? body.type.trim()
       : "Manual Adjustment"
+    const notes = typeof body.notes === "string" && body.notes.trim().length > 0
+      ? body.notes.trim()
+      : null
     let quantity =
       typeof body.quantity === "number" ? body.quantity : Number(body.quantity)
 
@@ -116,6 +120,7 @@ export async function POST(request: Request) {
           type,
           quantity,
           status: "completed",
+          notes,
         },
       })
 

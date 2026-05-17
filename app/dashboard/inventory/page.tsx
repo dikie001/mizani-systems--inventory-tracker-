@@ -114,6 +114,8 @@ type InventoryMovement = {
   type: string
   quantity: number
   status: string
+  notes?: string | null
+  userName?: string
   createdAt: string
 }
 
@@ -309,9 +311,12 @@ function InventoryPageContent() {
     currentStock: 0,
     quantity: "",
     reference: "Direct Sale",
+    notes: "",
   })
   const [submittingSale, setSubmittingSale] = useState(false)
   const [returnToDetailsProductId, setReturnToDetailsProductId] = useState<string | null>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyPage, setHistoryPage] = useState(1)
   const [exporting, setExporting] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -398,8 +403,17 @@ function InventoryPageContent() {
       currentStock: product.stock,
       quantity: "",
       reference: "Direct Sale",
+      notes: "",
     })
     setSaleOpen(true)
+  }
+
+  const handleHistoryClose = () => {
+    setHistoryOpen(false)
+    if (returnToDetailsProductId) {
+      setDetailsProductId(returnToDetailsProductId)
+      setReturnToDetailsProductId(null)
+    }
   }
 
   const handleCreateCategory = async () => {
@@ -683,7 +697,8 @@ function InventoryPageContent() {
         body: JSON.stringify({
           productId: saleValues.productId,
           quantity: -quantityToDeduct,
-          type: "Sale",
+          type: saleValues.reference,
+          notes: saleValues.notes,
         }),
       })
 
@@ -703,6 +718,7 @@ function InventoryPageContent() {
         currentStock: 0,
         quantity: "",
         reference: "Direct Sale",
+        notes: "",
       })
       setNotice({
         type: "success",
@@ -1377,6 +1393,22 @@ function InventoryPageContent() {
                     </div>
                   )}
                 </div>
+                {selectedProduct.recentMovements && selectedProduct.recentMovements.length > 0 && (
+                  <div className="border-t bg-muted/5 px-3.5 py-1.5 text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReturnToDetailsProductId(selectedProduct.id)
+                        setDetailsProductId(null)
+                        setHistoryPage(1)
+                        setHistoryOpen(true)
+                      }}
+                      className="inline-flex items-center justify-center text-[10px] font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider gap-1"
+                    >
+                      View Full History ({selectedProduct.movementCount})
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Footer Buttons */}
@@ -1433,6 +1465,7 @@ function InventoryPageContent() {
               currentStock: 0,
               quantity: "",
               reference: "Direct Sale",
+              notes: "",
             })
           }
         }}
@@ -1494,6 +1527,17 @@ function InventoryPageContent() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="sale-notes">Notes / Reference Details</Label>
+              <Textarea
+                id="sale-notes"
+                value={saleValues.notes}
+                onChange={(e) => setSaleValues(current => ({ ...current, notes: e.target.value }))}
+                placeholder="e.g. Invoice #1024, customer cash purchase, special delivery..."
+                className="min-h-[60px] resize-none"
+              />
             </div>
 
             {saleValues.quantity && Number(saleValues.quantity) > saleValues.currentStock && (
@@ -1631,6 +1675,148 @@ function InventoryPageContent() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={historyOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleHistoryClose()
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-2xl font-bold">Transaction History</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Complete stock history and operator logs for <span className="font-semibold text-foreground">{selectedProduct?.name}</span>.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedProduct && (
+            <div className="space-y-4 pt-2">
+              {/* Table / List */}
+              <div className="rounded-xl border bg-card overflow-hidden">
+                <div className="grid grid-cols-1 divide-y divide-border/60">
+                  {(() => {
+                    const movements = selectedProduct.recentMovements ?? []
+                    const totalMovements = movements.length
+                    const ITEMS_PER_PAGE = 5
+                    const totalPages = Math.ceil(totalMovements / ITEMS_PER_PAGE) || 1
+                    
+                    // Clamp page
+                    const currentPage = Math.min(historyPage, totalPages)
+                    const paginated = movements.slice(
+                      (currentPage - 1) * ITEMS_PER_PAGE,
+                      currentPage * ITEMS_PER_PAGE
+                    )
+
+                    if (paginated.length === 0) {
+                      return (
+                        <div className="py-12 text-center text-sm text-muted-foreground font-medium">
+                          No transaction history available.
+                        </div>
+                      )
+                    }
+
+                    return (
+                      <>
+                        <div className="max-h-[350px] overflow-auto divide-y divide-border/50">
+                          {paginated.map((movement) => (
+                            <div key={movement.id} className="p-3.5 hover:bg-muted/10 transition-colors space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2.5">
+                                  <div className={`h-7 w-7 rounded-md flex items-center justify-center shrink-0
+                                    ${movement.quantity > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}
+                                  `}>
+                                    {movement.quantity > 0 ? (
+                                      <Plus className="h-4.5 w-4.5" />
+                                    ) : (
+                                      <ArrowUpDown className="h-4.5 w-4.5 rotate-180" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-1.5">
+                                      <p className="text-xs font-bold text-foreground">{movement.type}</p>
+                                      <span className="text-[10px] text-muted-foreground font-medium px-1.5 py-0.5 rounded-full bg-muted border border-muted-foreground/15">
+                                        {movement.userName}
+                                      </span>
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground/80 font-medium">
+                                      {formatDate(movement.createdAt)}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className={`font-mono text-sm font-bold ${movement.quantity > 0 ? "text-emerald-600" : "text-red-600"}`}>
+                                    {movement.quantity > 0 ? "+" : ""}{movement.quantity} units
+                                  </p>
+                                  <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">
+                                    {movement.status}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {movement.notes && (
+                                <div className="bg-muted/30 border border-muted/50 rounded-lg p-2 mt-1">
+                                  <p className="text-[10px] text-muted-foreground leading-normal">
+                                    <span className="font-semibold text-foreground/75">Notes: </span>
+                                    {movement.notes}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Pagination Bar */}
+                        <div className="flex items-center justify-between border-t bg-muted/20 px-3.5 py-2.5">
+                          <span className="text-[11px] text-muted-foreground font-medium">
+                            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalMovements)} of {totalMovements} entries
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-[10px] font-bold px-2.5"
+                              onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
+                              disabled={currentPage === 1}
+                            >
+                              Previous
+                            </Button>
+                            <span className="text-[10px] font-bold text-muted-foreground px-1">
+                              {currentPage} / {totalPages}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-[10px] font-bold px-2.5"
+                              onClick={() => setHistoryPage((p) => Math.min(totalPages, p + 1))}
+                              disabled={currentPage === totalPages}
+                            >
+                              Next
+                            </Button>
+                          </div>
+                        </div>
+                      </>
+                    )
+                  })()}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-end gap-3 pt-3 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleHistoryClose}
+                >
+                  Back to Product
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

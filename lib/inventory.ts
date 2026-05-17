@@ -37,6 +37,11 @@ type ProductWithRelations = Product & {
     type: string
     quantity: number
     status: string
+    notes?: string | null
+    user?: {
+      name: string | null
+      email: string
+    } | null
     createdAt: Date
   }>
   _count?: {
@@ -177,6 +182,8 @@ export function formatProduct(product: ProductWithRelations) {
       type: movement.type,
       quantity: movement.quantity,
       status: movement.status,
+      notes: movement.notes ?? null,
+      userName: movement.user?.name ?? movement.user?.email ?? "System",
       createdAt: movement.createdAt.toISOString(),
     })),
   }
@@ -231,9 +238,17 @@ export function productQueryInclude(includeMovements = false) {
     ...(includeMovements
       ? {
           stockMovements: {
-            take: 8,
+            take: 100,
             orderBy: {
               createdAt: "desc" as const,
+            },
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
             },
           },
         }
