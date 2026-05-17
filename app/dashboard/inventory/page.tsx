@@ -890,7 +890,7 @@ function InventoryPageContent() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-2xl border-none shadow-2xl">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">
               {formMode === "create" ? "Add New Product" : "Edit Product"}
@@ -1045,7 +1045,7 @@ function InventoryPageContent() {
       </Dialog>
 
       <Dialog open={!!detailsProductId} onOpenChange={(open) => !open && setDetailsProductId(null)}>
-        <DialogContent className="sm:max-w-2xl border-none shadow-2xl">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">Product Intelligence</DialogTitle>
             <DialogDescription className="text-muted-foreground">
@@ -1221,7 +1221,7 @@ function InventoryPageContent() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-md border-none shadow-2xl">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Stock Adjustment</DialogTitle>
             <DialogDescription className="text-muted-foreground">
@@ -1305,7 +1305,7 @@ function InventoryPageContent() {
       </Dialog>
 
       <Dialog open={importOpen} onOpenChange={setImportOpen}>
-        <DialogContent className="sm:max-w-md border-none shadow-2xl">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Bulk Import Products</DialogTitle>
             <DialogDescription>
