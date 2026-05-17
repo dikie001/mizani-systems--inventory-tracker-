@@ -50,32 +50,24 @@ export function CreateOrderDialog({
   const [loading, setLoading] = useState(false)
   const [customer, setCustomer] = useState("")
   const [search, setSearch] = useState("")
-  const [products, setProducts] = useState<Product[]>([])
-  const [searching, setSearching] = useState(false)
+  const [allProducts, setAllProducts] = useState<Product[]>([])
   const [items, setItems] = useState<OrderItem[]>([])
 
-  // Search products
+  // Fetch all products when open
   useEffect(() => {
-    if (search.length < 2) {
-      setProducts([])
-      return
-    }
-
-    const handler = setTimeout(async () => {
-      setSearching(true)
-      try {
-        const res = await fetch(`/api/products?search=${encodeURIComponent(search)}`)
-        const data = await res.json()
-        setProducts(data)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setSearching(false)
+    if (open) {
+      const fetchProducts = async () => {
+        try {
+          const res = await fetch("/api/products")
+          const data = await res.json()
+          setAllProducts(data)
+        } catch (error) {
+          console.error("Failed to fetch products:", error)
+        }
       }
-    }, 300)
-
-    return () => clearTimeout(handler)
-  }, [search])
+      fetchProducts()
+    }
+  }, [open])
 
   const addItem = (product: Product) => {
     const existing = items.find((i) => i.productId === product.id)
@@ -89,8 +81,13 @@ export function CreateOrderDialog({
       setItems([...items, { productId: product.id, name: product.name, quantity: 1, price: product.price }])
     }
     setSearch("")
-    setProducts([])
   }
+
+  const filteredProducts = allProducts.filter((p) => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)
+  })
 
   const removeItem = (id: string) => {
     setItems(items.filter((i) => i.productId !== id))
@@ -137,15 +134,17 @@ export function CreateOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Order</DialogTitle>
-          <DialogDescription>Add items and customer details to create a new order.</DialogDescription>
+          <DialogDescription>
+            Add items and customer details to create a new order.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-6 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="customer">Customer Name</Label>
+        <div className="space-y-6 pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="customer">Customer Name *</Label>
             <Input
               id="customer"
               placeholder="e.g. John Doe"
@@ -155,9 +154,9 @@ export function CreateOrderDialog({
             />
           </div>
 
-          <div className="grid gap-2">
-            <Label>Add Products</Label>
-            <div className="relative">
+          <div className="space-y-2">
+            <Label>Add Products *</Label>
+            <div className="relative mb-2">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search by name or SKU..."
@@ -165,42 +164,79 @@ export function CreateOrderDialog({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              {searching && <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />}
-              
-              {products.length > 0 && (
-                <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-[200px] overflow-y-auto">
-                  {products.map((p) => (
+            </div>
+
+            <div className="rounded-xl border bg-muted/10 p-2 space-y-1">
+              <div className="px-3 py-1.5 flex justify-between items-center border-b border-border/40 pb-1.5 mb-1 bg-muted/30 -mx-2 -mt-2 rounded-t-xl">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Product Catalog</span>
+                <span className="text-[9px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">{filteredProducts.length} items</span>
+              </div>
+              <div className="max-h-[140px] overflow-y-auto pr-1 space-y-0.5 divide-y divide-border/20">
+                {filteredProducts.map((p) => {
+                  const isOutOfStock = p.stock <= 0
+                  const isLowStock = p.stock <= 10 && p.stock > 0
+                  
+                  return (
                     <button
+                      type="button"
                       key={p.id}
-                      className="flex w-full items-center justify-between px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                      disabled={isOutOfStock}
                       onClick={() => addItem(p)}
+                      className={`flex w-full items-center justify-between py-1.5 px-2 rounded-lg transition-all text-xs text-left hover:bg-muted/50
+                        ${isOutOfStock ? "opacity-40 cursor-not-allowed" : ""}
+                      `}
                     >
-                      <div className="text-left">
-                        <p className="font-medium">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">SKU: {p.sku} | Stock: {p.stock}</p>
+                      <div className="space-y-0.5">
+                        <p className="font-semibold text-foreground text-xs">{p.name}</p>
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          <span>SKU: {p.sku}</span>
+                          <span>•</span>
+                          <span className={`font-medium ${
+                            isOutOfStock 
+                              ? "text-red-500" 
+                              : isLowStock 
+                                ? "text-amber-500 font-semibold" 
+                                : "text-emerald-500 font-semibold"
+                          }`}>
+                            {isOutOfStock 
+                              ? "Out of Stock" 
+                              : `${p.stock} in stock`
+                            }
+                          </span>
+                        </div>
                       </div>
-                      <p className="font-mono font-semibold">${p.price.toFixed(2)}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-mono font-bold text-foreground text-xs">${p.price.toFixed(2)}</p>
+                        <div className="h-5 w-5 rounded-md bg-primary/10 flex items-center justify-center text-primary transition-colors shrink-0">
+                          <Plus className="w-3 h-3" />
+                        </div>
+                      </div>
                     </button>
-                  ))}
-                </div>
-              )}
+                  )
+                })}
+                {filteredProducts.length === 0 && (
+                  <div className="py-6 text-center text-xs text-muted-foreground italic">
+                    No products found matching "{search}".
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="rounded-md border overflow-hidden">
+          <div className="rounded-xl border bg-card overflow-hidden">
             <Table>
-              <TableHeader className="bg-muted/50">
+              <TableHeader className="bg-muted/30">
                 <TableRow>
-                  <TableHead className="text-xs uppercase tracking-wider">Product</TableHead>
-                  <TableHead className="w-[100px] text-xs uppercase tracking-wider text-center">Qty</TableHead>
-                  <TableHead className="text-right text-xs uppercase tracking-wider">Total</TableHead>
+                  <TableHead className="text-xs font-medium">Product</TableHead>
+                  <TableHead className="w-[100px] text-xs font-medium text-center">Qty</TableHead>
+                  <TableHead className="text-right text-xs font-medium">Total</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-32 text-center text-muted-foreground italic">
+                    <TableCell colSpan={4} className="h-20 text-center text-xs text-muted-foreground italic">
                       No items added yet. Search for products above to start.
                     </TableCell>
                   </TableRow>
@@ -232,21 +268,28 @@ export function CreateOrderDialog({
                 )}
               </TableBody>
             </Table>
+            <div className="flex justify-between items-center py-2.5 px-4 border-t bg-muted/20">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total</span>
+              <span className="font-mono font-extrabold text-base text-primary">${total.toFixed(2)}</span>
+            </div>
           </div>
 
-          <div className="flex justify-between items-center py-4 px-2 border-t bg-muted/20 rounded-b-md">
-             <span className="font-semibold text-muted-foreground uppercase tracking-wider text-xs">Order Summary Total</span>
-             <span className="font-bold text-2xl font-mono tracking-tight text-primary">${total.toFixed(2)}</span>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit} disabled={loading || items.length === 0}>
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Order"
+              )}
+            </Button>
           </div>
         </div>
-
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={loading || items.length === 0} className="shadow-sm">
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShoppingCart className="mr-2 h-4 w-4" />}
-            Create Order
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

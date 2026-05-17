@@ -49,7 +49,7 @@ export async function PATCH(
 
   try {
     const body = await request.json()
-    const { status, payment } = body
+    const { status, payment, reason } = body
 
     const currentOrder = await prisma.order.findUnique({
       where: { id },
@@ -82,12 +82,15 @@ export async function PATCH(
 
         await tx.order.update({
           where: { id },
-          data: { status: "cancelled" }
+          data: { 
+            status: "cancelled",
+            cancellationReason: reason || null
+          }
         })
         
         await tx.auditLog.create({
           data: {
-            action: `Cancelled order ${id} and restored stock`,
+            action: `Cancelled order ${id} and restored stock. Reason: ${reason || "Not specified"}`,
             entity: "Order",
             type: "update",
             userId: session.user.id as string

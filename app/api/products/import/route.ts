@@ -9,9 +9,11 @@ import prisma from "@/lib/prisma"
 
 export async function POST(request: Request) {
   const session = await auth()
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session.user.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+
+  const workspaceId = session.user.workspaceId
 
   try {
     const body = await request.json()
@@ -25,15 +27,26 @@ export async function POST(request: Request) {
     await prisma.$transaction(async (tx) => {
       for (const item of items) {
         const category = await tx.category.upsert({
-          where: { name: item.category },
+          where: {
+            workspaceId_name: {
+              workspaceId,
+              name: item.category,
+            }
+          },
           update: {},
-          create: { name: item.category },
+          create: {
+            name: item.category,
+            workspaceId,
+          },
         })
 
-
-
         const existingProduct = await tx.product.findUnique({
-          where: { sku: item.sku },
+          where: {
+            workspaceId_sku: {
+              workspaceId,
+              sku: item.sku,
+            }
+          },
           include: productQueryInclude(),
         })
 
@@ -52,7 +65,6 @@ export async function POST(request: Request) {
               maxStock: item.maxStock,
               status: computeProductStatus(item.stock, item.minStock),
               categoryId: category.id,
-
             },
           })
 
@@ -61,6 +73,7 @@ export async function POST(request: Request) {
               data: {
                 productId: existingProduct.id,
                 userId: session.user.id,
+                workspaceId,
                 type: "Import Adjustment",
                 quantity: stockDelta,
                 status: "completed",
@@ -74,6 +87,7 @@ export async function POST(request: Request) {
               entity: item.name,
               type: "update",
               userId: session.user.id,
+              workspaceId,
             },
           })
 
@@ -92,7 +106,7 @@ export async function POST(request: Request) {
             maxStock: item.maxStock,
             status: computeProductStatus(item.stock, item.minStock),
             categoryId: category.id,
-
+            workspaceId,
           },
         })
 
@@ -101,6 +115,7 @@ export async function POST(request: Request) {
             data: {
               productId: createdProduct.id,
               userId: session.user.id,
+              workspaceId,
               type: "Imported Stock",
               quantity: item.stock,
               status: "completed",
@@ -114,6 +129,7 @@ export async function POST(request: Request) {
             entity: item.name,
             type: "create",
             userId: session.user.id,
+            workspaceId,
           },
         })
 

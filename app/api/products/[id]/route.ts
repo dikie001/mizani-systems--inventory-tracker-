@@ -64,7 +64,12 @@ export async function PUT(request: Request, context: RouteContext) {
       }
 
       const conflictingProduct = await tx.product.findUnique({
-        where: { sku: payload.sku },
+        where: {
+          workspaceId_sku: {
+            workspaceId: existingProduct.workspaceId,
+            sku: payload.sku,
+          }
+        },
         select: { id: true },
       })
 
@@ -73,9 +78,17 @@ export async function PUT(request: Request, context: RouteContext) {
       }
 
       const category = await tx.category.upsert({
-        where: { name: payload.category },
+        where: {
+          workspaceId_name: {
+            workspaceId: existingProduct.workspaceId,
+            name: payload.category,
+          }
+        },
         update: {},
-        create: { name: payload.category },
+        create: {
+          name: payload.category,
+          workspaceId: existingProduct.workspaceId,
+        },
       })
 
 
@@ -105,6 +118,7 @@ export async function PUT(request: Request, context: RouteContext) {
           data: {
             productId: id,
             userId: session.user.id,
+            workspaceId: existingProduct.workspaceId,
             type: stockDelta > 0 ? "Manual Restock" : "Manual Reduction",
             quantity: stockDelta,
             status: "completed",
@@ -118,6 +132,7 @@ export async function PUT(request: Request, context: RouteContext) {
           entity: payload.name,
           type: "update",
           userId: session.user.id,
+          workspaceId: existingProduct.workspaceId,
         },
       })
 
@@ -189,6 +204,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
           entity: product.name,
           type: "delete",
           userId: session.user.id,
+          workspaceId: product.workspaceId,
         },
       })
 
