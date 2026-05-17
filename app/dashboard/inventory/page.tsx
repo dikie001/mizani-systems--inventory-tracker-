@@ -895,11 +895,7 @@ function InventoryPageContent() {
             <DialogTitle className="text-2xl font-bold">
               {formMode === "create" ? "Add New Product" : "Edit Product"}
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              {formMode === "create"
-                ? "Configure your product catalog by adding a new item with pricing and stock details."
-                : "Update product specifications, pricing, and inventory thresholds."}
-            </DialogDescription>
+      
           </DialogHeader>
 
           <form className="space-y-4 pt-2" onSubmit={handleProductSubmit}>
@@ -947,9 +943,9 @@ function InventoryPageContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="product-price" className="text-xs">Price *</Label>
+                <Label htmlFor="product-price">Unit Price (USD) *</Label>
                 <div className="relative">
                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                   <Input
@@ -967,7 +963,7 @@ function InventoryPageContent() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="product-stock" className="text-xs">Stock *</Label>
+                <Label htmlFor="product-stock">Current Stock *</Label>
                 <Input
                   id="product-stock"
                   name="stock"
@@ -979,8 +975,11 @@ function InventoryPageContent() {
                   required
                 />
               </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="product-minStock" className="text-xs">Min *</Label>
+                <Label htmlFor="product-minStock">Min Threshold *</Label>
                 <Input
                   id="product-minStock"
                   name="minStock"
@@ -993,7 +992,7 @@ function InventoryPageContent() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="product-maxStock" className="text-xs">Max *</Label>
+                <Label htmlFor="product-maxStock">Max Capacity *</Label>
                 <Input
                   id="product-maxStock"
                   name="maxStock"
