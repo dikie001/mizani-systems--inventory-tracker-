@@ -166,8 +166,12 @@ export function CreateOrderDialog({
               />
             </div>
 
-            <div className="rounded-xl border bg-muted/5 p-2.5">
-              <div className="max-h-[160px] overflow-y-auto pr-1 space-y-1 divide-y divide-border/40">
+            <div className="rounded-xl border bg-muted/10 p-2 space-y-1">
+              <div className="px-3 py-1.5 flex justify-between items-center border-b border-border/40 pb-1.5 mb-1 bg-muted/30 -mx-2 -mt-2 rounded-t-xl">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Product Catalog</span>
+                <span className="text-[9px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">{filteredProducts.length} items</span>
+              </div>
+              <div className="max-h-[140px] overflow-y-auto pr-1 space-y-0.5 divide-y divide-border/20">
                 {filteredProducts.map((p) => {
                   const isOutOfStock = p.stock <= 0
                   const isLowStock = p.stock <= 10 && p.stock > 0
@@ -178,40 +182,40 @@ export function CreateOrderDialog({
                       key={p.id}
                       disabled={isOutOfStock}
                       onClick={() => addItem(p)}
-                      className={`flex w-full items-center justify-between p-2 rounded-lg transition-all text-sm text-left hover:bg-muted/50
+                      className={`flex w-full items-center justify-between py-1.5 px-2 rounded-lg transition-all text-xs text-left hover:bg-muted/50
                         ${isOutOfStock ? "opacity-40 cursor-not-allowed" : ""}
                       `}
                     >
                       <div className="space-y-0.5">
-                        <p className="font-semibold text-foreground">{p.name}</p>
-                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <p className="font-semibold text-foreground text-xs">{p.name}</p>
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                           <span>SKU: {p.sku}</span>
                           <span>•</span>
                           <span className={`font-medium ${
                             isOutOfStock 
                               ? "text-red-500" 
                               : isLowStock 
-                                ? "text-amber-500" 
-                                : "text-emerald-500"
+                                ? "text-amber-500 font-semibold" 
+                                : "text-emerald-500 font-semibold"
                           }`}>
                             {isOutOfStock 
                               ? "Out of Stock" 
-                              : `${p.stock} units available`
+                              : `${p.stock} in stock`
                             }
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <p className="font-mono font-bold text-foreground">${p.price.toFixed(2)}</p>
-                        <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center text-primary transition-colors shrink-0">
-                          <Plus className="w-3.5 h-3.5" />
+                      <div className="flex items-center gap-2">
+                        <p className="font-mono font-bold text-foreground text-xs">${p.price.toFixed(2)}</p>
+                        <div className="h-5 w-5 rounded-md bg-primary/10 flex items-center justify-center text-primary transition-colors shrink-0">
+                          <Plus className="w-3 h-3" />
                         </div>
                       </div>
                     </button>
                   )
                 })}
                 {filteredProducts.length === 0 && (
-                  <div className="py-8 text-center text-xs text-muted-foreground italic">
+                  <div className="py-6 text-center text-xs text-muted-foreground italic">
                     No products found matching "{search}".
                   </div>
                 )}
