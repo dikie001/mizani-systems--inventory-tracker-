@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { AlertCircle, ArrowLeft, CheckCircle2, LoaderCircle } from "lucide-react"
@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export default function LinkAccountPage() {
+function LinkAccountContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const email = searchParams.get("email")
@@ -120,9 +120,9 @@ export default function LinkAccountPage() {
             {!isSuccess ? (
               <>
                 <Button 
-                  className="h-11 w-full rounded-xl font-semibold" 
-                  onClick={handleConfirmLink}
-                  disabled={isLoading}
+                   className="h-11 w-full rounded-xl font-semibold" 
+                   onClick={handleConfirmLink}
+                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -148,5 +148,17 @@ export default function LinkAccountPage() {
         </Card>
       </div>
     </main>
+  )
+}
+
+export default function LinkAccountPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-svh items-center justify-center bg-background">
+        <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <LinkAccountContent />
+    </Suspense>
   )
 }

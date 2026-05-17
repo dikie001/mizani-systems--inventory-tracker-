@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
-import { Plus, Search, Trash2, Loader2, ShoppingCart } from "lucide-react"
+import { Plus, Search, Trash2, Loader2, ShoppingCart, Package } from "lucide-react"
 import { toast } from "sonner"
 import {
   Dialog,

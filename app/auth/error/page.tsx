@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react"
+import { Suspense } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -14,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
 
@@ -77,5 +78,17 @@ export default function AuthErrorPage() {
         </Card>
       </div>
     </main>
+  )
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-svh items-center justify-center bg-background">
+        <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <AuthErrorContent />
+    </Suspense>
   )
 }

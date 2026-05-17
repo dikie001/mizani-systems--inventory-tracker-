@@ -1593,7 +1593,7 @@ function InventoryPageContent() {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => handleDetailsImageChange(e, selectedProduct.id)}
+                      onChange={(e) => selectedProduct && handleDetailsImageChange(e, selectedProduct.id)}
                       disabled={uploadStage !== "idle"}
                       className="hidden"
                     />
