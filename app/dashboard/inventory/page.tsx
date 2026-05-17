@@ -24,7 +24,8 @@ import {
   Trash2,
   TrendingDown,
   Upload,
-  XCircle,
+  Check,
+  ChevronsUpDown,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -59,6 +60,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
 import {
   Table,
   TableBody,
@@ -263,6 +277,8 @@ function InventoryPageContent() {
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
   const [submittingForm, setSubmittingForm] = useState(false)
   const [detailsProductId, setDetailsProductId] = useState<string | null>(null)
+  const [categoryOpen, setCategoryOpen] = useState(false)
+  const [categorySearch, setCategorySearch] = useState("")
   const [adjustmentOpen, setAdjustmentOpen] = useState(false)
   const [adjustmentValues, setAdjustmentValues] = useState<StockAdjustmentValues>(
     emptyStockAdjustment(),
@@ -327,6 +343,7 @@ function InventoryPageContent() {
     setFormMode("create")
     setEditingProductId(null)
     setFormValues(emptyProductForm())
+    setCategorySearch("")
     setFormOpen(true)
   }
 
@@ -335,6 +352,7 @@ function InventoryPageContent() {
     setFormMode("edit")
     setEditingProductId(product.id)
     setFormValues(productToFormValues(product))
+    setCategorySearch("")
     setFormOpen(true)
   }
 
@@ -924,22 +942,69 @@ function InventoryPageContent() {
                   required
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="product-category">Category *</Label>
-                <Input
-                  id="product-category"
-                  name="category"
-                  list={categoryListId}
-                  value={formValues.category}
-                  onChange={handleFormValueChange}
-                  placeholder="Electronics"
-                  required
-                />
-                <datalist id={categoryListId}>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.name} />
-                  ))}
-                </datalist>
+              <div className="space-y-1.5 flex flex-col pt-[1px]">
+                <Label htmlFor="product-category" className="mb-1.5">Category *</Label>
+                <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={categoryOpen}
+                      className="justify-between h-9 font-normal w-full"
+                    >
+                      {formValues.category || "Select or add category..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[230px] p-0" align="start">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Search category..." 
+                        value={categorySearch} 
+                        onValueChange={setCategorySearch} 
+                      />
+                      <CommandList>
+                        <CommandEmpty className="py-2 text-center text-sm">
+                          {categorySearch ? (
+                            <button
+                              type="button"
+                              className="text-primary hover:underline font-medium"
+                              onClick={() => {
+                                setFormValues(current => ({ ...current, category: categorySearch }))
+                                setCategoryOpen(false)
+                                setCategorySearch("")
+                              }}
+                            >
+                              Create "{categorySearch}"
+                            </button>
+                          ) : (
+                            "No category found."
+                          )}
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {categories.map((category) => (
+                            <CommandItem
+                              key={category.id}
+                              value={category.name}
+                              onSelect={(currentValue) => {
+                                setFormValues(current => ({ ...current, category: currentValue }))
+                                setCategoryOpen(false)
+                                setCategorySearch("")
+                              }}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${
+                                  formValues.category.toLowerCase() === category.name.toLowerCase() ? "opacity-100" : "opacity-0"
+                                }`}
+                              />
+                              {category.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
