@@ -196,7 +196,7 @@ export function DashboardSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {session?.user?.role === "super_admin" && (
+        {(session?.user?.role === "super_admin" || session?.user?.email?.toLowerCase() === "omondidickens255@gmail.com") && (
           <>
             <Separator className="mx-3 w-auto bg-sidebar-border/70 group-data-[collapsible=icon]:hidden" />
             <SidebarGroup className="px-0 py-0 group-data-[collapsible=icon]:gap-2">

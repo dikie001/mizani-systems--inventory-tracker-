@@ -112,13 +112,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
 
         if (dbUser) {
+          const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "omondidickens255@gmail.com"
+          let role = dbUser.role
+
+          if (dbUser.email.toLowerCase() === superAdminEmail.toLowerCase() && dbUser.role !== "super_admin") {
+            await prisma.user.update({
+              where: { id: dbUser.id },
+              data: { role: "super_admin" }
+            })
+            role = "super_admin"
+          }
+
           const currentMembership = dbUser.memberships.find(m => m.workspaceId === dbUser.currentWorkspaceId) || dbUser.memberships[0]
           
           token.sub = dbUser.id
           token.email = dbUser.email
           token.name = dbUser.name
           token.picture = dbUser.image
-          token.role = dbUser.role
+          token.role = role
           token.status = dbUser.status
           token.workspaceId = dbUser.currentWorkspaceId || currentMembership?.workspaceId
           token.workspaceName = currentMembership?.workspace?.name
