@@ -223,6 +223,7 @@ model StockMovement {
   type      String   // Restock, Sale, Transfer
   quantity  Int      // Positive for restock, negative for sale/transfer
   status    String   @default("completed") // completed, pending, processing
+  notes     String?  // Additional details or notes about this movement
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
