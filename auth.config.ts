@@ -24,8 +24,8 @@ export const authConfig: NextAuthConfig = {
         if (!isLoggedIn) {
           return false // Force redirect to /auth
         }
-        const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "omondidickens255@gmail.com"
-        const isSuperAdmin = auth.user.email?.toLowerCase() === superAdminEmail.toLowerCase()
+        const superAdminEmail = process.env.SUPER_ADMIN_EMAIL
+        const isSuperAdmin = !!(superAdminEmail && auth.user.email?.toLowerCase() === superAdminEmail.toLowerCase())
         if (!isSuperAdmin) {
           return Response.redirect(new URL("/dashboard", nextUrl))
         }
@@ -40,8 +40,8 @@ export const authConfig: NextAuthConfig = {
       }
       
       if (isLoggedIn && (nextUrl.pathname === "/auth" || nextUrl.pathname === "/")) {
-        const superAdminEmail = process.env.SUPER_ADMIN_EMAIL ;
-        const isSuperAdmin = auth.user.email?.toLowerCase() === superAdminEmail.toLowerCase()
+        const superAdminEmail = process.env.SUPER_ADMIN_EMAIL
+        const isSuperAdmin = !!(superAdminEmail && auth.user.email?.toLowerCase() === superAdminEmail.toLowerCase())
         if (isSuperAdmin) {
           return Response.redirect(new URL("/super-admin", nextUrl))
         }

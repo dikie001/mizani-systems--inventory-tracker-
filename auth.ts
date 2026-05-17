@@ -11,8 +11,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (!user?.email) return
 
       try {
-        const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "omondidickens255@gmail.com"
-        const isSuperAdmin = user.email.toLowerCase() === superAdminEmail.toLowerCase()
+        const superAdminEmail = process.env.SUPER_ADMIN_EMAIL
+        const isSuperAdmin = !!(superAdminEmail && user.email.toLowerCase() === superAdminEmail.toLowerCase())
 
         // 1. Increment loginCount and upgrade role if super admin
         await prisma.user.update({

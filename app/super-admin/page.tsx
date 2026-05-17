@@ -51,16 +51,16 @@ export default function SuperAdminPage() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-        <div className="h-14 w-14 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 shadow-lg shadow-red-500/5">
-          <Shield className="h-6 w-6 text-red-400" />
+        <div className="h-14 w-14 rounded-2xl bg-destructive/10 flex items-center justify-center border border-destructive/20 shadow-lg shadow-destructive/5">
+          <Shield className="h-6 w-6 text-destructive" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-slate-100">Failed to Load Control Panel</h2>
-          <p className="text-sm text-slate-400 mt-1 max-w-sm">
+          <h2 className="text-xl font-bold text-foreground">Failed to Load Control Panel</h2>
+          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
             There was an error communicating with the database or server. Ensure your database is running.
           </p>
         </div>
-        <Button variant="outline" onClick={() => mutate()} className="border-slate-800 bg-slate-900/50 text-slate-300">
+        <Button variant="outline" onClick={() => mutate()} className="border-border bg-background text-foreground">
           Retry Connection
         </Button>
       </div>
@@ -70,15 +70,15 @@ export default function SuperAdminPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-40 space-y-4">
-        <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
-        <p className="text-sm font-semibold text-slate-400 tracking-wide uppercase">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-sm font-semibold text-muted-foreground tracking-wide uppercase">
           Initializing Administrative Terminal...
         </p>
       </div>
     )
   }
 
-  const { stats, users = [], workspaces = [], activities = [] } = data || {}
+  const { stats, users = [], workspaces = [], activities = [], superAdminEmail = "" } = data || {}
 
   // Filter audit logs based on search query and selected log type
   const filteredLogs = activities.filter((log: any) => {
@@ -107,44 +107,44 @@ export default function SuperAdminPage() {
 
   const getLogTypeColor = (type: string) => {
     switch (type) {
-      case "create": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-      case "update": return "bg-amber-500/10 text-amber-400 border-amber-500/20"
-      case "delete": return "bg-rose-500/10 text-rose-400 border-rose-500/20"
-      case "auth": return "bg-purple-500/10 text-purple-400 border-purple-500/20"
-      default: return "bg-blue-500/10 text-blue-400 border-blue-500/20"
+      case "create": return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+      case "update": return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+      case "delete": return "bg-destructive/10 text-destructive border-destructive/20"
+      case "auth": return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+      default: return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
     }
   }
 
   return (
     <div className="space-y-8 flex-1 flex flex-col">
       {/* Visual Dynamic Ribbon */}
-      <div className="relative rounded-2xl overflow-hidden bg-slate-900/30 border border-slate-800/80 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl backdrop-blur-md">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-transparent pointer-events-none" />
+      <div className="relative rounded-2xl overflow-hidden bg-card border border-border p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl backdrop-blur-md">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-transparent pointer-events-none" />
         <div className="space-y-1 relative z-10">
-          <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">
             Operations Dashboard
           </h2>
-          <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
+          <p className="text-xs text-muted-foreground max-w-xl leading-relaxed">
             Real-time multi-tenant health, workspace isolation metrics, and global audit trace analysis.
             System updates occur dynamically every 10 seconds.
           </p>
         </div>
         
         {/* Connection status card */}
-        <div className="flex items-center gap-4 bg-slate-950/60 px-4 py-2.5 rounded-xl border border-slate-800/80 relative z-10 shadow-inner">
+        <div className="flex items-center gap-4 bg-background border border-border px-4 py-2.5 rounded-xl relative z-10 shadow-inner">
           <div className="relative flex h-3.5 w-3.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-950"></span>
+            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-background"></span>
           </div>
           <div className="text-left">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">System Link</p>
-            <p className="text-xs font-bold text-slate-200">Active & Syncing</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">System Link</p>
+            <p className="text-xs font-bold text-foreground">Active & Syncing</p>
           </div>
         </div>
       </div>
 
       {/* Modern Tab Bar Selector */}
-      <div className="flex border-b border-slate-900 overflow-x-auto scrollbar-none gap-2 pb-[1px]">
+      <div className="flex border-b border-border overflow-x-auto scrollbar-none gap-2 pb-[1px]">
         {[
           { id: "overview", label: "Overview", icon: Database },
           { id: "users", label: "Users & Accounts", icon: Users },
@@ -157,11 +157,11 @@ export default function SuperAdminPage() {
             onClick={() => handleTabChange(tab.id as any)}
             className={`flex items-center gap-2 px-5 py-3 border-b-2 font-bold text-xs tracking-wide uppercase transition duration-300 whitespace-nowrap cursor-pointer ${
               activeTab === tab.id
-                ? "border-indigo-500 text-indigo-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? "text-indigo-400" : "text-slate-500"}`} />
+            <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? "text-primary" : "text-muted-foreground"}`} />
             <span>{tab.label}</span>
           </button>
         ))}
@@ -187,7 +187,6 @@ export default function SuperAdminPage() {
                     value: stats?.totalUsers,
                     icon: Users,
                     color: "from-blue-500 to-indigo-500",
-                    glow: "shadow-blue-500/10",
                     badge: `${users.filter((u: any) => u.status === "active").length} Active`
                   },
                   {
@@ -195,7 +194,6 @@ export default function SuperAdminPage() {
                     value: stats?.totalWorkspaces,
                     icon: Layers,
                     color: "from-purple-500 to-indigo-500",
-                    glow: "shadow-purple-500/10",
                     badge: "Multi-Tenant"
                   },
                   {
@@ -203,7 +201,6 @@ export default function SuperAdminPage() {
                     value: stats?.totalLogins,
                     icon: Key,
                     color: "from-emerald-500 to-teal-500",
-                    glow: "shadow-emerald-500/10",
                     badge: "Sign-in Events"
                   },
                   {
@@ -211,23 +208,22 @@ export default function SuperAdminPage() {
                     value: stats?.totalLogs,
                     icon: Activity,
                     color: "from-amber-500 to-orange-500",
-                    glow: "shadow-amber-500/10",
                     badge: "Audit Trails"
                   },
                 ].map((kpi) => (
-                  <Card key={kpi.title} className="bg-slate-900/30 border-slate-800/80 shadow-lg relative overflow-hidden group hover:border-indigo-500/30 transition duration-300">
-                    <div className="absolute top-0 right-0 h-24 w-24 bg-gradient-to-bl from-indigo-500/5 to-transparent rounded-full group-hover:scale-125 transition duration-500" />
+                  <Card key={kpi.title} className="shadow-lg relative overflow-hidden group hover:border-primary/30 transition duration-300">
+                    <div className="absolute top-0 right-0 h-24 w-24 bg-gradient-to-bl from-primary/5 to-transparent rounded-full group-hover:scale-125 transition duration-500" />
                     <CardContent className="p-5 flex flex-col justify-between h-full">
                       <div className="flex items-center justify-between">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{kpi.title}</p>
-                        <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${kpi.color} flex items-center justify-center text-white shadow-md shadow-indigo-500/10`}>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{kpi.title}</p>
+                        <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${kpi.color} flex items-center justify-center text-white shadow-md shadow-primary/10`}>
                           <kpi.icon className="h-4 w-4" />
                         </div>
                       </div>
                       
                       <div className="mt-4 flex items-baseline justify-between">
-                        <h3 className="text-3xl font-extrabold text-white tracking-tight font-mono">{kpi.value}</h3>
-                        <Badge variant="outline" className="text-[9px] bg-slate-950/60 border-slate-800/80 font-bold uppercase tracking-wider text-slate-300">
+                        <h3 className="text-3xl font-extrabold text-foreground tracking-tight font-mono">{kpi.value}</h3>
+                        <Badge variant="outline" className="text-[9px] bg-background border-border font-bold uppercase tracking-wider text-foreground">
                           {kpi.badge}
                         </Badge>
                       </div>
@@ -239,50 +235,50 @@ export default function SuperAdminPage() {
               {/* Overview Details Section */}
               <div className="grid gap-6 lg:grid-cols-3">
                 {/* Real-time System Audit Stream */}
-                <Card className="lg:col-span-2 bg-slate-900/30 border-slate-800/80 shadow-xl backdrop-blur-md flex flex-col">
+                <Card className="lg:col-span-2 shadow-xl flex flex-col">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle className="text-base font-bold text-slate-100 flex items-center gap-2">
-                        <Activity className="h-4.5 w-4.5 text-indigo-400" />
+                      <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                        <Activity className="h-4.5 w-4.5 text-primary" />
                         Live Operations Stream
                       </CardTitle>
-                      <CardDescription className="text-xs text-slate-400">
+                      <CardDescription className="text-xs text-muted-foreground">
                         The latest user mutations, switchings, and sign-ins across all tenants.
                       </CardDescription>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => handleTabChange("audit")} className="border-slate-800 bg-slate-900/60 text-xs font-semibold hover:bg-slate-900">
+                    <Button variant="outline" size="sm" onClick={() => handleTabChange("audit")} className="border-border bg-background/50 text-xs font-semibold hover:bg-muted">
                       View Audit Log
                     </Button>
                   </CardHeader>
                   <CardContent className="flex-1 overflow-auto max-h-[360px] pr-2 scrollbar-thin">
                     {activities.length === 0 ? (
-                      <div className="py-12 text-center text-xs text-slate-500">
+                      <div className="py-12 text-center text-xs text-muted-foreground">
                         No activity records found.
                       </div>
                     ) : (
                       <div className="space-y-4">
                         {activities.slice(0, 7).map((log: any) => (
-                          <div key={log.id} className="flex items-start gap-3.5 p-3 rounded-xl bg-slate-950/40 border border-slate-900/80 hover:border-slate-800/80 transition duration-200">
+                          <div key={log.id} className="flex items-start gap-3.5 p-3 rounded-xl bg-card border border-border hover:bg-muted/30 transition duration-200">
                             {/* Type indicator bubble */}
                             <Badge variant="outline" className={`px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider ${getLogTypeColor(log.type)}`}>
                               {log.type}
                             </Badge>
 
                             <div className="flex-1 space-y-1 text-left min-w-0">
-                              <p className="text-xs font-bold text-slate-200 truncate">{log.action}</p>
+                              <p className="text-xs font-bold text-foreground truncate">{log.action}</p>
                               
-                              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-semibold text-slate-400">
-                                <span className="text-indigo-400">{log.user.name || log.user.email}</span>
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-semibold text-muted-foreground">
+                                <span className="text-primary">{log.user.name || log.user.email}</span>
                                 {log.workspaceName && (
                                   <>
                                     <span>•</span>
-                                    <span className="text-slate-300">Workspace: {log.workspaceName}</span>
+                                    <span className="text-foreground">Workspace: {log.workspaceName}</span>
                                   </>
                                 )}
                               </div>
                             </div>
 
-                            <div className="text-right flex flex-col justify-between h-full text-[10px] font-mono text-slate-500">
+                            <div className="text-right flex flex-col justify-between h-full text-[10px] font-mono text-muted-foreground">
                               <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                               <span className="text-[9px]">{log.ip}</span>
                             </div>
@@ -294,58 +290,58 @@ export default function SuperAdminPage() {
                 </Card>
 
                 {/* System Diagnostics & Parameters */}
-                <Card className="bg-slate-900/30 border-slate-800/80 shadow-xl backdrop-blur-md flex flex-col">
+                <Card className="shadow-xl flex flex-col">
                   <CardHeader>
-                    <CardTitle className="text-base font-bold text-slate-100 flex items-center gap-2">
-                      <Monitor className="h-4.5 w-4.5 text-indigo-400" />
+                    <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                      <Monitor className="h-4.5 w-4.5 text-primary" />
                       Operations Diagnostics
                     </CardTitle>
-                    <CardDescription className="text-xs text-slate-400">
+                    <CardDescription className="text-xs text-muted-foreground">
                       Administrative specifications, variables, and health logs.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 flex-1">
-                    <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-900 space-y-3.5">
+                    <div className="p-4 rounded-xl bg-muted/30 border border-border space-y-3.5">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 font-semibold">Node Environment</span>
-                        <Badge variant="outline" className="text-[10px] bg-indigo-500/10 text-indigo-400 border-indigo-500/20 font-mono font-bold">production</Badge>
+                        <span className="text-muted-foreground font-semibold">Node Environment</span>
+                        <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20 font-mono font-bold">production</Badge>
                       </div>
                       <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 font-semibold">OAuth Providers</span>
+                        <span className="text-muted-foreground font-semibold">OAuth Providers</span>
                         <div className="flex gap-1.5">
-                          <Badge variant="outline" className="text-[9px] bg-slate-900 border-slate-800 text-slate-300 font-bold uppercase">Google OAuth</Badge>
+                          <Badge variant="outline" className="text-[9px] bg-muted border-border text-foreground font-bold uppercase">Google OAuth</Badge>
                         </div>
                       </div>
                       <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 font-semibold">DB Client Schema</span>
-                        <span className="font-mono text-indigo-400 font-bold text-[10px]">Prisma (PostgreSQL)</span>
+                        <span className="text-muted-foreground font-semibold">DB Client Schema</span>
+                        <span className="font-mono text-primary font-bold text-[10px]">Prisma (PostgreSQL)</span>
                       </div>
                       <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 font-semibold">Super Admin Domain</span>
-                        <span className="text-slate-300 font-bold font-mono text-[10px]">omondidickens255@gmail.com</span>
+                        <span className="text-muted-foreground font-semibold">Super Admin Domain</span>
+                        <span className="text-foreground font-bold font-mono text-[10px]">{superAdminEmail || "Not Configured"}</span>
                       </div>
                     </div>
 
                     {/* Quick performance indicators */}
                     <div className="space-y-3 mt-4 text-left">
                       <div className="space-y-1">
-                        <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase">
+                        <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase">
                           <span>User Densities (Active / Total)</span>
-                          <span className="font-mono text-slate-200">
+                          <span className="font-mono text-foreground">
                             {Math.round((users.filter((u: any) => u.status === "active").length / (users.length || 1)) * 100)}%
                           </span>
                         </div>
-                        <Progress value={(users.filter((u: any) => u.status === "active").length / (users.length || 1)) * 100} className="h-1.5 bg-slate-950" />
+                        <Progress value={(users.filter((u: any) => u.status === "active").length / (users.length || 1)) * 100} className="h-1.5" />
                       </div>
 
                       <div className="space-y-1">
-                        <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase">
+                        <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase">
                           <span>Workspace Load Densities</span>
-                          <span className="font-mono text-slate-200">
+                          <span className="font-mono text-foreground">
                             {Math.round((workspaces.filter((w: any) => w.productCount > 0).length / (workspaces.length || 1)) * 100)}%
                           </span>
                         </div>
-                        <Progress value={(workspaces.filter((w: any) => w.productCount > 0).length / (workspaces.length || 1)) * 100} className="h-1.5 bg-slate-950" />
+                        <Progress value={(workspaces.filter((w: any) => w.productCount > 0).length / (workspaces.length || 1)) * 100} className="h-1.5" />
                       </div>
                     </div>
                   </CardContent>
@@ -364,12 +360,12 @@ export default function SuperAdminPage() {
               className="space-y-4"
             >
               {/* Users statistics bar */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-slate-900/30 border border-slate-800/80 gap-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-card border border-border gap-4">
                 <div className="text-left">
-                  <h3 className="text-base font-bold text-slate-200">Registered Accounts</h3>
-                  <p className="text-xs text-slate-400">Manage account properties, login cycles, and tenant workspace allocations.</p>
+                  <h3 className="text-base font-bold text-foreground">Registered Accounts</h3>
+                  <p className="text-xs text-muted-foreground">Manage account properties, login cycles, and tenant workspace allocations.</p>
                 </div>
-                <Badge variant="outline" className="px-3 py-1 bg-slate-950 border-slate-800 text-slate-300 font-bold font-mono">
+                <Badge variant="outline" className="px-3 py-1 bg-background border-border text-foreground font-bold font-mono">
                   Total Users: {users.length}
                 </Badge>
               </div>
@@ -379,7 +375,7 @@ export default function SuperAdminPage() {
                 {users.map((user: any) => (
                   <Card
                     key={user.id}
-                    className="bg-slate-900/30 border-slate-800/80 hover:border-indigo-500/30 transition duration-300 shadow-lg text-left"
+                    className="bg-card border-border hover:border-primary/30 transition duration-300 shadow-lg text-left"
                   >
                     <CardContent className="p-5 space-y-4">
                       {/* User Header Block */}
@@ -388,25 +384,25 @@ export default function SuperAdminPage() {
                           <img
                             src={user.image}
                             alt={user.name}
-                            className="h-11 w-11 rounded-full ring-2 ring-indigo-500/20 object-cover"
+                            className="h-11 w-11 rounded-full ring-2 ring-primary/20 object-cover"
                           />
                         ) : (
-                          <div className="h-11 w-11 rounded-full bg-indigo-500/10 text-indigo-400 font-bold flex items-center justify-center ring-2 ring-indigo-500/20 text-sm">
+                          <div className="h-11 w-11 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center ring-2 ring-primary/20 text-sm">
                             {user.name.split(" ").map((n: string) => n[0]).join("")}
                           </div>
                         )}
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <h4 className="font-bold text-slate-100 truncate text-sm">{user.name}</h4>
+                            <h4 className="font-bold text-foreground truncate text-sm">{user.name}</h4>
                             
                             {user.role === "super_admin" && (
-                              <Badge variant="outline" className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border-red-500/20">
+                              <Badge variant="outline" className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider bg-destructive/10 text-destructive border-destructive/20">
                                 Super Admin
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xs text-slate-400 truncate font-mono">{user.email}</p>
+                          <p className="text-xs text-muted-foreground truncate font-mono">{user.email}</p>
                         </div>
 
                         {/* Interactive Expand Workspace Button */}
@@ -415,8 +411,8 @@ export default function SuperAdminPage() {
                             variant="outline"
                             className={`px-2 py-0 text-[9px] font-bold uppercase tracking-wider ${
                               user.status === "active"
-                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                : "bg-slate-800 text-slate-400 border-slate-700"
+                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                : "bg-muted text-muted-foreground border-border"
                             }`}
                           >
                             {user.status}
@@ -425,18 +421,18 @@ export default function SuperAdminPage() {
                       </div>
 
                       {/* Middle Details Grid */}
-                      <div className="grid grid-cols-3 gap-2.5 p-3 rounded-lg bg-slate-950/60 border border-slate-900 text-xs">
+                      <div className="grid grid-cols-3 gap-2.5 p-3 rounded-lg bg-muted/50 border border-border text-xs">
                         <div className="text-left space-y-0.5">
-                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Logins</p>
-                          <span className="font-bold text-slate-200 font-mono text-sm">{user.loginCount}</span>
+                          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Logins</p>
+                          <span className="font-bold text-foreground font-mono text-sm">{user.loginCount}</span>
                         </div>
                         <div className="text-left space-y-0.5">
-                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Workspaces</p>
-                          <span className="font-bold text-indigo-400 font-mono text-sm">{user.workspaces.length}</span>
+                          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Workspaces</p>
+                          <span className="font-bold text-primary font-mono text-sm">{user.workspaces.length}</span>
                         </div>
                         <div className="text-left space-y-0.5">
-                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Joined</p>
-                          <span className="font-bold text-slate-300 font-mono text-[10px] truncate block">{user.createdAt}</span>
+                          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Joined</p>
+                          <span className="font-bold text-muted-foreground font-mono text-[10px] truncate block">{user.createdAt}</span>
                         </div>
                       </div>
 
@@ -444,10 +440,10 @@ export default function SuperAdminPage() {
                       <div className="space-y-2">
                         <button
                           onClick={() => setExpandedUser(expandedUser === user.id ? null : user.id)}
-                          className="w-full flex items-center justify-between text-[11px] font-bold text-slate-400 hover:text-slate-200 transition duration-200 cursor-pointer"
+                          className="w-full flex items-center justify-between text-[11px] font-bold text-muted-foreground hover:text-foreground transition duration-200 cursor-pointer"
                         >
                           <span>{expandedUser === user.id ? "Hide workspaces" : "Show workspaces"} ({user.workspaces.length})</span>
-                          <ChevronRight className={`h-3.5 w-3.5 transition duration-300 ${expandedUser === user.id ? "rotate-90 text-indigo-400" : ""}`} />
+                          <ChevronRight className={`h-3.5 w-3.5 transition duration-300 ${expandedUser === user.id ? "rotate-90 text-primary" : ""}`} />
                         </button>
 
                         <AnimatePresence>
@@ -456,18 +452,18 @@ export default function SuperAdminPage() {
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="overflow-hidden space-y-1.5 pt-1.5 border-t border-slate-900/60"
+                              className="overflow-hidden space-y-1.5 pt-1.5 border-t border-border/60"
                             >
                               {user.workspaces.length === 0 ? (
-                                <p className="text-[10px] text-slate-500 italic">No workspaces associated with this user yet.</p>
+                                <p className="text-[10px] text-muted-foreground italic">No workspaces associated with this user yet.</p>
                               ) : (
                                 user.workspaces.map((ws: any) => (
-                                  <div key={ws.id} className="flex justify-between items-center p-2 rounded bg-slate-950/30 border border-slate-900 text-xs">
-                                    <span className="font-semibold text-slate-300">{ws.name}</span>
+                                  <div key={ws.id} className="flex justify-between items-center p-2 rounded bg-background border border-border text-xs">
+                                    <span className="font-semibold text-foreground">{ws.name}</span>
                                     <Badge variant="outline" className={`px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider ${
                                       ws.role === "OWNER" 
-                                        ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" 
-                                        : "bg-slate-900 border-slate-800 text-slate-400"
+                                        ? "bg-primary/10 text-primary border-primary/20" 
+                                        : "bg-muted border-border text-muted-foreground"
                                     }`}>
                                       {ws.role}
                                     </Badge>
@@ -495,12 +491,12 @@ export default function SuperAdminPage() {
               className="space-y-4"
             >
               {/* Workspaces statistics header */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-slate-900/30 border border-slate-800/80 gap-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-card border border-border gap-4">
                 <div className="text-left">
-                  <h3 className="text-base font-bold text-slate-200">Workspaces Portfolio</h3>
-                  <p className="text-xs text-slate-400">Analyze multi-tenant operations, client business categories, and storage levels.</p>
+                  <h3 className="text-base font-bold text-foreground">Workspaces Portfolio</h3>
+                  <p className="text-xs text-muted-foreground">Analyze multi-tenant operations, client business categories, and storage levels.</p>
                 </div>
-                <Badge variant="outline" className="px-3 py-1 bg-slate-950 border-slate-800 text-slate-300 font-bold font-mono">
+                <Badge variant="outline" className="px-3 py-1 bg-background border-border text-foreground font-bold font-mono">
                   Total Workspaces: {workspaces.length}
                 </Badge>
               </div>
@@ -510,17 +506,17 @@ export default function SuperAdminPage() {
                 {workspaces.map((ws: any) => (
                   <Card
                     key={ws.id}
-                    className="bg-slate-900/30 border-slate-800/80 hover:border-indigo-500/30 transition duration-300 shadow-xl flex flex-col text-left"
+                    className="bg-card border-border hover:border-primary/30 transition duration-300 shadow-xl flex flex-col text-left"
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-1">
-                          <CardTitle className="text-sm font-bold text-slate-100 tracking-tight">
+                          <CardTitle className="text-sm font-bold text-foreground tracking-tight">
                             {ws.name}
                           </CardTitle>
-                          <span className="font-mono text-[10px] text-slate-400 block truncate">{ws.slug}</span>
+                          <span className="font-mono text-[10px] text-muted-foreground block truncate">{ws.slug}</span>
                         </div>
-                        <Badge variant="outline" className="px-1.5 py-0.5 text-[8px] bg-slate-900 border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
+                        <Badge variant="outline" className="px-1.5 py-0.5 text-[8px] bg-muted border-border text-muted-foreground font-bold uppercase tracking-wider">
                           {ws.currency}
                         </Badge>
                       </div>
@@ -528,45 +524,45 @@ export default function SuperAdminPage() {
                     <CardContent className="space-y-4 flex-1 flex flex-col justify-between">
                       {/* Meta Tags Row */}
                       <div className="flex flex-wrap gap-1.5">
-                        <Badge variant="outline" className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider bg-slate-950/60 text-slate-400 border-slate-900">
+                        <Badge variant="outline" className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider bg-muted/50 text-muted-foreground border-border">
                           {ws.businessType}
                         </Badge>
-                        <Badge variant="outline" className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider bg-slate-950/60 text-slate-400 border-slate-900">
+                        <Badge variant="outline" className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider bg-muted/50 text-muted-foreground border-border">
                           {ws.inventorySize} Size
                         </Badge>
                       </div>
 
                       {/* Workspaces quantitative stats */}
-                      <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-slate-950/50 border border-slate-900/80 my-3 text-center">
+                      <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-muted/30 border border-border my-3 text-center">
                         <div className="flex flex-col items-center">
-                          <Package className="h-3.5 w-3.5 text-indigo-400 mb-1" />
-                          <span className="text-[10px] font-bold text-slate-500 uppercase">Products</span>
-                          <span className="font-mono font-bold text-slate-200 text-xs mt-0.5">{ws.productCount}</span>
+                          <Package className="h-3.5 w-3.5 text-primary mb-1" />
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">Products</span>
+                          <span className="font-mono font-bold text-foreground text-xs mt-0.5">{ws.productCount}</span>
                         </div>
-                        <div className="flex flex-col items-center border-x border-slate-900">
-                          <ShoppingCart className="h-3.5 w-3.5 text-indigo-400 mb-1" />
-                          <span className="text-[10px] font-bold text-slate-500 uppercase">Orders</span>
-                          <span className="font-mono font-bold text-slate-200 text-xs mt-0.5">{ws.orderCount}</span>
+                        <div className="flex flex-col items-center border-x border-border">
+                          <ShoppingCart className="h-3.5 w-3.5 text-primary mb-1" />
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">Orders</span>
+                          <span className="font-mono font-bold text-foreground text-xs mt-0.5">{ws.orderCount}</span>
                         </div>
                         <div className="flex flex-col items-center">
-                          <Users className="h-3.5 w-3.5 text-indigo-400 mb-1" />
-                          <span className="text-[10px] font-bold text-slate-500 uppercase">Members</span>
-                          <span className="font-mono font-bold text-slate-200 text-xs mt-0.5">{ws.memberCount}</span>
+                          <Users className="h-3.5 w-3.5 text-primary mb-1" />
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">Members</span>
+                          <span className="font-mono font-bold text-foreground text-xs mt-0.5">{ws.memberCount}</span>
                         </div>
                       </div>
 
                       {/* Owner Details Footer */}
-                      <div className="pt-3.5 border-t border-slate-900 flex flex-col gap-1 text-[11px]">
-                        <span className="text-slate-500 uppercase font-bold tracking-wider text-[9px]">Workspace Owner</span>
+                      <div className="pt-3.5 border-t border-border flex flex-col gap-1 text-[11px]">
+                        <span className="text-muted-foreground uppercase font-bold tracking-wider text-[9px]">Workspace Owner</span>
                         {ws.owner ? (
-                          <div className="flex items-center justify-between text-slate-300">
+                          <div className="flex items-center justify-between text-foreground">
                             <span className="font-bold truncate">{ws.owner.name}</span>
-                            <span className="font-mono text-slate-400 text-[10px] truncate max-w-[130px]">{ws.owner.email}</span>
+                            <span className="font-mono text-muted-foreground text-[10px] truncate max-w-[130px]">{ws.owner.email}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-500 italic">No Owner Linked</span>
+                          <span className="text-muted-foreground italic">No Owner Linked</span>
                         )}
-                        <span className="text-[9px] text-slate-500 font-mono mt-1">Created: {ws.createdAt}</span>
+                        <span className="text-[9px] text-muted-foreground font-mono mt-1">Created: {ws.createdAt}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -585,9 +581,9 @@ export default function SuperAdminPage() {
               className="space-y-6 flex-1 flex flex-col"
             >
               {/* Filter controls row */}
-              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between p-4 rounded-xl bg-slate-900/30 border border-slate-800/80 shadow-lg">
+              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between p-4 rounded-xl bg-card border border-border shadow-lg">
                 <div className="relative w-full lg:max-w-md">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <input
                     id="input-audit-search"
                     type="text"
@@ -597,13 +593,13 @@ export default function SuperAdminPage() {
                       setAuditSearch(e.target.value)
                       setAuditPage(1) // Reset page on filter
                     }}
-                    className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-800 bg-slate-950 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+                    className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
                   />
                 </div>
 
                 {/* Filter buttons */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase mr-1.5 flex items-center gap-1">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase mr-1.5 flex items-center gap-1">
                     <SlidersHorizontal className="h-3 w-3" /> Log Category
                   </span>
                   {[
@@ -623,8 +619,8 @@ export default function SuperAdminPage() {
                       }}
                       className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border cursor-pointer transition ${
                         auditFilterType === type.id
-                          ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/10"
-                          : "border-slate-800 bg-slate-950/60 text-slate-400 hover:text-slate-200 hover:border-slate-700"
+                          ? "bg-primary border-primary text-primary-foreground shadow-lg"
+                          : "border-border bg-background text-muted-foreground hover:text-foreground hover:border-border/80"
                       }`}
                     >
                       {type.label}
@@ -636,7 +632,7 @@ export default function SuperAdminPage() {
               {/* Paginated Activities Grid */}
               <div className="flex-1 flex flex-col justify-between">
                 {paginatedLogs.length === 0 ? (
-                  <div className="py-20 text-center text-xs text-slate-500 bg-slate-900/10 border border-slate-900 rounded-xl">
+                  <div className="py-20 text-center text-xs text-muted-foreground bg-muted/10 border border-border rounded-xl">
                     No activity logs match your search.
                   </div>
                 ) : (
@@ -644,18 +640,18 @@ export default function SuperAdminPage() {
                     {paginatedLogs.map((log: any) => (
                       <div
                         key={log.id}
-                        className="bg-slate-900/20 border border-slate-900 rounded-xl p-4 flex flex-col justify-between hover:border-slate-800 hover:bg-slate-900/30 transition text-left"
+                        className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between hover:border-border/80 hover:bg-muted/10 transition text-left"
                       >
                         <div className="space-y-2">
                           <div className="flex justify-between items-start gap-2">
-                            <span className="font-mono text-[9px] text-slate-500 tracking-wider">ID: {log.id.slice(0, 8)}...</span>
+                            <span className="font-mono text-[9px] text-muted-foreground tracking-wider">ID: {log.id.slice(0, 8)}...</span>
                             <Badge variant="outline" className={`px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider ${getLogTypeColor(log.type)}`}>
                               {log.type}
                             </Badge>
                           </div>
 
-                          <p className="text-xs font-bold text-slate-100 leading-snug">{log.action}</p>
-                          <div className="h-[1px] bg-slate-900 my-2" />
+                          <p className="text-xs font-bold text-foreground leading-snug">{log.action}</p>
+                          <div className="h-[1px] bg-border my-2" />
 
                           {/* Profile block */}
                           <div className="flex items-center gap-2">
@@ -666,28 +662,28 @@ export default function SuperAdminPage() {
                                 className="h-6 w-6 rounded-full object-cover"
                               />
                             ) : (
-                              <div className="h-6 w-6 rounded-full bg-slate-800 text-slate-400 text-[10px] font-bold flex items-center justify-center">
+                              <div className="h-6 w-6 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center">
                                 {log.user.name[0]}
                               </div>
                             )}
                             <div className="min-w-0">
-                              <p className="text-[10px] font-bold text-slate-300 truncate leading-none">{log.user.name}</p>
-                              <span className="text-[8px] font-mono text-slate-500 truncate block mt-0.5">{log.user.email}</span>
+                              <p className="text-[10px] font-bold text-foreground truncate leading-none">{log.user.name}</p>
+                              <span className="text-[8px] font-mono text-muted-foreground truncate block mt-0.5">{log.user.email}</span>
                             </div>
                           </div>
                         </div>
 
                         {/* Audit Log Footer Details */}
-                        <div className="mt-4 pt-3.5 border-t border-slate-900/60 flex items-center justify-between text-[9px] font-mono text-slate-500">
+                        <div className="mt-4 pt-3.5 border-t border-border/60 flex items-center justify-between text-[9px] font-mono text-muted-foreground">
                           <div className="flex flex-col text-left">
                             {log.workspaceName ? (
-                              <span className="text-slate-400 font-semibold truncate max-w-[120px]">WS: {log.workspaceName}</span>
+                              <span className="text-foreground font-semibold truncate max-w-[120px]">WS: {log.workspaceName}</span>
                             ) : (
-                              <span className="text-slate-600">Global Space</span>
+                              <span className="text-muted-foreground">Global Space</span>
                             )}
-                            <span className="text-[8px] text-slate-600 mt-0.5">IP: {log.ip}</span>
+                            <span className="text-[8px] text-muted-foreground mt-0.5">IP: {log.ip}</span>
                           </div>
-                          <span className="flex items-center gap-1 font-semibold text-slate-500">
+                          <span className="flex items-center gap-1 font-semibold text-muted-foreground">
                             <Clock className="h-3 w-3" />
                             {new Date(log.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                           </span>
@@ -699,8 +695,8 @@ export default function SuperAdminPage() {
 
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
-                  <div className="flex justify-between items-center border-t border-slate-900 pt-6 mt-6">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="flex justify-between items-center border-t border-border pt-6 mt-6">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                       Showing logs {(auditPage - 1) * logsPerPage + 1} - {Math.min(auditPage * logsPerPage, filteredLogs.length)} of {filteredLogs.length}
                     </span>
 
@@ -711,11 +707,11 @@ export default function SuperAdminPage() {
                         size="sm"
                         disabled={auditPage === 1}
                         onClick={() => setAuditPage(auditPage - 1)}
-                        className="text-[10px] font-bold uppercase tracking-wider border-slate-800 bg-slate-950/60"
+                        className="text-[10px] font-bold uppercase tracking-wider border-border bg-background"
                       >
                         Prev
                       </Button>
-                      <div className="flex items-center px-3 border border-slate-800 rounded-lg bg-slate-950/60 text-[10px] font-bold font-mono text-slate-300">
+                      <div className="flex items-center px-3 border border-border rounded-lg bg-background text-[10px] font-bold font-mono text-foreground">
                         Page {auditPage} / {totalPages}
                       </div>
                       <Button
@@ -724,7 +720,7 @@ export default function SuperAdminPage() {
                         size="sm"
                         disabled={auditPage === totalPages}
                         onClick={() => setAuditPage(auditPage + 1)}
-                        className="text-[10px] font-bold uppercase tracking-wider border-slate-800 bg-slate-950/60"
+                        className="text-[10px] font-bold uppercase tracking-wider border-border bg-background"
                       >
                         Next
                       </Button>

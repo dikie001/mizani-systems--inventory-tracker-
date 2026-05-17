@@ -9,10 +9,10 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "omondidickens255@gmail.com"
+  const superAdminEmail = process.env.SUPER_ADMIN_EMAIL
   
   // Extra robust checks (both email matching and DB role validation)
-  const isSuperAdminEmail = session.user.email.toLowerCase() === superAdminEmail.toLowerCase()
+  const isSuperAdminEmail = !!(superAdminEmail && session.user.email.toLowerCase() === superAdminEmail.toLowerCase())
   const dbUser = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: { role: true }
@@ -165,7 +165,8 @@ export async function GET() {
       stats,
       users: formattedUsers,
       workspaces: formattedWorkspaces,
-      activities: formattedLogs
+      activities: formattedLogs,
+      superAdminEmail
     })
   } catch (error) {
     console.error("Failed to fetch super admin dashboard data:", error)
