@@ -30,6 +30,7 @@ import { Textarea } from "@/components/ui/textarea"
 // New Dialogs
 import { CreateOrderDialog } from "@/components/orders/create-order-dialog"
 import { OrderDetailsDialog } from "@/components/orders/order-details-dialog"
+import { formatPrice } from "@/lib/utils"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
@@ -49,6 +50,8 @@ const paymentConfig: Record<string, { style: string; label: string }> = {
 
 export default function OrdersPage() {
   const { mutate } = useSWRConfig()
+  const { data: workspace } = useSWR("/api/workspaces/current", fetcher)
+  const currency = (workspace as any)?.currency || "KES"
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   
@@ -163,7 +166,7 @@ export default function OrdersPage() {
           { label: "Total Orders", value: isLoading ? "-" : orders?.length.toString(), icon: Package, color: "text-primary", bg: "bg-primary/10" },
           { label: "Pending", value: isLoading ? "-" : orders?.filter((o) => o.status === "pending").length.toString(), icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
           { label: "In Transit", value: isLoading ? "-" : orders?.filter((o) => o.status === "shipped").length.toString(), icon: Truck, color: "text-blue-500", bg: "bg-blue-500/10" },
-          { label: "Revenue", value: isLoading ? "-" : `$${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+          { label: "Revenue", value: isLoading ? "-" : formatPrice(totalRevenue, currency), icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="pt-4">
@@ -277,7 +280,7 @@ export default function OrdersPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right py-2.5 font-mono text-sm">{order.items}</TableCell>
-                    <TableCell className="text-right py-2.5 font-mono font-medium text-sm">${order.total.toFixed(2)}</TableCell>
+                    <TableCell className="text-right py-2.5 font-mono font-medium text-sm">{formatPrice(order.total, currency)}</TableCell>
                     <TableCell className="py-2.5 pl-6">
                       <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border
                         ${statusConfig[order.status]?.style || "bg-muted text-muted-foreground border-muted"}

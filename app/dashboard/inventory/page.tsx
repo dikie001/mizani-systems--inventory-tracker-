@@ -4,6 +4,7 @@ import { ChangeEvent, FormEvent, useId, useRef, useState, useEffect, Suspense } 
 import { useSearchParams, useRouter } from "next/navigation"
 import useSWR, { useSWRConfig } from "swr"
 import { toast } from "sonner"
+import { formatPrice } from "@/lib/utils"
 import {
   AlertCircle,
   AlertTriangle,
@@ -245,21 +246,24 @@ function productToFormValues(product: InventoryProduct): ProductFormValues {
   }
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value)
+function formatCurrency(value: number, currency: string = "KES") {
+  return formatPrice(value, currency)
 }
 
-function formatCumulativePrice(value: number) {
+function formatCumulativePrice(value: number, currency: string = "KES") {
   if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`
+    if (currency === "USD") {
+      return `$${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`
+    }
+    return `${currency} ${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`
   }
   if (value >= 100000) {
-    return `$${Math.round(value / 1000)}k`
+    if (currency === "USD") {
+      return `$${Math.round(value / 1000)}k`
+    }
+    return `${currency} ${Math.round(value / 1000)}k`
   }
-  return formatCurrency(value)
+  return formatCurrency(value, currency)
 }
 
 function formatDate(value: string) {
@@ -549,6 +553,8 @@ function InventoryPageContent() {
 
   const { data: products, error, isLoading, mutate: mutateProducts } = useSWR<InventoryProduct[]>(productsUrl, fetcher)
   const { data: meta, mutate: mutateMeta } = useSWR<InventoryMeta>("/api/inventory/meta", fetcher)
+  const { data: workspace } = useSWR("/api/workspaces/current", fetcher)
+  const currency = (workspace as any)?.currency || "KES"
   const {
     data: selectedProduct,
     error: selectedProductError,
@@ -1189,7 +1195,7 @@ function InventoryPageContent() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="cursor-help hover:text-primary transition-colors underline decoration-dotted decoration-muted-foreground/30 underline-offset-4">
-                              {formatCumulativePrice(product.price * product.stock)}
+                              {formatCumulativePrice(product.price * product.stock, currency)}
                             </span>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="!bg-popover !text-popover-foreground border !border-border shadow-lg px-3 py-2 z-50 [&_[data-slot=tooltip-arrow]]:!bg-popover [&_[data-slot=tooltip-arrow]]:!fill-popover">
@@ -1197,13 +1203,13 @@ function InventoryPageContent() {
                               <div className="flex justify-between items-center gap-4">
                                 <span className="!text-muted-foreground font-medium">Total Value:</span>
                                 <span className="font-bold !text-popover-foreground">
-                                  {formatCurrency(product.price * product.stock)}
+                                  {formatCurrency(product.price * product.stock, currency)}
                                 </span>
                               </div>
                               <div className="flex justify-between items-center gap-4 border-t border-border/60 pt-1.5">
                                 <span className="!text-muted-foreground font-medium">Unit Price:</span>
                                 <span className="font-semibold !text-popover-foreground">
-                                  {formatCurrency(product.price)}
+                                  {formatCurrency(product.price, currency)}
                                 </span>
                               </div>
                             </div>
@@ -1403,19 +1409,19 @@ function InventoryPageContent() {
 
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="product-price">Unit Price (USD) *</Label>
+                <Label htmlFor="product-price">Unit Price ({currency}) *</Label>
                 <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-bold">{currency === "USD" ? "$" : currency}</span>
                   <Input
                     id="product-price"
                     name="price"
                     type="number"
                     step="0.01"
                     min="0"
+                    placeholder="0.00"
+                    className={`${currency === "USD" ? "pl-7" : "pl-11"} h-9 text-sm`}
                     value={formValues.price}
                     onChange={handleFormValueChange}
-                    placeholder="0.00"
-                    className="pl-6"
                     required
                   />
                 </div>
@@ -1647,7 +1653,7 @@ function InventoryPageContent() {
                 <div className="flex flex-col justify-center border-x border-border/50">
                   <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Unit Price</span>
                   <span className="mt-1 text-xs font-bold text-primary">
-                    {formatCurrency(selectedProduct.price)}
+                    {formatCurrency(selectedProduct.price, currency)}
                   </span>
                 </div>
                 <div className="flex flex-col justify-center">

@@ -42,6 +42,7 @@ model Workspace {
   businessType  String?
   inventorySize String?
   goals         String[] @default([])
+  currency      String   @default("KES")
   
   members       WorkspaceMember[]
   

@@ -33,14 +33,16 @@ export default function SettingsPage() {
   const [isUpdatingWorkspace, setIsUpdatingWorkspace] = React.useState(false)
   const [workspaceForm, setWorkspaceForm] = React.useState({
     name: "",
-    businessType: ""
+    businessType: "",
+    currency: "KES"
   })
 
   React.useEffect(() => {
     if (workspace) {
       setWorkspaceForm({
         name: workspace.name || "",
-        businessType: workspace.businessType || ""
+        businessType: workspace.businessType || "",
+        currency: workspace.currency || "KES"
       })
     }
   }, [workspace])
@@ -142,6 +144,21 @@ export default function SettingsPage() {
                       <SelectItem value="manufacturing">Manufacturing</SelectItem>
                       <SelectItem value="ecommerce">E-Commerce</SelectItem>
                       <SelectItem value="services">Services</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label htmlFor="currency">Currency</Label>
+                  <Select 
+                    value={workspaceForm.currency} 
+                    onValueChange={(v) => setWorkspaceForm({ ...workspaceForm, currency: v })}
+                  >
+                    <SelectTrigger id="currency"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="KES">Kenyan Shilling (KES)</SelectItem>
+                      <SelectItem value="USD">US Dollar (USD)</SelectItem>
+                      <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                      <SelectItem value="GBP">British Pound (GBP)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

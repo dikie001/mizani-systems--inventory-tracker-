@@ -71,6 +71,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+import { formatPrice } from "@/lib/utils"
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 const revenueChartConfig: ChartConfig = {
@@ -85,6 +87,8 @@ const categoryChartConfig: ChartConfig = {
 
 export default function DashboardPage() {
   const { data: session } = useSession()
+  const { data: workspace } = useSWR("/api/workspaces/current", fetcher)
+  const currency = (workspace as any)?.currency || "KES"
   const [revMetric, setRevMetric] = useState<"revenue" | "orders">("revenue")
   const [viewInterval, setViewInterval] = useState<"monthly" | "weekly">("monthly")
   const { data: stats, isLoading: statsLoading } = useSWR(
@@ -143,7 +147,7 @@ export default function DashboardPage() {
             title: "Monthly Revenue",
             value: statsLoading
               ? "-"
-              : `$${stats?.totalRevenue.toLocaleString()}`,
+              : formatPrice(stats?.totalRevenue ?? 0, currency),
             icon: BarChart3,
             color: "text-emerald-600 dark:text-emerald-400",
           },
@@ -275,7 +279,7 @@ export default function DashboardPage() {
                     tickMargin={6}
                     tickFormatter={(value) => 
                       revMetric === "revenue" 
-                        ? `$${(value / 1000).toFixed(0)}k` 
+                        ? (currency === "USD" ? `$${(value / 1000).toFixed(0)}k` : `${currency} ${(value / 1000).toFixed(0)}k`)
                         : value
                     }
                     label={{
@@ -298,7 +302,7 @@ export default function DashboardPage() {
                             </span>
                             <span className="font-mono font-medium">
                               {name === "revenue"
-                                ? `$${Number(value).toLocaleString()}`
+                                ? formatPrice(Number(value), currency)
                                 : value}
                             </span>
                           </div>
@@ -385,7 +389,7 @@ export default function DashboardPage() {
                             <span className="font-mono font-medium">
                               {name === "items"
                                 ? value
-                                : `$${Number(value).toLocaleString()}`}
+                                : formatPrice(Number(value), currency)}
                             </span>
                           </div>
                         )}

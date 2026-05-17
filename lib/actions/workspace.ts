@@ -135,7 +135,7 @@ export async function createWorkspace(data: {
   }
 }
 
-export async function updateWorkspace(workspaceId: string, data: { name?: string, businessType?: string }) {
+export async function updateWorkspace(workspaceId: string, data: { name?: string, businessType?: string, currency?: string }) {
   const session = await auth()
   if (!session?.user?.id) {
     throw new Error("Unauthorized")

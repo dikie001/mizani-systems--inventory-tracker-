@@ -21,7 +21,8 @@ import {
 import { Loader2, Package, Plus, Search, Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { useSWRConfig } from "swr"
+import useSWR, { useSWRConfig } from "swr"
+import { formatPrice } from "@/lib/utils"
 
 interface Product {
   id: string
@@ -48,6 +49,8 @@ export function CreateOrderDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const { mutate } = useSWRConfig()
+  const { data: workspace } = useSWR("/api/workspaces/current", (url) => fetch(url).then((res) => res.json()))
+  const currency = (workspace as any)?.currency || "KES"
   const [loading, setLoading] = useState(false)
   const [customer, setCustomer] = useState("")
   const [search, setSearch] = useState("")
@@ -220,7 +223,7 @@ export function CreateOrderDialog({
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <p className="font-mono font-bold text-foreground text-xs">${p.price.toFixed(2)}</p>
+                        <p className="font-mono font-bold text-foreground text-xs">{formatPrice(p.price, currency)}</p>
                         <div className="h-5 w-5 rounded-md bg-primary/10 flex items-center justify-center text-primary transition-colors shrink-0">
                           <Plus className="w-3 h-3" />
                         </div>
@@ -272,7 +275,7 @@ export function CreateOrderDialog({
                           </div>
                           <div>
                             <p className="font-semibold text-sm leading-tight text-foreground">{item.name}</p>
-                            <p className="text-xs text-muted-foreground">${item.price.toFixed(2)} each</p>
+                            <p className="text-xs text-muted-foreground">{formatPrice(item.price, currency)} each</p>
                           </div>
                         </div>
                       </TableCell>
@@ -286,7 +289,7 @@ export function CreateOrderDialog({
                           />
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-mono text-sm font-semibold">${(item.price * item.quantity).toFixed(2)}</TableCell>
+                      <TableCell className="text-right font-mono text-sm font-semibold">{formatPrice(item.price * item.quantity, currency)}</TableCell>
                       <TableCell>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => removeItem(item.productId)}>
                           <Trash2 className="h-4 w-4" />
@@ -299,7 +302,7 @@ export function CreateOrderDialog({
             </Table>
             <div className="flex justify-between items-center py-2.5 px-4 border-t bg-muted/20">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total</span>
-              <span className="font-mono font-extrabold text-base text-primary">${total.toFixed(2)}</span>
+              <span className="font-mono font-extrabold text-base text-primary">{formatPrice(total, currency)}</span>
             </div>
           </div>
 
