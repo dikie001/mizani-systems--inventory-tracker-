@@ -65,19 +65,6 @@ export async function GET(request: Request) {
         const monthOrders = orders.filter(o => format(o.createdAt, "MMM") === monthStr)
         const revenue = monthOrders.reduce((sum, o) => sum + o.total, 0)
         
-        // If we have no real data for this month, and it's a 12m view, we can provide some mock data 
-        // to keep the charts looking "alive" for the demo if the DB is fresh
-        if (revenue === 0 && orders.length === 0) {
-           // Provide some small variation for demo if empty
-           const base = 20000 + (Math.random() * 10000)
-           return {
-             month: monthStr,
-             revenue: Math.round(base),
-             costs: Math.round(base * 0.65),
-             orders: Math.round(base / 150)
-           }
-        }
-
         return {
           month: monthStr,
           revenue,

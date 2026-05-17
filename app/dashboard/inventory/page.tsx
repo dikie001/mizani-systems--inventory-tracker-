@@ -903,157 +903,143 @@ function InventoryPageContent() {
           </DialogHeader>
 
           <form className="space-y-6 pt-4" onSubmit={handleProductSubmit}>
-            <div className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="product-name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Product Name</Label>
+            <div className="space-y-2">
+              <Label htmlFor="product-name">Product Name *</Label>
+              <Input
+                id="product-name"
+                name="name"
+                value={formValues.name}
+                onChange={handleFormValueChange}
+                placeholder="e.g. Wireless Noise Cancelling Headphones"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="product-sku">SKU / Item Code *</Label>
                 <Input
-                  id="product-name"
-                  name="name"
-                  value={formValues.name}
+                  id="product-sku"
+                  name="sku"
+                  value={formValues.sku}
                   onChange={handleFormValueChange}
-                  placeholder="e.g. Wireless Noise Cancelling Headphones"
-                  className="h-11 shadow-sm focus-visible:ring-1"
+                  placeholder="WCH-2024-PRO"
+                  className="font-mono uppercase"
                   required
                 />
               </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="product-sku" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">SKU / Item Code</Label>
-                  <Input
-                    id="product-sku"
-                    name="sku"
-                    value={formValues.sku}
-                    onChange={handleFormValueChange}
-                    placeholder="WCH-2024-PRO"
-                    className="h-11 font-mono uppercase shadow-sm focus-visible:ring-1"
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="product-category" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Category</Label>
-                  <Input
-                    id="product-category"
-                    name="category"
-                    list={categoryListId}
-                    value={formValues.category}
-                    onChange={handleFormValueChange}
-                    placeholder="Electronics"
-                    className="h-11 shadow-sm focus-visible:ring-1"
-                    required
-                  />
-                  <datalist id={categoryListId}>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.name} />
-                    ))}
-                  </datalist>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-
-                <div className="grid gap-2">
-                  <Label htmlFor="product-price" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Unit Price (USD)</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                    <Input
-                      id="product-price"
-                      name="price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formValues.price}
-                      onChange={handleFormValueChange}
-                      placeholder="0.00"
-                      className="h-11 pl-7 shadow-sm focus-visible:ring-1"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-muted/30 p-4 border border-muted/50">
-                <div className="mb-3 flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Inventory Thresholds</span>
-                </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div className="grid gap-1.5">
-                    <Label htmlFor="product-stock" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Current Stock</Label>
-                    <Input
-                      id="product-stock"
-                      name="stock"
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={formValues.stock}
-                      onChange={handleFormValueChange}
-                      className="h-9 shadow-sm focus-visible:ring-1 bg-background"
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-1.5">
-                    <Label htmlFor="product-minStock" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Min Threshold</Label>
-                    <Input
-                      id="product-minStock"
-                      name="minStock"
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={formValues.minStock}
-                      onChange={handleFormValueChange}
-                      className="h-9 shadow-sm focus-visible:ring-1 bg-background"
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-1.5">
-                    <Label htmlFor="product-maxStock" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Max Capacity</Label>
-                    <Input
-                      id="product-maxStock"
-                      name="maxStock"
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={formValues.maxStock}
-                      onChange={handleFormValueChange}
-                      className="h-9 shadow-sm focus-visible:ring-1 bg-background"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="product-description" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description / Notes</Label>
-                <Textarea
-                  id="product-description"
-                  name="description"
-                  value={formValues.description}
+              <div className="space-y-2">
+                <Label htmlFor="product-category">Category *</Label>
+                <Input
+                  id="product-category"
+                  name="category"
+                  list={categoryListId}
+                  value={formValues.category}
                   onChange={handleFormValueChange}
-                  placeholder="Provide additional details about this item..."
-                  className="min-h-[100px] resize-none shadow-sm focus-visible:ring-1"
+                  placeholder="Electronics"
+                  required
                 />
+                <datalist id={categoryListId}>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.name} />
+                  ))}
+                </datalist>
               </div>
             </div>
 
-            <DialogFooter className="gap-2 sm:gap-0 pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setFormOpen(false)}
-                className="h-11"
-              >
-                Discard Changes
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="product-price">Unit Price (USD) *</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                  <Input
+                    id="product-price"
+                    name="price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formValues.price}
+                    onChange={handleFormValueChange}
+                    placeholder="0.00"
+                    className="pl-7"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label>Inventory Thresholds *</Label>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="product-stock" className="text-xs text-muted-foreground font-normal">Current Stock</Label>
+                  <Input
+                    id="product-stock"
+                    name="stock"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formValues.stock}
+                    onChange={handleFormValueChange}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="product-minStock" className="text-xs text-muted-foreground font-normal">Min Threshold</Label>
+                  <Input
+                    id="product-minStock"
+                    name="minStock"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formValues.minStock}
+                    onChange={handleFormValueChange}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="product-maxStock" className="text-xs text-muted-foreground font-normal">Max Capacity</Label>
+                  <Input
+                    id="product-maxStock"
+                    name="maxStock"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formValues.maxStock}
+                    onChange={handleFormValueChange}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="product-description">Description / Notes</Label>
+              <Textarea
+                id="product-description"
+                name="description"
+                value={formValues.description}
+                onChange={handleFormValueChange}
+                placeholder="Provide additional details about this item..."
+                className="min-h-[100px] resize-none"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button type="button" variant="outline" onClick={() => setFormOpen(false)} disabled={submittingForm}>
+                Cancel
               </Button>
-              <Button type="submit" disabled={submittingForm} className="h-11 px-8 shadow-md">
+              <Button type="submit" disabled={submittingForm}>
                 {submittingForm ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {formMode === "create" ? "Creating..." : "Updating..."}
+                  </>
                 ) : (
-                  <Plus className="mr-2 h-4 w-4" />
+                  formMode === "create" ? "Create Product" : "Update Product"
                 )}
-                {formMode === "create" ? "Create Item" : "Update Catalog"}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
