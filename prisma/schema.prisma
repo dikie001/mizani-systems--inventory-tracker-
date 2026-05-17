@@ -30,6 +30,7 @@ model User {
   auditLogs      AuditLog[]
 
   allowGoogleLink Boolean @default(false)
+  loginCount      Int     @default(0)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -242,8 +243,8 @@ model AuditLog {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
 
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }

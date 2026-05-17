@@ -14,6 +14,7 @@ import {
   Settings,
   ShoppingCart,
   TrendingUp,
+  Shield,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -194,6 +195,7 @@ export function DashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
       </SidebarContent>
 
       <SidebarFooter className="mt-auto border-t border-sidebar-border/60 px-2.5 py-2.5 group-data-[collapsible=icon]:px-1.5 group-data-[collapsible=icon]:py-2">

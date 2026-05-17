@@ -130,16 +130,6 @@ export async function POST(request: Request) {
         })
       }
 
-      await tx.auditLog.create({
-        data: {
-          action: "Product Created",
-          entity: payload.name,
-          type: "create",
-          userId: session.user.id,
-          workspaceId,
-        },
-      })
-
       return createdProduct
     })
 

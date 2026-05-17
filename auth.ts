@@ -6,6 +6,74 @@ import { authConfig } from "./auth.config"
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
+  events: {
+    async signIn({ user, isNewUser }) {
+      if (!user?.email) return
+
+      try {
+        const superAdminEmail = process.env.SUPER_ADMIN_EMAIL
+        const isSuperAdmin = !!(superAdminEmail && user.email.toLowerCase() === superAdminEmail.toLowerCase())
+
+        // 1. Increment loginCount and upgrade role if super admin
+        await prisma.user.update({
+          where: { email: user.email },
+          data: {
+            loginCount: { increment: 1 },
+            ...(isSuperAdmin ? { role: "super_admin" } : {})
+          }
+        })
+
+        // 2. Create Audit Log for login
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email },
+          select: { id: true, currentWorkspaceId: true }
+        })
+
+        if (dbUser) {
+          await prisma.auditLog.create({
+            data: {
+              action: isNewUser ? "User Registered and Signed In" : "User Signed In via Google",
+              entity: "Auth",
+              type: "auth",
+              userId: dbUser.id,
+              workspaceId: dbUser.currentWorkspaceId || null,
+            }
+          })
+        }
+      } catch (err) {
+        console.error("Error in signIn event:", err)
+      }
+    },
+    async signOut(message) {
+      // In Auth.js v5 events, signOut message contains token and/or session
+      const token = (message as any).token
+      const session = (message as any).session
+      const email = session?.user?.email || token?.email
+      
+      if (!email) return
+
+      try {
+        const dbUser = await prisma.user.findUnique({
+          where: { email },
+          select: { id: true, currentWorkspaceId: true }
+        })
+
+        if (dbUser) {
+          await prisma.auditLog.create({
+            data: {
+              action: "User Signed Out",
+              entity: "Auth",
+              type: "auth",
+              userId: dbUser.id,
+              workspaceId: dbUser.currentWorkspaceId || null,
+            }
+          })
+        }
+      } catch (err) {
+        console.error("Error in signOut event:", err)
+      }
+    }
+  },
   callbacks: {
     ...authConfig.callbacks,
     async signIn({ user, account }) {
@@ -44,13 +112,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
 
         if (dbUser) {
+          const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "omondidickens255@gmail.com"
+          let role = dbUser.role
+
+          if (dbUser.email.toLowerCase() === superAdminEmail.toLowerCase() && dbUser.role !== "super_admin") {
+            await prisma.user.update({
+              where: { id: dbUser.id },
+              data: { role: "super_admin" }
+            })
+            role = "super_admin"
+          }
+
           const currentMembership = dbUser.memberships.find(m => m.workspaceId === dbUser.currentWorkspaceId) || dbUser.memberships[0]
           
           token.sub = dbUser.id
           token.email = dbUser.email
           token.name = dbUser.name
           token.picture = dbUser.image
-          token.role = dbUser.role
+          token.role = role
           token.status = dbUser.status
           token.workspaceId = dbUser.currentWorkspaceId || currentMembership?.workspaceId
           token.workspaceName = currentMembership?.workspace?.name

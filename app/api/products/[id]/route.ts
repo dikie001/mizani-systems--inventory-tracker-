@@ -126,16 +126,6 @@ export async function PUT(request: Request, context: RouteContext) {
         })
       }
 
-      await tx.auditLog.create({
-        data: {
-          action: "Product Updated",
-          entity: payload.name,
-          type: "update",
-          userId: session.user.id,
-          workspaceId: existingProduct.workspaceId,
-        },
-      })
-
       return updatedProduct
     })
 
@@ -196,16 +186,6 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
       await tx.product.delete({
         where: { id },
-      })
-
-      await tx.auditLog.create({
-        data: {
-          action: "Product Deleted",
-          entity: product.name,
-          type: "delete",
-          userId: session.user.id,
-          workspaceId: product.workspaceId,
-        },
       })
 
       return { id: product.id, name: product.name }
