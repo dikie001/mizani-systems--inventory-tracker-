@@ -30,6 +30,7 @@ interface Product {
   sku: string
   price: number
   stock: number
+  image?: string | null
 }
 
 interface OrderItem {
@@ -37,6 +38,7 @@ interface OrderItem {
   name: string
   quantity: number
   price: number
+  image?: string | null
 }
 
 export function CreateOrderDialog({
@@ -78,7 +80,7 @@ export function CreateOrderDialog({
         )
       )
     } else {
-      setItems([...items, { productId: product.id, name: product.name, quantity: 1, price: product.price }])
+      setItems([...items, { productId: product.id, name: product.name, quantity: 1, price: product.price, image: product.image }])
     }
     setSearch("")
   }
@@ -186,23 +188,36 @@ export function CreateOrderDialog({
                         ${isOutOfStock ? "opacity-40 cursor-not-allowed" : ""}
                       `}
                     >
-                      <div className="space-y-0.5">
-                        <p className="font-semibold text-foreground text-xs">{p.name}</p>
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                          <span>SKU: {p.sku}</span>
-                          <span>•</span>
-                          <span className={`font-medium ${
-                            isOutOfStock 
-                              ? "text-red-500" 
-                              : isLowStock 
-                                ? "text-amber-500 font-semibold" 
-                                : "text-emerald-500 font-semibold"
-                          }`}>
-                            {isOutOfStock 
-                              ? "Out of Stock" 
-                              : `${p.stock} in stock`
-                            }
-                          </span>
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 shrink-0 overflow-hidden rounded-md border bg-muted flex items-center justify-center">
+                          {p.image ? (
+                            <img
+                              src={p.image}
+                              alt={p.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <Package className="h-4 w-4 text-muted-foreground/60" />
+                          )}
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="font-semibold text-foreground text-xs">{p.name}</p>
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <span>SKU: {p.sku}</span>
+                            <span>•</span>
+                            <span className={`font-medium ${
+                              isOutOfStock 
+                                ? "text-red-500" 
+                                : isLowStock 
+                                  ? "text-amber-500 font-semibold" 
+                                  : "text-emerald-500 font-semibold"
+                            }`}>
+                              {isOutOfStock 
+                                ? "Out of Stock" 
+                                : `${p.stock} in stock`
+                              }
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -244,8 +259,23 @@ export function CreateOrderDialog({
                   items.map((item) => (
                     <TableRow key={item.productId}>
                       <TableCell>
-                        <p className="font-medium text-sm">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">${item.price.toFixed(2)} each</p>
+                        <div className="flex items-center gap-3">
+                          <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md border bg-muted flex items-center justify-center">
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <Package className="h-4 w-4 text-muted-foreground/60" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm leading-tight text-foreground">{item.name}</p>
+                            <p className="text-xs text-muted-foreground">${item.price.toFixed(2)} each</p>
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex justify-center">

@@ -73,6 +73,7 @@ export async function PATCH(
             data: {
               productId: item.productId,
               userId: session.user.id as string,
+              workspaceId: currentOrder.workspaceId,
               type: "Restock",
               quantity: item.quantity,
               status: "completed"
@@ -93,7 +94,8 @@ export async function PATCH(
             action: `Cancelled order ${id} and restored stock. Reason: ${reason || "Not specified"}`,
             entity: "Order",
             type: "update",
-            userId: session.user.id as string
+            userId: session.user.id as string,
+            workspaceId: currentOrder.workspaceId
           }
         })
       })
@@ -113,7 +115,8 @@ export async function PATCH(
         action: `Updated order ${id}: status=${status || currentOrder.status}, payment=${payment || currentOrder.payment}`,
         entity: "Order",
         type: "update",
-        userId: session.user.id as string
+        userId: session.user.id as string,
+        workspaceId: currentOrder.workspaceId
       }
     })
 
@@ -136,6 +139,15 @@ export async function DELETE(
   const { id } = await params
 
   try {
+    const order = await prisma.order.findUnique({
+      where: { id },
+      select: { workspaceId: true }
+    })
+
+    if (!order) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 })
+    }
+
     await prisma.order.delete({
       where: { id }
     })
@@ -145,7 +157,8 @@ export async function DELETE(
         action: `Deleted order ${id}`,
         entity: "Order",
         type: "delete",
-        userId: session.user.id as string
+        userId: session.user.id as string,
+        workspaceId: order.workspaceId
       }
     })
 

@@ -27,6 +27,8 @@ import {
   Upload,
   Check,
   ChevronsUpDown,
+  Camera,
+  X,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -325,6 +327,7 @@ function InventoryPageContent() {
   const [historyProduct, setHistoryProduct] = useState<InventoryProduct | null>(null)
   const [uploadStage, setUploadStage] = useState<"idle" | "compressing" | "uploading">("idle")
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
 
   const compressImage = (file: File, targetSizeKb: number = 100): Promise<File> => {
     return new Promise((resolve) => {
@@ -425,6 +428,75 @@ function InventoryPageContent() {
             toast.success("Product image uploaded successfully!")
           } catch (err) {
             toast.error("Failed to parse upload response.")
+          }
+        } else {
+          toast.error("Failed to upload image. Please try again.")
+        }
+      })
+
+      xhr.addEventListener("error", () => {
+        setUploadStage("idle")
+        setUploadProgress(0)
+        toast.error("Upload encountered an error.")
+      })
+
+      xhr.open("POST", "/api/upload")
+      xhr.send(formData)
+    } catch (err) {
+      setUploadStage("idle")
+      setUploadProgress(0)
+      toast.error("Image compression failed.")
+    }
+  }
+
+  const handleDetailsImageChange = async (e: ChangeEvent<HTMLInputElement>, productId: string) => {
+    const originalFile = e.target.files?.[0]
+    if (!originalFile) return
+
+    setUploadStage("compressing")
+    setUploadProgress(0)
+
+    try {
+      const file = await compressImage(originalFile, 100)
+      setUploadStage("uploading")
+
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const xhr = new XMLHttpRequest()
+
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          const percentage = Math.round((event.loaded * 100) / event.total)
+          setUploadProgress(percentage)
+        }
+      })
+
+      xhr.addEventListener("load", async () => {
+        setUploadStage("idle")
+        setUploadProgress(0)
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText)
+            
+            const putRes = await fetch(`/api/products/${productId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                ...selectedProduct,
+                image: data.url,
+              }),
+            })
+
+            if (!putRes.ok) throw new Error("Failed to update product image.")
+
+            toast.success("Product image changed successfully!")
+            mutateSelectedProduct()
+            mutateProducts()
+          } catch (err) {
+            toast.error("Failed to save product image.")
           }
         } else {
           toast.error("Failed to upload image. Please try again.")
@@ -1486,17 +1558,46 @@ function InventoryPageContent() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader className="space-y-1">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted overflow-hidden border border-border/40 shadow-inner">
-                {selectedProduct?.image ? (
-                  <img
-                    src={selectedProduct.image}
-                    alt={selectedProduct.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-base">
-                    {selectedProduct?.name.charAt(0).toUpperCase()}
+              <div className="relative group flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted overflow-hidden border border-border/40 shadow-inner">
+                {uploadStage !== "idle" ? (
+                  <div className="flex h-full w-full items-center justify-center bg-muted">
+                    <Loader2 className="h-4.5 w-4.5 animate-spin text-primary" />
                   </div>
+                ) : selectedProduct?.image ? (
+                  <>
+                    <img
+                      src={selectedProduct.image}
+                      alt={selectedProduct.name}
+                      className="h-full w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setZoomImageUrl(selectedProduct.image)}
+                    />
+                    <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex flex-col items-center justify-center cursor-pointer text-[8px] text-white font-bold leading-none gap-0.5 select-none">
+                      <Camera className="h-3 w-3" />
+                      <span>Change</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleDetailsImageChange(e, selectedProduct.id)}
+                        disabled={uploadStage !== "idle"}
+                        className="hidden"
+                      />
+                    </label>
+                  </>
+                ) : (
+                  <label className="relative group flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-base cursor-pointer hover:bg-primary/20 transition-colors">
+                    <span>{selectedProduct?.name.charAt(0).toUpperCase()}</span>
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex flex-col items-center justify-center text-[8px] text-white font-bold leading-none gap-0.5 select-none">
+                      <Camera className="h-3 w-3" />
+                      <span>Add</span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleDetailsImageChange(e, selectedProduct.id)}
+                      disabled={uploadStage !== "idle"}
+                      className="hidden"
+                    />
+                  </label>
                 )}
               </div>
               <div className="min-w-0 flex-1">
@@ -1535,16 +1636,6 @@ function InventoryPageContent() {
             </div>
           ) : selectedProduct ? (
             <div className="space-y-4 pt-2">
-              {selectedProduct.image && (
-                <div className="relative rounded-xl border bg-muted/20 overflow-hidden flex items-center justify-center h-[160px] w-full">
-                  <img
-                    src={selectedProduct.image}
-                    alt={selectedProduct.name}
-                    className="object-contain max-h-[140px] w-full"
-                  />
-                </div>
-              )}
-
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-2 bg-muted/30 p-3 rounded-xl border border-muted/50 text-center">
                 <div className="flex flex-col justify-center">
@@ -1677,6 +1768,27 @@ function InventoryPageContent() {
               </div>
             </div>
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!zoomImageUrl} onOpenChange={(open) => !open && setZoomImageUrl(null)}>
+        <DialogContent className="sm:max-w-[420px] p-2 bg-background border rounded-2xl shadow-2xl flex flex-col items-center gap-2 overflow-hidden">
+          {zoomImageUrl && (
+            <div className="relative w-full flex items-center justify-center p-1 bg-muted/10 rounded-xl overflow-hidden min-h-[260px] max-h-[360px]">
+              <img
+                src={zoomImageUrl}
+                alt="Product zoomed preview"
+                className="object-contain max-h-[340px] w-full rounded-lg"
+              />
+              <button
+                type="button"
+                className="absolute top-3 right-3 h-6 w-6 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+                onClick={() => setZoomImageUrl(null)}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

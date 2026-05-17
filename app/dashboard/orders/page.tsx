@@ -220,6 +220,7 @@ export default function OrdersPage() {
                   <TableHead className="w-[50px] text-center">#</TableHead>
                   <TableHead className="w-[120px]">Order ID</TableHead>
                   <TableHead>Customer</TableHead>
+                  <TableHead className="w-[120px]">Products</TableHead>
                   <TableHead className="w-[100px] text-right">Items</TableHead>
                   <TableHead className="w-[120px] text-right">Total</TableHead>
                   <TableHead className="w-[130px] pl-6">Status</TableHead>
@@ -244,13 +245,35 @@ export default function OrdersPage() {
                       </code>
                     </TableCell>
                     <TableCell className="py-2.5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary shadow-inner transition-transform group-hover:scale-105">
-                          <span className="text-xs font-bold">{order.customer.charAt(0).toUpperCase()}</span>
-                        </div>
-                        <div className="truncate font-semibold tracking-tight text-foreground text-sm">
-                          {order.customer}
-                        </div>
+                      <div className="truncate font-semibold tracking-tight text-foreground text-sm">
+                        {order.customer}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-2.5">
+                      <div className="flex items-center -space-x-2.5 overflow-hidden">
+                        {order.productImages && order.productImages.length > 0 ? (
+                          order.productImages.slice(0, 3).map((imgUrl: string, idx: number) => (
+                            <div
+                              key={idx}
+                              className="relative inline-block h-7 w-7 rounded-full ring-2 ring-background overflow-hidden bg-muted border border-border/40 shadow-sm"
+                            >
+                              <img
+                                src={imgUrl}
+                                alt="Product"
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                          ))
+                        ) : (
+                          <div className="inline-block h-7 w-7 rounded-full ring-2 ring-background overflow-hidden bg-muted border border-border/40 shadow-sm flex items-center justify-center">
+                            <Package className="h-3.5 w-3.5 text-muted-foreground/60" />
+                          </div>
+                        )}
+                        {order.productImages && order.productImages.length > 3 && (
+                          <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-muted text-[9px] font-bold text-muted-foreground ring-2 ring-background border border-border/40 shadow-sm">
+                            +{order.productImages.length - 3}
+                          </span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-right py-2.5 font-mono text-sm">{order.items}</TableCell>
@@ -331,7 +354,7 @@ export default function OrdersPage() {
                 ))}
                 {orders?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center text-muted-foreground italic">No orders found.</TableCell>
+                    <TableCell colSpan={10} className="h-24 text-center text-muted-foreground italic">No orders found.</TableCell>
                   </TableRow>
                 )}
               </TableBody>
