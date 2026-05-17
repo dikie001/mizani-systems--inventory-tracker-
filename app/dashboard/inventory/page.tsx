@@ -861,14 +861,20 @@ function InventoryPageContent() {
                               {formatCumulativePrice(product.price * product.stock)}
                             </span>
                           </TooltipTrigger>
-                          <TooltipContent side="top">
-                            <div className="flex flex-col gap-0.5 text-xs text-center">
-                              <span className="font-semibold text-foreground">
-                                {formatCurrency(product.price * product.stock)}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                {formatCurrency(product.price)} / unit
-                              </span>
+                          <TooltipContent side="top" className="!bg-popover !text-popover-foreground border !border-border shadow-lg px-3 py-2 z-50">
+                            <div className="flex flex-col gap-1.5 text-xs min-w-[170px]">
+                              <div className="flex justify-between items-center gap-4">
+                                <span className="!text-muted-foreground font-medium">Total Value:</span>
+                                <span className="font-bold !text-popover-foreground">
+                                  {formatCurrency(product.price * product.stock)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center gap-4 border-t border-border/60 pt-1.5">
+                                <span className="!text-muted-foreground font-medium">Unit Price:</span>
+                                <span className="font-semibold !text-popover-foreground">
+                                  {formatCurrency(product.price)}
+                                </span>
+                              </div>
                             </div>
                           </TooltipContent>
                         </Tooltip>
