@@ -942,8 +942,8 @@ function InventoryPageContent() {
                   required
                 />
               </div>
-              <div className="space-y-1.5 flex flex-col pt-[1px]">
-                <Label htmlFor="product-category" className="mb-1.5">Category *</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="product-category">Category *</Label>
                 <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
                   <PopoverTrigger asChild>
                     <Button
@@ -952,57 +952,73 @@ function InventoryPageContent() {
                       aria-expanded={categoryOpen}
                       className="justify-between h-9 font-normal w-full"
                     >
-                      {formValues.category || "Select or add category..."}
+                      {formValues.category || "Select category..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[230px] p-0" align="start">
-                    <Command>
-                      <CommandInput 
-                        placeholder="Search category..." 
-                        value={categorySearch} 
-                        onValueChange={setCategorySearch} 
-                      />
-                      <CommandList>
-                        <CommandEmpty className="py-2 text-center text-sm">
-                          {categorySearch ? (
-                            <button
-                              type="button"
-                              className="text-primary hover:underline font-medium"
-                              onClick={() => {
-                                setFormValues(current => ({ ...current, category: categorySearch }))
-                                setCategoryOpen(false)
+                  <PopoverContent className="w-[280px] p-0" align="start">
+                    <div className="max-h-[200px] overflow-y-auto p-1">
+                      {categories.length === 0 ? (
+                        <div className="p-4 text-center text-sm text-muted-foreground">
+                          No categories yet.
+                        </div>
+                      ) : (
+                        categories.map((category) => (
+                          <button
+                            key={category.id}
+                            type="button"
+                            className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                            onClick={() => {
+                              setFormValues(current => ({ ...current, category: category.name }))
+                              setCategoryOpen(false)
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${
+                                formValues.category.toLowerCase() === category.name.toLowerCase() ? "opacity-100" : "opacity-0"
+                              }`}
+                            />
+                            {category.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                    <div className="border-t p-2 bg-muted/20">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          placeholder="New category name..."
+                          className="h-8 text-xs bg-background"
+                          value={categorySearch}
+                          onChange={(e) => setCategorySearch(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              if (categorySearch.trim()) {
+                                setFormValues(current => ({ ...current, category: categorySearch.trim() }))
                                 setCategorySearch("")
-                              }}
-                            >
-                              Create "{categorySearch}"
-                            </button>
-                          ) : (
-                            "No category found."
-                          )}
-                        </CommandEmpty>
-                        <CommandGroup>
-                          {categories.map((category) => (
-                            <CommandItem
-                              key={category.id}
-                              value={category.name}
-                              onSelect={(currentValue) => {
-                                setFormValues(current => ({ ...current, category: currentValue }))
                                 setCategoryOpen(false)
-                                setCategorySearch("")
-                              }}
-                            >
-                              <Check
-                                className={`mr-2 h-4 w-4 ${
-                                  formValues.category.toLowerCase() === category.name.toLowerCase() ? "opacity-100" : "opacity-0"
-                                }`}
-                              />
-                              {category.name}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
+                              }
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-8 text-xs font-semibold shrink-0"
+                          disabled={!categorySearch.trim()}
+                          onClick={() => {
+                            if (categorySearch.trim()) {
+                              setFormValues(current => ({ ...current, category: categorySearch.trim() }))
+                              setCategorySearch("")
+                              setCategoryOpen(false)
+                            }
+                          }}
+                        >
+                          <Plus className="mr-1 h-3 w-3" />
+                          Add
+                        </Button>
+                      </div>
+                    </div>
                   </PopoverContent>
                 </Popover>
               </div>
