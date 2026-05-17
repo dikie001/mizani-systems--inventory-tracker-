@@ -50,32 +50,24 @@ export function CreateOrderDialog({
   const [loading, setLoading] = useState(false)
   const [customer, setCustomer] = useState("")
   const [search, setSearch] = useState("")
-  const [products, setProducts] = useState<Product[]>([])
-  const [searching, setSearching] = useState(false)
+  const [allProducts, setAllProducts] = useState<Product[]>([])
   const [items, setItems] = useState<OrderItem[]>([])
 
-  // Search products
+  // Fetch all products when open
   useEffect(() => {
-    if (search.length < 2) {
-      setProducts([])
-      return
-    }
-
-    const handler = setTimeout(async () => {
-      setSearching(true)
-      try {
-        const res = await fetch(`/api/products?search=${encodeURIComponent(search)}`)
-        const data = await res.json()
-        setProducts(data)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setSearching(false)
+    if (open) {
+      const fetchProducts = async () => {
+        try {
+          const res = await fetch("/api/products")
+          const data = await res.json()
+          setAllProducts(data)
+        } catch (error) {
+          console.error("Failed to fetch products:", error)
+        }
       }
-    }, 300)
-
-    return () => clearTimeout(handler)
-  }, [search])
+      fetchProducts()
+    }
+  }, [open])
 
   const addItem = (product: Product) => {
     const existing = items.find((i) => i.productId === product.id)
@@ -89,8 +81,13 @@ export function CreateOrderDialog({
       setItems([...items, { productId: product.id, name: product.name, quantity: 1, price: product.price }])
     }
     setSearch("")
-    setProducts([])
   }
+
+  const filteredProducts = allProducts.filter((p) => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)
+  })
 
   const removeItem = (id: string) => {
     setItems(items.filter((i) => i.productId !== id))
@@ -159,7 +156,7 @@ export function CreateOrderDialog({
 
           <div className="space-y-2">
             <Label>Add Products *</Label>
-            <div className="relative">
+            <div className="relative mb-2">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search by name or SKU..."
@@ -167,25 +164,58 @@ export function CreateOrderDialog({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              {searching && <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />}
-              
-              {products.length > 0 && (
-                <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-[200px] overflow-y-auto">
-                  {products.map((p) => (
+            </div>
+
+            <div className="rounded-xl border bg-muted/5 p-2.5">
+              <div className="max-h-[160px] overflow-y-auto pr-1 space-y-1 divide-y divide-border/40">
+                {filteredProducts.map((p) => {
+                  const isOutOfStock = p.stock <= 0
+                  const isLowStock = p.stock <= 10 && p.stock > 0
+                  
+                  return (
                     <button
+                      type="button"
                       key={p.id}
-                      className="flex w-full items-center justify-between px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                      disabled={isOutOfStock}
                       onClick={() => addItem(p)}
+                      className={`flex w-full items-center justify-between p-2 rounded-lg transition-all text-sm text-left hover:bg-muted/50
+                        ${isOutOfStock ? "opacity-40 cursor-not-allowed" : ""}
+                      `}
                     >
-                      <div className="text-left">
-                        <p className="font-medium">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">SKU: {p.sku} | Stock: {p.stock}</p>
+                      <div className="space-y-0.5">
+                        <p className="font-semibold text-foreground">{p.name}</p>
+                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                          <span>SKU: {p.sku}</span>
+                          <span>•</span>
+                          <span className={`font-medium ${
+                            isOutOfStock 
+                              ? "text-red-500" 
+                              : isLowStock 
+                                ? "text-amber-500" 
+                                : "text-emerald-500"
+                          }`}>
+                            {isOutOfStock 
+                              ? "Out of Stock" 
+                              : `${p.stock} units available`
+                            }
+                          </span>
+                        </div>
                       </div>
-                      <p className="font-mono font-semibold">${p.price.toFixed(2)}</p>
+                      <div className="flex items-center gap-3">
+                        <p className="font-mono font-bold text-foreground">${p.price.toFixed(2)}</p>
+                        <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center text-primary transition-colors shrink-0">
+                          <Plus className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
                     </button>
-                  ))}
-                </div>
-              )}
+                  )
+                })}
+                {filteredProducts.length === 0 && (
+                  <div className="py-8 text-center text-xs text-muted-foreground italic">
+                    No products found matching "{search}".
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
