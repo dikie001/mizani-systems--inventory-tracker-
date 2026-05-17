@@ -134,6 +134,7 @@ model Product {
   name        String
   sku         String
   description String?
+  image       String?
   price       Float
   stock       Int      @default(0)
   minStock    Int      @default(10)
