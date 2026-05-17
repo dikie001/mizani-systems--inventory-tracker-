@@ -861,7 +861,7 @@ function InventoryPageContent() {
                               {formatCumulativePrice(product.price * product.stock)}
                             </span>
                           </TooltipTrigger>
-                          <TooltipContent side="top" className="!bg-popover !text-popover-foreground border !border-border shadow-lg px-3 py-2 z-50">
+                          <TooltipContent side="top" className="!bg-popover !text-popover-foreground border !border-border shadow-lg px-3 py-2 z-50 [&_[data-slot=tooltip-arrow]]:!bg-popover [&_[data-slot=tooltip-arrow]]:!fill-popover">
                             <div className="flex flex-col gap-1.5 text-xs min-w-[170px]">
                               <div className="flex justify-between items-center gap-4">
                                 <span className="!text-muted-foreground font-medium">Total Value:</span>
