@@ -118,6 +118,7 @@ export async function PUT(request: Request, context: RouteContext) {
           data: {
             productId: id,
             userId: session.user.id,
+            workspaceId: existingProduct.workspaceId,
             type: stockDelta > 0 ? "Manual Restock" : "Manual Reduction",
             quantity: stockDelta,
             status: "completed",
@@ -131,6 +132,7 @@ export async function PUT(request: Request, context: RouteContext) {
           entity: payload.name,
           type: "update",
           userId: session.user.id,
+          workspaceId: existingProduct.workspaceId,
         },
       })
 
@@ -202,6 +204,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
           entity: product.name,
           type: "delete",
           userId: session.user.id,
+          workspaceId: product.workspaceId,
         },
       })
 
