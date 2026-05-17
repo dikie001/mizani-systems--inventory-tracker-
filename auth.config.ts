@@ -16,22 +16,19 @@ export const authConfig: NextAuthConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
-      const hasWorkspace = !!auth?.user?.workspaceId
       const isDashboard = nextUrl.pathname.startsWith("/dashboard")
       const isOnboarding = nextUrl.pathname === "/onboarding"
       
-      if (isOnboarding) {
-        if (!isLoggedIn) return false // Force redirect to /auth
-        if (hasWorkspace) return Response.redirect(new URL("/dashboard", nextUrl))
+      if (isOnboarding && !isLoggedIn) {
+        return false // Force redirect to /auth
       }
       
-      if (isDashboard) {
-        if (!isLoggedIn) return false
-        if (!hasWorkspace) return Response.redirect(new URL("/onboarding", nextUrl))
+      if (isDashboard && !isLoggedIn) {
+        return false
       }
       
       if (isLoggedIn && (nextUrl.pathname === "/auth" || nextUrl.pathname === "/")) {
-        return Response.redirect(new URL(hasWorkspace ? "/dashboard" : "/onboarding", nextUrl))
+        return Response.redirect(new URL("/dashboard", nextUrl))
       }
 
       return true
