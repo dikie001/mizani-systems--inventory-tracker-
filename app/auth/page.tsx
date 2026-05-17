@@ -152,7 +152,9 @@ export default function AuthPage() {
 
         <Card className="rounded-2xl border bg-card text-card-foreground shadow-sm">
           <CardHeader className="items-center gap-3 px-6 pt-6 text-center">
-          
+            <div className="flex h-12 w-12 items-center justify-center shrink-0 overflow-hidden mb-1">
+              <img src="/logo.png" alt="Logo" className="h-full w-full object-contain" />
+            </div>
             <div className="space-y-1">
               <CardTitle className="text-2xl tracking-tight">
                 Continue to StockVault

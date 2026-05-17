@@ -29,8 +29,8 @@ function Navbar({ session }: { session: any }) {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground italic">
-            M
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden shrink-0">
+            <img src="/logo.png" alt="Mizani Systems" className="h-full w-full object-contain" />
           </div>
           <span>Mizani Systems</span>
         </Link>
@@ -308,8 +308,8 @@ function Footer() {
     <footer className="bg-background py-12 border-t">
       <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-2 font-bold text-xl">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground italic">
-            M
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden shrink-0">
+            <img src="/logo.png" alt="Mizani Systems" className="h-full w-full object-contain" />
           </div>
           <span>Mizani Systems</span>
         </div>

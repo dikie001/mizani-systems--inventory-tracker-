@@ -45,8 +45,8 @@ export function SuperAdminSidebar() {
       {/* Brand Header */}
       <SidebarHeader className="h-16 justify-center border-b border-sidebar-border/60 px-3 py-0 group-data-[collapsible=icon]:h-16">
         <div className="flex items-center gap-2.5 px-1">
-          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center ring-1 ring-border shrink-0">
-            <ShieldAlert className="h-4.5 w-4.5 text-primary" />
+          <div className="h-9 w-9 flex items-center justify-center shrink-0 overflow-hidden">
+            <img src="/logo.png" alt="Admin Logo" className="h-full w-full object-contain" />
           </div>
           {!isCollapsed && (
             <div className="text-left">
