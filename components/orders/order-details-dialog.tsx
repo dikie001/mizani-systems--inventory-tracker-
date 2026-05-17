@@ -1,6 +1,7 @@
 "use client"
 
 import useSWR, { useSWRConfig } from "swr"
+import { formatPrice } from "@/lib/utils"
 import { Loader2, Package, User, Calendar, CreditCard, Activity, DollarSign } from "lucide-react"
 import {
   Dialog,
@@ -58,6 +59,8 @@ export function OrderDetailsDialog({
     orderId ? `/api/orders/${orderId}` : null,
     fetcher
   )
+  const { data: workspace } = useSWR("/api/workspaces/current", fetcher)
+  const currency = workspace?.currency || "KES"
 
   if (!orderId) return null
 
@@ -198,8 +201,8 @@ export function OrderDetailsDialog({
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-mono text-xs py-2">{item.quantity}</TableCell>
-                        <TableCell className="text-right font-mono text-xs py-2">${item.price.toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-mono text-xs font-semibold py-2">${(item.price * item.quantity).toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs py-2">{formatPrice(item.price, currency)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs font-semibold py-2">{formatPrice(item.price * item.quantity, currency)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -209,15 +212,15 @@ export function OrderDetailsDialog({
                 <div className="bg-muted/20 border-t px-4 py-3 space-y-1.5 text-xs text-muted-foreground">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="font-mono">${order.total.toFixed(2)}</span>
+                    <span className="font-mono">{formatPrice(order.total, currency)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax (0%)</span>
-                    <span className="font-mono">$0.00</span>
+                    <span className="font-mono">{formatPrice(0, currency)}</span>
                   </div>
                   <div className="border-t border-border/40 my-1 pt-1.5 flex justify-between items-baseline text-foreground">
                     <span className="font-bold uppercase text-[10px] tracking-wider">Total</span>
-                    <span className="font-mono font-extrabold text-base text-primary">${order.total.toFixed(2)}</span>
+                    <span className="font-mono font-extrabold text-base text-primary">{formatPrice(order.total, currency)}</span>
                   </div>
                 </div>
               </div>
