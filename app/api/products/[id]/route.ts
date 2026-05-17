@@ -99,13 +99,13 @@ export async function PUT(request: Request, context: RouteContext) {
           name: payload.name,
           sku: payload.sku,
           description: payload.description,
+          image: payload.image,
           price: payload.price,
           stock: payload.stock,
           minStock: payload.minStock,
           maxStock: payload.maxStock,
           status: computeProductStatus(payload.stock, payload.minStock),
           categoryId: category.id,
-
         },
         include: productQueryInclude(true),
       })

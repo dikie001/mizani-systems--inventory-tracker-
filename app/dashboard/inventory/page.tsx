@@ -3,6 +3,7 @@
 import { ChangeEvent, FormEvent, useId, useRef, useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import useSWR, { useSWRConfig } from "swr"
+import { toast } from "sonner"
 import {
   AlertCircle,
   AlertTriangle,
@@ -94,6 +95,7 @@ type InventoryProduct = {
   name: string
   sku: string
   description: string | null
+  image: string | null
   category: string
   categoryId: string
 
@@ -139,6 +141,7 @@ type ProductFormValues = {
   minStock: string
   maxStock: string
   description: string
+  image: string
 }
 
 type StockAdjustmentValues = {
@@ -190,6 +193,7 @@ const emptyProductForm = (): ProductFormValues => ({
   minStock: "10",
   maxStock: "100",
   description: "",
+  image: "",
 })
 
 const emptyStockAdjustment = (): StockAdjustmentValues => ({
@@ -235,6 +239,7 @@ function productToFormValues(product: InventoryProduct): ProductFormValues {
     minStock: String(product.minStock),
     maxStock: String(product.maxStock),
     description: product.description ?? "",
+    image: product.image ?? "",
   }
 }
 
@@ -318,6 +323,39 @@ function InventoryPageContent() {
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyPage, setHistoryPage] = useState(1)
   const [historyProduct, setHistoryProduct] = useState<InventoryProduct | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingImage(true)
+    const formData = new FormData()
+    formData.append("file", file)
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to upload image")
+      }
+
+      const data = await response.json()
+      setFormValues((current) => ({
+        ...current,
+        image: data.url,
+      }))
+      toast.success("Product image uploaded successfully!")
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload image")
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
   const [exporting, setExporting] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -951,8 +989,18 @@ function InventoryPageContent() {
                     </TableCell>
                     <TableCell className="py-2.5">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary shadow-inner transition-transform group-hover:scale-105">
-                          <span className="text-xs font-bold">{product.name.charAt(0).toUpperCase()}</span>
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted overflow-hidden border border-border/40 shadow-inner transition-transform group-hover:scale-105">
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-primary/5 text-primary font-bold text-xs">
+                              {product.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
                         </div>
                         <div className="min-w-0">
                           <div className="truncate font-semibold tracking-tight text-foreground text-sm">{product.name}</div>
@@ -1239,6 +1287,57 @@ function InventoryPageContent() {
             </div>
 
             <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Product Image</Label>
+              {formValues.image ? (
+                <div className="relative group rounded-xl border bg-muted/20 overflow-hidden flex items-center justify-center min-h-[120px] max-h-[140px]">
+                  <img
+                    src={formValues.image}
+                    alt="Product preview"
+                    className="object-contain max-h-[120px] w-full transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => setFormValues(current => ({ ...current, image: "" }))}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <label className="relative group border-2 border-dashed border-border hover:border-primary/40 rounded-xl bg-muted/5 hover:bg-muted/15 p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-200 min-h-[120px] max-h-[140px]">
+                  {uploadingImage ? (
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground animate-pulse">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      <span className="text-[10px] font-medium">Uploading image...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="h-8 w-8 rounded-full bg-primary/5 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-inner">
+                        <Upload className="h-4.5 w-4.5" />
+                      </div>
+                      <div className="text-center">
+                        <span className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors">Upload product image</span>
+                        <p className="text-[9px] text-muted-foreground mt-0.5">PNG, JPG, WEBP up to 5MB</p>
+                      </div>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploadingImage}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
               <Label htmlFor="product-description">Description / Notes</Label>
               <Textarea
                 id="product-description"
@@ -1283,8 +1382,18 @@ function InventoryPageContent() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader className="space-y-1">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-base shadow-inner">
-                {selectedProduct?.name.charAt(0).toUpperCase()}
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted overflow-hidden border border-border/40 shadow-inner">
+                {selectedProduct?.image ? (
+                  <img
+                    src={selectedProduct.image}
+                    alt={selectedProduct.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-base">
+                    {selectedProduct?.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <DialogTitle className="text-2xl font-bold truncate leading-none mb-1">
@@ -1322,6 +1431,16 @@ function InventoryPageContent() {
             </div>
           ) : selectedProduct ? (
             <div className="space-y-4 pt-2">
+              {selectedProduct.image && (
+                <div className="relative rounded-xl border bg-muted/20 overflow-hidden flex items-center justify-center h-[160px] w-full">
+                  <img
+                    src={selectedProduct.image}
+                    alt={selectedProduct.name}
+                    className="object-contain max-h-[140px] w-full"
+                  />
+                </div>
+              )}
+
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-2 bg-muted/30 p-3 rounded-xl border border-muted/50 text-center">
                 <div className="flex flex-col justify-center">
