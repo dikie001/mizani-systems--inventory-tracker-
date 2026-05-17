@@ -796,7 +796,8 @@ function InventoryPageContent() {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[300px]">Product</TableHead>
+                  <TableHead className="w-[50px] text-center">#</TableHead>
+                  <TableHead className="w-[280px]">Product</TableHead>
                   <TableHead className="hidden md:table-cell">SKU</TableHead>
                   <TableHead className="hidden lg:table-cell">Category</TableHead>
 
@@ -808,15 +809,18 @@ function InventoryPageContent() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products?.map((product) => (
+                {products?.map((product, index) => (
                   <TableRow key={product.id} className="group transition-colors hover:bg-muted/30">
-                    <TableCell>
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary shadow-inner transition-transform group-hover:scale-105">
-                          <span className="text-sm font-bold">{product.name.charAt(0).toUpperCase()}</span>
+                    <TableCell className="text-center font-mono text-xs text-muted-foreground/80 py-2.5">
+                      {index + 1}
+                    </TableCell>
+                    <TableCell className="py-2.5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary shadow-inner transition-transform group-hover:scale-105">
+                          <span className="text-xs font-bold">{product.name.charAt(0).toUpperCase()}</span>
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate font-semibold tracking-tight text-foreground">{product.name}</div>
+                          <div className="truncate font-semibold tracking-tight text-foreground text-sm">{product.name}</div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span className="md:hidden font-mono">{product.sku}</span>
                             <span className="md:hidden opacity-30">•</span>
@@ -825,26 +829,26 @@ function InventoryPageContent() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">
+                    <TableCell className="hidden md:table-cell py-2.5">
                       <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                         {product.sku}
                       </code>
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <Badge variant="outline" className="font-normal text-muted-foreground border-muted-foreground/20">
+                    <TableCell className="hidden lg:table-cell py-2.5">
+                      <Badge variant="outline" className="font-normal text-muted-foreground border-muted-foreground/20 text-xs">
                         {product.category}
                       </Badge>
                     </TableCell>
 
-                    <TableCell className="text-right font-medium">
+                    <TableCell className="text-right font-medium py-2.5">
                       {formatCurrency(product.price)}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right py-2.5">
                       <span className={`inline-flex items-center font-bold ${product.stock <= product.minStock ? "text-red-600" : "text-foreground"}`}>
                         {product.stock}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-2.5">
                       <div className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-tight
                         ${
                           product.status === "in-stock"
@@ -866,13 +870,13 @@ function InventoryPageContent() {
                         {statusConfig[product.status].label}
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-right text-xs text-muted-foreground font-mono">
+                    <TableCell className="hidden md:table-cell text-right text-xs text-muted-foreground font-mono py-2.5">
                       {product.minStock} / {product.maxStock}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-2.5">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
