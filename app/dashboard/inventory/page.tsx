@@ -243,6 +243,16 @@ function formatCurrency(value: number) {
   }).format(value)
 }
 
+function formatCumulativePrice(value: number) {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`
+  }
+  if (value >= 100000) {
+    return `$${Math.round(value / 1000)}k`
+  }
+  return formatCurrency(value)
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -848,13 +858,18 @@ function InventoryPageContent() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="cursor-help hover:text-primary transition-colors underline decoration-dotted decoration-muted-foreground/30 underline-offset-4">
-                              {formatCurrency(product.price * product.stock)}
+                              {formatCumulativePrice(product.price * product.stock)}
                             </span>
                           </TooltipTrigger>
                           <TooltipContent side="top">
-                            <span className="text-xs font-medium">
-                              {formatCurrency(product.price)} per unit
-                            </span>
+                            <div className="flex flex-col gap-0.5 text-xs">
+                              <span className="font-semibold text-muted-foreground/80">
+                                Total: {formatCurrency(product.price * product.stock)}
+                              </span>
+                              <span className="font-medium text-foreground">
+                                {formatCurrency(product.price)} each
+                              </span>
+                            </div>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
