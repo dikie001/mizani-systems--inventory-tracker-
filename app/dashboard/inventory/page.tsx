@@ -317,6 +317,7 @@ function InventoryPageContent() {
   const [returnToDetailsProductId, setReturnToDetailsProductId] = useState<string | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyPage, setHistoryPage] = useState(1)
+  const [historyProduct, setHistoryProduct] = useState<InventoryProduct | null>(null)
   const [exporting, setExporting] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -1398,6 +1399,7 @@ function InventoryPageContent() {
                     <button
                       type="button"
                       onClick={() => {
+                        setHistoryProduct(selectedProduct)
                         setReturnToDetailsProductId(selectedProduct.id)
                         setDetailsProductId(null)
                         setHistoryPage(1)
@@ -1690,17 +1692,17 @@ function InventoryPageContent() {
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-2xl font-bold">Transaction History</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              Complete stock history and operator logs for <span className="font-semibold text-foreground">{selectedProduct?.name}</span>.
+              Complete stock history and operator logs for <span className="font-semibold text-foreground">{historyProduct?.name}</span>.
             </DialogDescription>
           </DialogHeader>
 
-          {selectedProduct && (
+          {historyProduct && (
             <div className="space-y-4 pt-2">
               {/* Table / List */}
               <div className="rounded-xl border bg-card overflow-hidden">
                 <div className="grid grid-cols-1 divide-y divide-border/60">
                   {(() => {
-                    const movements = selectedProduct.recentMovements ?? []
+                    const movements = historyProduct.recentMovements ?? []
                     const totalMovements = movements.length
                     const ITEMS_PER_PAGE = 5
                     const totalPages = Math.ceil(totalMovements / ITEMS_PER_PAGE) || 1
