@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 
+import { formatPrice } from "@/lib/utils"
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 const revenueConfig: ChartConfig = {
@@ -42,16 +44,18 @@ export default function ReportsPage() {
   const { data: revenueData, isLoading: revLoading } = useSWR(`/api/dashboard/revenue?range=${range}`, fetcher)
   const { data: categoryData, isLoading: catLoading } = useSWR(`/api/dashboard/categories?range=${range}`, fetcher)
   const { data: topProducts, isLoading: topLoading } = useSWR(`/api/dashboard/reports/top-products?range=${range}`, fetcher)
+  const { data: workspace } = useSWR("/api/workspaces/current", fetcher)
+  const currency = (workspace as any)?.currency || "KES"
 
   const handleExport = () => {
     window.print()
   }
 
   const kpis = [
-    { label: "Total Revenue", value: stats?.revenue.value, change: stats?.revenue.change, icon: DollarSign, color: "text-emerald-500", prefix: "$" },
-    { label: "Total Costs", value: stats?.costs.value, change: stats?.costs.change, icon: ShoppingBag, color: "text-red-500", prefix: "$" },
-    { label: "Net Profit", value: stats?.profit.value, change: stats?.profit.change, icon: Percent, color: "text-blue-500", prefix: "$" },
-    { label: "Avg Order Value", value: stats?.aov.value, change: stats?.aov.change, icon: Package, color: "text-amber-500", prefix: "$" },
+    { label: "Total Revenue", value: stats?.revenue.value, change: stats?.revenue.change, icon: DollarSign, color: "text-emerald-500" },
+    { label: "Total Costs", value: stats?.costs.value, change: stats?.costs.change, icon: ShoppingBag, color: "text-red-500" },
+    { label: "Net Profit", value: stats?.profit.value, change: stats?.profit.change, icon: Percent, color: "text-blue-500" },
+    { label: "Avg Order Value", value: stats?.aov.value, change: stats?.aov.change, icon: Package, color: "text-amber-500" },
   ]
 
   return (
@@ -96,7 +100,7 @@ export default function ReportsPage() {
               ) : (
                 <>
                   <p className="mt-1 text-2xl font-bold">
-                    {kpi.prefix}{typeof kpi.value === 'number' ? kpi.value.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
+                    {typeof kpi.value === 'number' ? formatPrice(kpi.value, currency) : '0'}
                   </p>
                   <p className={`mt-1 flex items-center gap-1 text-[10px] ${kpi.change?.startsWith('+') ? 'text-emerald-500' : 'text-red-500'}`}>
                     <TrendingUp className="h-2.5 w-2.5" />{kpi.change} vs last period
@@ -133,8 +137,23 @@ export default function ReportsPage() {
                   </defs>
                   <CartesianGrid vertical={false} strokeDasharray="3 3" />
                   <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} minTickGap={30} />
-                  <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => currency === "USD" ? `$${(v / 1000).toFixed(0)}k` : `${currency} ${(v / 1000).toFixed(0)}k`} />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        formatter={(value, name) => (
+                          <div className="flex items-center justify-between gap-8">
+                            <span className="text-muted-foreground">
+                              {name === "revenue" ? "Revenue" : name === "costs" ? "Costs" : name}
+                            </span>
+                            <span className="font-mono font-medium">
+                              {formatPrice(Number(value), currency)}
+                            </span>
+                          </div>
+                        )}
+                      />
+                    }
+                  />
                   <ChartLegend content={<ChartLegendContent />} />
                   <Area type="monotone" dataKey="revenue" stroke="var(--color-revenue)" strokeWidth={2} fill="url(#fillRev)" />
                   <Area type="monotone" dataKey="costs" stroke="var(--color-costs)" strokeWidth={2} fill="url(#fillCost)" />
@@ -183,7 +202,24 @@ export default function ReportsPage() {
               <ChartContainer config={pieConfig} className="h-[240px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <ChartTooltip content={<ChartTooltipContent nameKey="category" hideLabel />} />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          nameKey="category"
+                          hideLabel
+                          formatter={(value, name) => (
+                            <div className="flex items-center justify-between gap-8">
+                              <span className="text-muted-foreground">
+                                {name || "Revenue Share"}
+                              </span>
+                              <span className="font-mono font-medium">
+                                {formatPrice(Number(value), currency)}
+                              </span>
+                            </div>
+                          )}
+                        />
+                      }
+                    />
                     <Pie 
                       data={categoryData || []} 
                       dataKey="value" 

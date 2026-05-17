@@ -51,7 +51,7 @@ const paymentConfig: Record<string, { style: string; label: string }> = {
 export default function OrdersPage() {
   const { mutate } = useSWRConfig()
   const { data: workspace } = useSWR("/api/workspaces/current", fetcher)
-  const currency = workspace?.currency || "KES"
+  const currency = (workspace as any)?.currency || "KES"
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   
