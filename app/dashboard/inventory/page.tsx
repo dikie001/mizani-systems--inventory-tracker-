@@ -1147,14 +1147,14 @@ function InventoryPageContent() {
         </DialogContent>
       </Dialog>
       <Dialog open={!!detailsProductId} onOpenChange={(open) => !open && setDetailsProductId(null)}>
-        <DialogContent className="sm:max-w-[500px] p-5 gap-4">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader className="space-y-1">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-base shadow-inner">
                 {selectedProduct?.name.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                <DialogTitle className="text-lg font-bold truncate leading-none mb-1">
+                <DialogTitle className="text-2xl font-bold truncate leading-none mb-1">
                   {selectedProduct?.name}
                 </DialogTitle>
                 <div className="flex items-center gap-2">
@@ -1188,7 +1188,7 @@ function InventoryPageContent() {
               <p className="text-xs font-semibold text-red-700">Failed to load product details</p>
             </div>
           ) : selectedProduct ? (
-            <div className="space-y-4 pt-3">
+            <div className="space-y-4 pt-2">
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-2 bg-muted/30 p-3 rounded-xl border border-muted/50 text-center">
                 <div className="flex flex-col justify-center">
@@ -1265,33 +1265,29 @@ function InventoryPageContent() {
               </div>
 
               {/* Footer Buttons */}
-              <DialogFooter className="gap-2 pt-1 flex flex-row justify-end">
+              <div className="flex justify-end gap-3 pt-3 border-t">
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  className="h-8 text-xs shadow-sm"
                   onClick={() => {
                     setDetailsProductId(null)
                     beginAdjustment(selectedProduct)
                   }}
                 >
-                  <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" />
+                  <ArrowUpDown className="mr-2 h-4 w-4 text-muted-foreground" />
                   Adjust Stock
                 </Button>
                 <Button
                   type="button"
-                  size="sm"
-                  className="h-8 text-xs shadow-sm"
                   onClick={() => {
                     setDetailsProductId(null)
                     beginEdit(selectedProduct)
                   }}
                 >
-                  <Edit className="mr-1.5 h-3.5 w-3.5" />
+                  <Edit className="mr-2 h-4 w-4" />
                   Edit Catalog
                 </Button>
-              </DialogFooter>
+              </div>
             </div>
           ) : null}
         </DialogContent>
