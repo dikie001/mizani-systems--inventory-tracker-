@@ -31,6 +31,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { WorkspaceSwitcher } from "@/components/workspace-switcher"
 
 const mainNavItems = [
   { title: "Dashboard", icon: Home, href: "/dashboard", badge: null },
@@ -116,30 +117,7 @@ export function DashboardSidebar() {
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="bg-transparent">
       <SidebarHeader className="h-16 justify-center border-b border-sidebar-border/60 px-3 py-0 group-data-[collapsible=icon]:h-16">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              asChild
-              tooltip={session?.user?.workspaceName || "Workspace"}
-              className="h-11 rounded-lg px-2 text-sidebar-foreground transition-all duration-200 group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:border group-data-[collapsible=icon]:border-sidebar-border/50 group-data-[collapsible=icon]:bg-sidebar-accent/30 group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/40"
-            >
-              <Link href="/dashboard" onClick={handleNavClick}>
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm shadow-emerald-950/10 transition-transform group-hover:scale-105">
-                  <Box className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col gap-0 leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="text-[14px] font-bold tracking-tight text-white">
-                    {session?.user?.workspaceName || "Mizani"}
-                  </span>
-                  <span className="text-[10px] font-medium tracking-wide text-sidebar-foreground/45 uppercase">
-                    Workspace
-                  </span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <WorkspaceSwitcher />
       </SidebarHeader>
 
       <SidebarContent className="gap-4 px-3 py-4 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3">
