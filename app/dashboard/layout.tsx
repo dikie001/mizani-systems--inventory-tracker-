@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 
 import { DashboardShell } from "./dashboard-shell"
+import { CreateWorkspaceModal } from "@/components/modals/create-workspace-modal"
 
 export const metadata: Metadata = {
   title: "Dashboard | StockVault",
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     "Manage your inventory, track orders, and monitor key metrics from your StockVault dashboard.",
 }
 
+import { Suspense } from "react"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import prisma from "@/lib/prisma"
@@ -38,5 +40,12 @@ export default async function DashboardLayout({
     redirect("/onboarding")
   }
 
-  return <DashboardShell>{children}</DashboardShell>
+  return (
+    <>
+      <DashboardShell>{children}</DashboardShell>
+      <Suspense fallback={null}>
+        <CreateWorkspaceModal />
+      </Suspense>
+    </>
+  )
 }

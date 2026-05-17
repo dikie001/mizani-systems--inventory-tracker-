@@ -60,10 +60,12 @@ export function WorkspaceSwitcher() {
       const data = await getWorkspaces()
       setWorkspaces(data)
     }
-    if (session?.user?.id) {
+    if (session?.user?.id && open) {
+      loadWorkspaces()
+    } else if (session?.user?.id && workspaces.length === 0) {
       loadWorkspaces()
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id, open])
 
   async function onWorkspaceSelect(workspace: Workspace) {
     if (workspace.id === currentWorkspaceId) {
@@ -155,7 +157,9 @@ export function WorkspaceSwitcher() {
               <CommandItem
                 onSelect={() => {
                   setOpen(false)
-                  router.push("/onboarding")
+                  const url = new URL(window.location.href)
+                  url.searchParams.set("createWorkspace", "true")
+                  router.push(url.pathname + url.search)
                 }}
                 className="flex items-center gap-2 px-2 py-2 cursor-pointer"
               >
