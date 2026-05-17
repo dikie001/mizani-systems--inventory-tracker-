@@ -29,17 +29,17 @@ import { OrderDetailsDialog } from "@/components/orders/order-details-dialog"
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 const statusConfig: Record<string, { style: string; label: string }> = {
-  delivered: { style: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", label: "Delivered" },
-  shipped: { style: "bg-blue-500/10 text-blue-600 dark:text-blue-400", label: "Shipped" },
-  processing: { style: "bg-violet-500/10 text-violet-600 dark:text-violet-400", label: "Processing" },
-  pending: { style: "bg-amber-500/10 text-amber-600 dark:text-amber-400", label: "Pending" },
-  cancelled: { style: "bg-red-500/10 text-red-600 dark:text-red-400", label: "Cancelled" },
+  delivered: { style: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400", label: "Delivered" },
+  shipped: { style: "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400", label: "Shipped" },
+  processing: { style: "bg-violet-500/10 text-violet-600 border-violet-500/20 dark:text-violet-400", label: "Processing" },
+  pending: { style: "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400", label: "Pending" },
+  cancelled: { style: "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400", label: "Cancelled" },
 }
 
 const paymentConfig: Record<string, { style: string; label: string }> = {
-  paid: { style: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", label: "Paid" },
-  unpaid: { style: "bg-amber-500/10 text-amber-600 dark:text-amber-400", label: "Unpaid" },
-  refunded: { style: "bg-muted text-muted-foreground", label: "Refunded" },
+  paid: { style: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400", label: "Paid" },
+  unpaid: { style: "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400", label: "Unpaid" },
+  refunded: { style: "bg-muted text-muted-foreground border-muted", label: "Refunded" },
 }
 
 export default function OrdersPage() {
@@ -178,38 +178,67 @@ export default function OrdersPage() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Order ID</TableHead>
+                <TableRow className="hover:bg-transparent border-b">
+                  <TableHead className="w-[50px] text-center">#</TableHead>
+                  <TableHead className="w-[120px]">Order ID</TableHead>
                   <TableHead>Customer</TableHead>
-                  <TableHead className="text-right">Items</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="w-10" />
+                  <TableHead className="w-[100px] text-right">Items</TableHead>
+                  <TableHead className="w-[120px] text-right">Total</TableHead>
+                  <TableHead className="w-[130px] pl-6">Status</TableHead>
+                  <TableHead className="w-[130px] pl-6">Payment</TableHead>
+                  <TableHead className="w-[140px]">Date</TableHead>
+                  <TableHead className="w-[50px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders?.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono text-xs font-medium">{order.id.slice(0, 8)}</TableCell>
-                    <TableCell className="font-medium">{order.customer}</TableCell>
-                    <TableCell className="text-right font-mono">{order.items}</TableCell>
-                    <TableCell className="text-right font-mono">${order.total.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={`text-xs ${statusConfig[order.status]?.style}`}>
+                {orders?.map((order, index) => (
+                  <TableRow 
+                    key={order.id}
+                    className="group transition-colors hover:bg-muted/30 cursor-pointer"
+                    onClick={() => { setSelectedOrderId(order.id); setIsDetailsOpen(true); }}
+                  >
+                    <TableCell className="text-center font-mono text-xs text-muted-foreground/80 py-2.5">
+                      {index + 1}
+                    </TableCell>
+                    <TableCell className="py-2.5 font-mono">
+                      <code className="rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        {order.id.slice(0, 8)}
+                      </code>
+                    </TableCell>
+                    <TableCell className="py-2.5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary shadow-inner transition-transform group-hover:scale-105">
+                          <span className="text-xs font-bold">{order.customer.charAt(0).toUpperCase()}</span>
+                        </div>
+                        <div className="truncate font-semibold tracking-tight text-foreground text-sm">
+                          {order.customer}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right py-2.5 font-mono text-sm">{order.items}</TableCell>
+                    <TableCell className="text-right py-2.5 font-mono font-medium text-sm">${order.total.toFixed(2)}</TableCell>
+                    <TableCell className="py-2.5 pl-6">
+                      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border
+                        ${statusConfig[order.status]?.style || "bg-muted text-muted-foreground border-muted"}
+                      `}>
                         {statusConfig[order.status]?.label}
-                      </Badge>
+                      </span>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={`text-xs ${paymentConfig[order.payment]?.style}`}>
+                    <TableCell className="py-2.5 pl-6">
+                      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border
+                        ${paymentConfig[order.payment]?.style || "bg-muted text-muted-foreground border-muted"}
+                      `}>
                         {paymentConfig[order.payment]?.label}
-                      </Badge>
+                      </span>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{order.date}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-xs text-muted-foreground py-2.5">{order.date}</TableCell>
+                    <TableCell className="py-2.5 w-[50px]" onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon-xs"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setSelectedOrderId(order.id); setIsDetailsOpen(true); }}><Eye className="mr-2 h-3.5 w-3.5" />View details</DropdownMenuItem>
                           
@@ -236,7 +265,7 @@ export default function OrdersPage() {
                 ))}
                 {orders?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground italic">No orders found.</TableCell>
+                    <TableCell colSpan={9} className="h-24 text-center text-muted-foreground italic">No orders found.</TableCell>
                   </TableRow>
                 )}
               </TableBody>
