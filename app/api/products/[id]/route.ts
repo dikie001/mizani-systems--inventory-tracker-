@@ -78,9 +78,17 @@ export async function PUT(request: Request, context: RouteContext) {
       }
 
       const category = await tx.category.upsert({
-        where: { name: payload.category },
+        where: {
+          workspaceId_name: {
+            workspaceId: existingProduct.workspaceId,
+            name: payload.category,
+          }
+        },
         update: {},
-        create: { name: payload.category },
+        create: {
+          name: payload.category,
+          workspaceId: existingProduct.workspaceId,
+        },
       })
 
 
