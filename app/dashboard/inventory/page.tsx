@@ -902,8 +902,8 @@ function InventoryPageContent() {
             </DialogDescription>
           </DialogHeader>
 
-          <form className="space-y-6 pt-4" onSubmit={handleProductSubmit}>
-            <div className="space-y-2">
+          <form className="space-y-4 pt-2" onSubmit={handleProductSubmit}>
+            <div className="space-y-1.5">
               <Label htmlFor="product-name">Product Name *</Label>
               <Input
                 id="product-name"
@@ -916,7 +916,7 @@ function InventoryPageContent() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="product-sku">SKU / Item Code *</Label>
                 <Input
                   id="product-sku"
@@ -928,7 +928,7 @@ function InventoryPageContent() {
                   required
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="product-category">Category *</Label>
                 <Input
                   id="product-category"
@@ -947,11 +947,11 @@ function InventoryPageContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="product-price">Unit Price (USD) *</Label>
+            <div className="grid grid-cols-4 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="product-price" className="text-xs">Price *</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                   <Input
                     id="product-price"
                     name="price"
@@ -961,59 +961,53 @@ function InventoryPageContent() {
                     value={formValues.price}
                     onChange={handleFormValueChange}
                     placeholder="0.00"
-                    className="pl-7"
+                    className="pl-6"
                     required
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-3">
-              <Label>Inventory Thresholds *</Label>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="product-stock" className="text-xs text-muted-foreground font-normal">Current Stock</Label>
-                  <Input
-                    id="product-stock"
-                    name="stock"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={formValues.stock}
-                    onChange={handleFormValueChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="product-minStock" className="text-xs text-muted-foreground font-normal">Min Threshold</Label>
-                  <Input
-                    id="product-minStock"
-                    name="minStock"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={formValues.minStock}
-                    onChange={handleFormValueChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="product-maxStock" className="text-xs text-muted-foreground font-normal">Max Capacity</Label>
-                  <Input
-                    id="product-maxStock"
-                    name="maxStock"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={formValues.maxStock}
-                    onChange={handleFormValueChange}
-                    required
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="product-stock" className="text-xs">Stock *</Label>
+                <Input
+                  id="product-stock"
+                  name="stock"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={formValues.stock}
+                  onChange={handleFormValueChange}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="product-minStock" className="text-xs">Min *</Label>
+                <Input
+                  id="product-minStock"
+                  name="minStock"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={formValues.minStock}
+                  onChange={handleFormValueChange}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="product-maxStock" className="text-xs">Max *</Label>
+                <Input
+                  id="product-maxStock"
+                  name="maxStock"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={formValues.maxStock}
+                  onChange={handleFormValueChange}
+                  required
+                />
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="product-description">Description / Notes</Label>
               <Textarea
                 id="product-description"
@@ -1021,11 +1015,11 @@ function InventoryPageContent() {
                 value={formValues.description}
                 onChange={handleFormValueChange}
                 placeholder="Provide additional details about this item..."
-                className="min-h-[100px] resize-none"
+                className="min-h-[60px] resize-none"
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 pt-3 border-t">
               <Button type="button" variant="outline" onClick={() => setFormOpen(false)} disabled={submittingForm}>
                 Cancel
               </Button>
