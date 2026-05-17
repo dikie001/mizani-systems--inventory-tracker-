@@ -82,6 +82,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 type InventoryProduct = {
   id: string
@@ -838,17 +844,25 @@ function InventoryPageContent() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium py-2.5 w-[110px]">
-                      {formatCurrency(product.price)}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help hover:text-primary transition-colors underline decoration-dotted decoration-muted-foreground/30 underline-offset-4">
+                              {formatCurrency(product.price * product.stock)}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <span className="text-xs font-medium">
+                              {formatCurrency(product.price)} per unit
+                            </span>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </TableCell>
-                    <TableCell className="text-right py-2.5 w-[140px]">
-                      <div className="flex flex-col items-end gap-0.5">
-                        <span className={`text-sm font-semibold ${product.stock <= product.minStock ? "text-red-500 font-bold" : "text-foreground"}`}>
-                          {product.stock} remaining
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">
-                          Min alert: {product.minStock}
-                        </span>
-                      </div>
+                    <TableCell className="text-right py-2.5 w-[140px] font-mono">
+                      <span className={`text-sm font-semibold ${product.stock <= product.minStock ? "text-red-500 font-bold" : "text-foreground"}`}>
+                        {product.stock}
+                      </span>
                     </TableCell>
                     <TableCell className="py-2.5 w-[110px] pl-6">
                       <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border
