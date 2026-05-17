@@ -824,7 +824,11 @@ function InventoryPageContent() {
               </TableHeader>
               <TableBody>
                 {products?.map((product, index) => (
-                  <TableRow key={product.id} className="group transition-colors hover:bg-muted/30">
+                  <TableRow
+                    key={product.id}
+                    className="group transition-colors hover:bg-muted/30 cursor-pointer"
+                    onClick={() => setDetailsProductId(product.id)}
+                  >
                     <TableCell className="text-center font-mono text-xs text-muted-foreground/80 py-2.5">
                       {index + 1}
                     </TableCell>
@@ -898,7 +902,7 @@ function InventoryPageContent() {
                         {statusConfig[product.status].label}
                       </span>
                     </TableCell>
-                    <TableCell className="py-2.5 w-[50px]">
+                    <TableCell className="py-2.5 w-[50px]" onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -906,10 +910,6 @@ function InventoryPageContent() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => setDetailsProductId(product.id)} className="cursor-pointer">
-                            <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
-                            View Details
-                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => beginEdit(product)} className="cursor-pointer">
                             <Edit className="mr-2 h-4 w-4 text-muted-foreground" />
                             Edit Product
@@ -1146,174 +1146,156 @@ function InventoryPageContent() {
           </form>
         </DialogContent>
       </Dialog>
-
       <Dialog open={!!detailsProductId} onOpenChange={(open) => !open && setDetailsProductId(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Product Intelligence</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Deep dive into stock levels, historical movements, and catalog data.
-            </DialogDescription>
+        <DialogContent className="sm:max-w-[440px] p-5 gap-4">
+          <DialogHeader className="space-y-1">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-base shadow-inner">
+                {selectedProduct?.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <DialogTitle className="text-lg font-bold truncate leading-none mb-1">
+                  {selectedProduct?.name}
+                </DialogTitle>
+                <div className="flex items-center gap-2">
+                  <code className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                    {selectedProduct?.sku}
+                  </code>
+                  <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider border
+                    ${
+                      selectedProduct?.status === "in-stock"
+                        ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400"
+                        : selectedProduct?.status === "low-stock"
+                          ? "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400"
+                          : "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400"
+                    }
+                  `}>
+                    {selectedProduct ? statusConfig[selectedProduct.status].label : ""}
+                  </span>
+                </div>
+              </div>
+            </div>
           </DialogHeader>
 
           {loadingSelectedProduct ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <Loader2 className="h-8 w-8 animate-spin text-primary/40" />
-              <p className="text-sm text-muted-foreground font-medium animate-pulse">Retrieving product data...</p>
+            <div className="flex flex-col items-center justify-center py-12 gap-2">
+              <Loader2 className="h-6 w-6 animate-spin text-primary/40" />
+              <p className="text-xs text-muted-foreground font-medium animate-pulse">Loading details...</p>
             </div>
           ) : selectedProductError ? (
-            <div className="rounded-2xl border border-red-200 bg-red-500/5 px-6 py-8 text-center">
-              <AlertTriangle className="h-10 w-10 text-red-500 mx-auto mb-3" />
-              <p className="text-sm font-semibold text-red-700">Failed to load product details</p>
-              <p className="text-xs text-red-600/70 mt-1">{selectedProductError.message || "An unexpected error occurred."}</p>
+            <div className="rounded-xl border border-red-200 bg-red-500/5 p-4 text-center">
+              <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+              <p className="text-xs font-semibold text-red-700">Failed to load product details</p>
             </div>
           ) : selectedProduct ? (
-            <div className="space-y-6 pt-4">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl bg-muted/30 p-5 border border-muted/50">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary shadow-lg text-primary-foreground">
-                    <span className="text-2xl font-black">{selectedProduct.name.charAt(0).toUpperCase()}</span>
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold tracking-tight">{selectedProduct.name}</h2>
-                    <code className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-                      {selectedProduct.sku}
-                    </code>
-                  </div>
+            <div className="space-y-4">
+              {/* Stats Row */}
+              <div className="grid grid-cols-3 gap-2 bg-muted/30 p-3 rounded-xl border border-muted/50 text-center">
+                <div className="flex flex-col justify-center">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Category</span>
+                  <span className="mt-1 text-xs font-semibold text-foreground truncate px-1">
+                    {selectedProduct.category}
+                  </span>
                 </div>
-                <div className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider
-                  ${
-                    selectedProduct.status === "in-stock"
-                      ? "bg-emerald-500 text-white"
-                      : selectedProduct.status === "low-stock"
-                        ? "bg-amber-500 text-white"
-                        : "bg-red-500 text-white"
-                  }
-                `}>
-                  {statusConfig[selectedProduct.status].label}
-                </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="group rounded-2xl border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-sm">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Categorization</p>
-                  <p className="mt-2 text-lg font-bold">{selectedProduct.category}</p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">Primary classification</p>
-                </div>
-
-                <div className="group rounded-2xl border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-sm">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Market Pricing</p>
-                  <p className="mt-2 text-2xl font-black text-primary">
+                <div className="flex flex-col justify-center border-x border-border/50">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Unit Price</span>
+                  <span className="mt-1 text-xs font-bold text-primary">
                     {formatCurrency(selectedProduct.price)}
-                  </p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">Unit cost basis</p>
+                  </span>
                 </div>
-                <div className="group rounded-2xl border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-sm">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Inventory Balance</p>
-                  <div className="mt-2 flex items-baseline gap-2">
-                    <p className="text-2xl font-black">{selectedProduct.stock}</p>
-                    <span className="text-xs font-medium text-muted-foreground">UNITS</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground/60 mt-1">
-                    Thresholds: <span className="font-mono">{selectedProduct.minStock}</span> to <span className="font-mono">{selectedProduct.maxStock}</span>
-                  </p>
+                <div className="flex flex-col justify-center">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Stock Level</span>
+                  <span className={`mt-1 text-xs font-bold ${selectedProduct.stock <= selectedProduct.minStock ? "text-red-500 font-bold" : "text-foreground"}`}>
+                    {selectedProduct.stock}
+                  </span>
                 </div>
               </div>
 
-              <div className="rounded-2xl border bg-background p-5">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Product Description</p>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {selectedProduct.description || "Detailed intelligence description not available for this item."}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border bg-background overflow-hidden">
-                <div className="flex items-center justify-between border-b bg-muted/30 px-5 py-3">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Stock Activity Log</p>
-                    <p className="text-[10px] text-muted-foreground/60">Historical audit trail</p>
-                  </div>
-                  <Badge variant="outline" className="font-mono text-[10px] border-muted-foreground/20">
-                    {selectedProduct.movementCount} TOTAL
-                  </Badge>
+              {/* Description */}
+              {selectedProduct.description && (
+                <div className="rounded-xl border p-3 bg-card/30">
+                  <h4 className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Description</h4>
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    {selectedProduct.description}
+                  </p>
                 </div>
-                <div className="max-h-[240px] overflow-auto divide-y">
+              )}
+
+              {/* Activity Log */}
+              <div className="rounded-xl border bg-card overflow-hidden">
+                <div className="flex items-center justify-between border-b bg-muted/20 px-3.5 py-2">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Activity Log</span>
+                  <span className="font-mono text-[9px] text-muted-foreground/60">
+                    {selectedProduct.movementCount} total movements
+                  </span>
+                </div>
+                <div className="max-h-[130px] overflow-auto divide-y">
                   {selectedProduct.recentMovements?.length ? (
-                    selectedProduct.recentMovements.map((movement) => (
+                    selectedProduct.recentMovements.slice(0, 3).map((movement) => (
                       <div
                         key={movement.id}
-                        className="flex items-center justify-between px-5 py-3 transition-colors hover:bg-muted/30"
+                        className="flex items-center justify-between px-3.5 py-2 hover:bg-muted/10 transition-colors"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center
+                        <div className="flex items-center gap-2">
+                          <div className={`h-6 w-6 rounded-md flex items-center justify-center shrink-0
                             ${movement.quantity > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}
                           `}>
-                            {movement.quantity > 0 ? <Plus className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4 rotate-180" />}
+                            {movement.quantity > 0 ? <Plus className="h-3 w-3" /> : <ArrowUpDown className="h-3 w-3 rotate-180" />}
                           </div>
                           <div>
-                            <p className="text-xs font-bold">{movement.type}</p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-[11px] font-semibold">{movement.type}</p>
+                            <p className="text-[9px] text-muted-foreground/75">
                               {formatDate(movement.createdAt)}
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p
-                            className={`font-mono text-xs font-black ${
-                              movement.quantity > 0
-                                ? "text-emerald-600"
-                                : "text-red-600"
-                            }`}
-                          >
-                            {movement.quantity > 0 ? "+" : ""}
-                            {movement.quantity}
-                          </p>
-                          <p className="text-[10px] uppercase tracking-tighter text-muted-foreground font-bold">
-                            {movement.status}
+                          <p className={`font-mono text-xs font-bold ${movement.quantity > 0 ? "text-emerald-600" : "text-red-600"}`}>
+                            {movement.quantity > 0 ? "+" : ""}{movement.quantity}
                           </p>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="py-12 text-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted mx-auto mb-3">
-                        <Loader2 className="h-6 w-6 text-muted-foreground/20" />
-                      </div>
-                      <p className="text-xs text-muted-foreground">No recent stock movements recorded.</p>
+                    <div className="py-6 text-center text-[11px] text-muted-foreground">
+                      No recent stock movements recorded.
                     </div>
                   )}
                 </div>
               </div>
 
-              <DialogFooter className="gap-2 sm:gap-0 pt-2">
+              {/* Footer Buttons */}
+              <DialogFooter className="gap-2 sm:gap-0 pt-1 flex-row justify-end">
                 <Button
                   type="button"
                   variant="outline"
-                  className="h-11 shadow-sm"
+                  size="sm"
+                  className="h-8 text-xs shadow-sm"
                   onClick={() => {
                     setDetailsProductId(null)
                     beginAdjustment(selectedProduct)
                   }}
                 >
-                  <ArrowUpDown className="mr-2 h-4 w-4" />
+                  <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" />
                   Adjust Stock
                 </Button>
                 <Button
                   type="button"
-                  className="h-11 shadow-md"
+                  size="sm"
+                  className="h-8 text-xs shadow-sm"
                   onClick={() => {
                     setDetailsProductId(null)
                     beginEdit(selectedProduct)
                   }}
                 >
-                  <Edit className="mr-2 h-4 w-4" />
+                  <Edit className="mr-1.5 h-3.5 w-3.5" />
                   Edit Catalog
                 </Button>
               </DialogFooter>
             </div>
           ) : null}
         </DialogContent>
-      </Dialog>
+      </Dialog>g>
 
       <Dialog
         open={adjustmentOpen}
