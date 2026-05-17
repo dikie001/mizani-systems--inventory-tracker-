@@ -76,12 +76,13 @@ const categoryChartConfig: ChartConfig = {
 export default function DashboardPage() {
   const { data: session } = useSession()
   const [revMetric, setRevMetric] = useState<"revenue" | "orders">("revenue")
+  const [viewInterval, setViewInterval] = useState<"monthly" | "weekly">("monthly")
   const { data: stats, isLoading: statsLoading } = useSWR(
     "/api/dashboard/stats",
     fetcher
   )
   const { data: revenueData, isLoading: revLoading } = useSWR(
-    "/api/dashboard/revenue",
+    `/api/dashboard/revenue?interval=${viewInterval}`,
     fetcher
   )
   const { data: categoryData, isLoading: catLoading } = useSWR(
@@ -162,27 +163,46 @@ export default function DashboardPage() {
         {/* Revenue Chart */}
         <Card className="flex flex-col">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <CardTitle>Revenue Overview</CardTitle>
                 <CardDescription>
-                  Monthly revenue and order trends
+                  {viewInterval === "monthly" ? "Monthly" : "Weekly"} revenue and order trends
                 </CardDescription>
               </div>
-              <Tabs
-                value={revMetric}
-                onValueChange={(v) => setRevMetric(v as "revenue" | "orders")}
-                className="w-auto"
-              >
-                <TabsList className="h-8">
-                  <TabsTrigger value="revenue" className="text-xs">
-                    Revenue
-                  </TabsTrigger>
-                  <TabsTrigger value="orders" className="text-xs">
-                    Orders
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <div className="flex items-center gap-3">
+                {/* Interval Toggle */}
+                <Tabs
+                  value={viewInterval}
+                  onValueChange={(v) => setViewInterval(v as "monthly" | "weekly")}
+                  className="w-auto"
+                >
+                  <TabsList className="h-8">
+                    <TabsTrigger value="monthly" className="text-xs">
+                      Monthly
+                    </TabsTrigger>
+                    <TabsTrigger value="weekly" className="text-xs">
+                      Weekly
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                {/* Metric Toggle */}
+                <Tabs
+                  value={revMetric}
+                  onValueChange={(v) => setRevMetric(v as "revenue" | "orders")}
+                  className="w-auto"
+                >
+                  <TabsList className="h-8">
+                    <TabsTrigger value="revenue" className="text-xs">
+                      Revenue
+                    </TabsTrigger>
+                    <TabsTrigger value="orders" className="text-xs">
+                      Orders
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="flex-1">
@@ -228,7 +248,7 @@ export default function DashboardPage() {
                     tickMargin={8}
                     padding={{ left: 0, right: 0 }}
                     label={{
-                      value: "Month",
+                      value: viewInterval === "monthly" ? "Month" : "Week (Starting Mon)",
                       position: "insideBottom",
                       offset: -10,
                       fill: "var(--muted-foreground)",
