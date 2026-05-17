@@ -1147,7 +1147,7 @@ function InventoryPageContent() {
         </DialogContent>
       </Dialog>
       <Dialog open={!!detailsProductId} onOpenChange={(open) => !open && setDetailsProductId(null)}>
-        <DialogContent className="sm:max-w-[440px] p-5 gap-4">
+        <DialogContent className="sm:max-w-[500px] p-5 gap-4">
           <DialogHeader className="space-y-1">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-base shadow-inner">
@@ -1265,7 +1265,7 @@ function InventoryPageContent() {
               </div>
 
               {/* Footer Buttons */}
-              <DialogFooter className="gap-2 sm:gap-0 pt-1 flex-row justify-end">
+              <DialogFooter className="gap-2 pt-1 flex flex-row justify-end">
                 <Button
                   type="button"
                   variant="outline"
