@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { createWorkspace } from "./actions"
+import { createWorkspace } from "@/lib/actions/workspace"
 import { toast } from "sonner"
 
 const steps = [
