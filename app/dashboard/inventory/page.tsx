@@ -1611,12 +1611,20 @@ function InventoryPageContent() {
                 <Label htmlFor="adjustment-type">Reason for Adjustment</Label>
                 <Select
                   value={adjustmentValues.type}
-                  onValueChange={(value) =>
-                    setAdjustmentValues((current) => ({
-                      ...current,
-                      type: value,
-                    }))
-                  }
+                  onValueChange={(value) => {
+                    if (value === "Sale") {
+                      setAdjustmentOpen(false)
+                      const product = products?.find((p) => p.id === adjustmentValues.productId)
+                      if (product) {
+                        beginRecordSale(product)
+                      }
+                    } else {
+                      setAdjustmentValues((current) => ({
+                        ...current,
+                        type: value,
+                      }))
+                    }
+                  }}
                 >
                   <SelectTrigger id="adjustment-type" className="w-full">
                     <SelectValue placeholder="Select movement type" />
