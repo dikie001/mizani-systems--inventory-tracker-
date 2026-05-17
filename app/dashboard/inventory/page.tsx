@@ -1295,7 +1295,7 @@ function InventoryPageContent() {
             </div>
           ) : null}
         </DialogContent>
-      </Dialog>g>
+      </Dialog>
 
       <Dialog
         open={adjustmentOpen}
