@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { useSearchParams } from "next/navigation"
+import { usePathname } from "next/navigation"
 
 function getInitials(name?: string | null, email?: string | null) {
   if (name?.trim()) {
@@ -44,8 +44,7 @@ function getInitials(name?: string | null, email?: string | null) {
 }
 
 export function SuperAdminHeader() {
-  const searchParams = useSearchParams()
-  const activeTab = searchParams.get("tab") || "overview"
+  const pathname = usePathname()
   const { theme, setTheme } = useTheme()
   const { data: session, status } = useSession()
   const [isAvatarReady, setIsAvatarReady] = useState(false)
@@ -93,13 +92,12 @@ export function SuperAdminHeader() {
     }
   }, [status, userImage, userName])
 
-  const getActiveTabLabel = (tab: string) => {
-    switch (tab) {
-      case "overview": return "Overview"
-      case "users": return "Users & Accounts"
-      case "workspaces": return "Workspaces Portfolio"
-      case "audit": return "Global Activity Trail"
-      default: return "Dashboard"
+  const getActiveTabLabel = (path: string) => {
+    switch (path) {
+      case "/super-admin/users": return "Users & Accounts"
+      case "/super-admin/workspaces": return "Workspaces Portfolio"
+      case "/super-admin/audit": return "Global Activity Trail"
+      default: return "Overview"
     }
   }
 
@@ -117,7 +115,7 @@ export function SuperAdminHeader() {
         </span>
         <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
         <span className="truncate text-foreground">
-          {getActiveTabLabel(activeTab)}
+          {getActiveTabLabel(pathname)}
         </span>
       </nav>
 

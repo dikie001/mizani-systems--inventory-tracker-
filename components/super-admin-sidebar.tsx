@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
 import {
   Database,
@@ -28,15 +28,14 @@ import {
 } from "@/components/ui/sidebar"
 
 const adminNavItems = [
-  { title: "Overview", icon: Database, id: "overview" },
-  { title: "Users & Accounts", icon: Users, id: "users" },
-  { title: "Workspaces Grid", icon: Briefcase, id: "workspaces" },
-  { title: "Global Activity Trail", icon: Activity, id: "audit" },
+  { title: "Overview", icon: Database, href: "/super-admin" },
+  { title: "Users & Accounts", icon: Users, href: "/super-admin/users" },
+  { title: "Workspaces Grid", icon: Briefcase, href: "/super-admin/workspaces" },
+  { title: "Global Activity Trail", icon: Activity, href: "/super-admin/audit" },
 ]
 
 export function SuperAdminSidebar() {
-  const searchParams = useSearchParams()
-  const activeTab = searchParams.get("tab") || "overview"
+  const pathname = usePathname()
   const { data: session } = useSession()
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
@@ -71,15 +70,15 @@ export function SuperAdminSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
               {adminNavItems.map((item) => (
-                <SidebarMenuItem key={item.id}>
+                <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={activeTab === item.id}
+                    isActive={pathname === item.href}
                     tooltip={item.title}
                     size="lg"
                     className="h-9 rounded-lg px-2.5 text-[12px] font-medium text-sidebar-foreground/75 transition-all duration-200 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:px-0 cursor-pointer hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-foreground data-[active=true]:shadow-sm"
                   >
-                    <Link href={`/super-admin?tab=${item.id}`}>
+                    <Link href={item.href}>
                       <item.icon className="h-4 w-4 shrink-0 text-muted-foreground group-data-[active=true]:text-primary" />
                       {!isCollapsed && (
                         <span className="ml-2.5">
