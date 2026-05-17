@@ -280,7 +280,7 @@ export default function OrdersPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right py-2.5 font-mono text-sm">{order.items}</TableCell>
-                    <TableCell className="text-right py-2.5 font-mono font-medium text-sm">${order.total.toFixed(2)}</TableCell>
+                    <TableCell className="text-right py-2.5 font-mono font-medium text-sm">{formatPrice(order.total, currency)}</TableCell>
                     <TableCell className="py-2.5 pl-6">
                       <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border
                         ${statusConfig[order.status]?.style || "bg-muted text-muted-foreground border-muted"}
