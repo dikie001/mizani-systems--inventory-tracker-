@@ -137,15 +137,15 @@ export function CreateOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create New Order</DialogTitle>
-          <DialogDescription>Add items and customer details to create a new order.</DialogDescription>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="text-2xl font-bold">Create New Order</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">Add items and customer details to create a new order.</DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-6 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="customer">Customer Name</Label>
+        <div className="space-y-4 py-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="customer" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Customer Name</Label>
             <Input
               id="customer"
               placeholder="e.g. John Doe"
@@ -155,8 +155,8 @@ export function CreateOrderDialog({
             />
           </div>
 
-          <div className="grid gap-2">
-            <Label>Add Products</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Add Products</Label>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -187,20 +187,20 @@ export function CreateOrderDialog({
             </div>
           </div>
 
-          <div className="rounded-md border overflow-hidden">
+          <div className="rounded-xl border bg-card overflow-hidden">
             <Table>
-              <TableHeader className="bg-muted/50">
+              <TableHeader className="bg-muted/30">
                 <TableRow>
-                  <TableHead className="text-xs uppercase tracking-wider">Product</TableHead>
-                  <TableHead className="w-[100px] text-xs uppercase tracking-wider text-center">Qty</TableHead>
-                  <TableHead className="text-right text-xs uppercase tracking-wider">Total</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Product</TableHead>
+                  <TableHead className="w-[100px] text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center">Qty</TableHead>
+                  <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-32 text-center text-muted-foreground italic">
+                    <TableCell colSpan={4} className="h-20 text-center text-xs text-muted-foreground italic">
                       No items added yet. Search for products above to start.
                     </TableCell>
                   </TableRow>
@@ -234,17 +234,26 @@ export function CreateOrderDialog({
             </Table>
           </div>
 
-          <div className="flex justify-between items-center py-4 px-2 border-t bg-muted/20 rounded-b-md">
-             <span className="font-semibold text-muted-foreground uppercase tracking-wider text-xs">Order Summary Total</span>
-             <span className="font-bold text-2xl font-mono tracking-tight text-primary">${total.toFixed(2)}</span>
+          <div className="flex justify-between items-center py-3 px-4 border-t bg-muted/20 rounded-b-xl">
+             <span className="font-bold text-muted-foreground uppercase tracking-wider text-[10px]">Order Summary Total</span>
+             <span className="font-extrabold text-2xl font-mono tracking-tight text-primary">${total.toFixed(2)}</span>
           </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-3 pt-3 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={loading || items.length === 0} className="shadow-sm">
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShoppingCart className="mr-2 h-4 w-4" />}
-            Create Order
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating Order...
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Create Order
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
