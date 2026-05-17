@@ -1,18 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useSWRConfig } from "swr"
-import { Plus, Search, Trash2, Loader2, ShoppingCart, Package } from "lucide-react"
-import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -23,6 +18,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Loader2, Package, Plus, Search, Trash2 } from "lucide-react"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import { useSWRConfig } from "swr"
 
 interface Product {
   id: string
