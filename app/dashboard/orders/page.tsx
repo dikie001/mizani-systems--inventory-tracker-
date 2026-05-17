@@ -107,6 +107,23 @@ export default function OrdersPage() {
     }
   }
 
+  const handleUpdatePayment = async (id: string, payment: string) => {
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment }),
+      })
+
+      if (!res.ok) throw new Error("Failed to update payment status")
+
+      toast.success(`Payment marked as ${payment}`)
+      mutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
+    } catch (error: any) {
+      toast.error(error.message)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -242,11 +259,29 @@ export default function OrdersPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setSelectedOrderId(order.id); setIsDetailsOpen(true); }}><Eye className="mr-2 h-3.5 w-3.5" />View details</DropdownMenuItem>
                           
+                          <DropdownMenuSeparator />
+                          {/* Order Status Transitions */}
                           {order.status === "pending" && (
+                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "processing")}><Clock className="mr-2 h-3.5 w-3.5" />Mark Processing</DropdownMenuItem>
+                          )}
+                          {order.status === "processing" && (
                             <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "shipped")}><Truck className="mr-2 h-3.5 w-3.5" />Mark Shipped</DropdownMenuItem>
                           )}
                           {order.status === "shipped" && (
                             <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "delivered")}><Package className="mr-2 h-3.5 w-3.5" />Mark Delivered</DropdownMenuItem>
+                          )}
+
+                          {/* Payment status transitions */}
+                          {order.payment === "unpaid" ? (
+                            <DropdownMenuItem onClick={() => handleUpdatePayment(order.id, "paid")} className="text-emerald-600 dark:text-emerald-400 font-medium">
+                              <DollarSign className="mr-2 h-3.5 w-3.5" />
+                              <span>Mark Paid</span>
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={() => handleUpdatePayment(order.id, "unpaid")} className="text-muted-foreground">
+                              <DollarSign className="mr-2 h-3.5 w-3.5" />
+                              <span>Mark Unpaid</span>
+                            </DropdownMenuItem>
                           )}
                           
                           <DropdownMenuSeparator />

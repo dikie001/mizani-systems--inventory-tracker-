@@ -1,6 +1,6 @@
 "use client"
 
-import useSWR from "swr"
+import useSWR, { useSWRConfig } from "swr"
 import { Loader2, Package, User, Calendar, CreditCard, Activity, DollarSign } from "lucide-react"
 import {
   Dialog,
@@ -12,6 +12,13 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -46,7 +53,8 @@ export function OrderDetailsDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const { data: order, isLoading } = useSWR(
+  const { mutate: globalMutate } = useSWRConfig()
+  const { data: order, isLoading, mutate } = useSWR(
     orderId ? `/api/orders/${orderId}` : null,
     fetcher
   )
@@ -83,23 +91,63 @@ export function OrderDetailsDialog({
               </div>
               <div className="space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Status</span>
-                <div>
-                  <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border
-                    ${statusConfig[order.status]?.style || "bg-muted text-muted-foreground border-muted"}
-                  `}>
-                    {statusConfig[order.status]?.label || order.status}
-                  </span>
-                </div>
+                <Select
+                  value={order.status}
+                  onValueChange={async (val) => {
+                    try {
+                      const res = await fetch(`/api/orders/${order.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: val }),
+                      })
+                      if (!res.ok) throw new Error("Failed to update status")
+                      await mutate()
+                      globalMutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
+                    } catch (err: any) {
+                      console.error(err)
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-7 text-xs bg-muted/20 border-border/60">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="processing">Processing</SelectItem>
+                    <SelectItem value="shipped">Shipped</SelectItem>
+                    <SelectItem value="delivered">Delivered</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Payment</span>
-                <div>
-                  <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border
-                    ${paymentConfig[order.payment]?.style || "bg-muted text-muted-foreground border-muted"}
-                  `}>
-                    {paymentConfig[order.payment]?.label || order.payment}
-                  </span>
-                </div>
+                <Select
+                  value={order.payment}
+                  onValueChange={async (val) => {
+                    try {
+                      const res = await fetch(`/api/orders/${order.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ payment: val }),
+                      })
+                      if (!res.ok) throw new Error("Failed to update payment status")
+                      await mutate()
+                      globalMutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
+                    } catch (err: any) {
+                      console.error(err)
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-7 text-xs bg-muted/20 border-border/60">
+                    <SelectValue placeholder="Payment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unpaid">Unpaid</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
