@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Building2, 
@@ -72,6 +73,7 @@ const goalOptions = [
 ]
 
 export default function OnboardingClient() {
+  const { update } = useSession()
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState({
     name: "",
@@ -100,6 +102,7 @@ export default function OnboardingClient() {
     try {
       const result = await createWorkspace(formData)
       if (result.success) {
+        await update({ workspaceId: result.workspaceId })
         toast.success("Workspace created successfully!")
         router.push("/dashboard")
         router.refresh()
