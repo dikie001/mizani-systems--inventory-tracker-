@@ -301,6 +301,15 @@ function InventoryPageContent() {
     emptyStockAdjustment(),
   )
   const [submittingAdjustment, setSubmittingAdjustment] = useState(false)
+  const [saleOpen, setSaleOpen] = useState(false)
+  const [saleValues, setSaleValues] = useState({
+    productId: "",
+    productName: "",
+    currentStock: 0,
+    quantity: "",
+    reference: "Direct Sale",
+  })
+  const [submittingSale, setSubmittingSale] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -377,6 +386,18 @@ function InventoryPageContent() {
       quantity: "",
     })
     setAdjustmentOpen(true)
+  }
+
+  const beginRecordSale = (product: InventoryProduct) => {
+    setNotice(null)
+    setSaleValues({
+      productId: product.id,
+      productName: product.name,
+      currentStock: product.stock,
+      quantity: "",
+      reference: "Direct Sale",
+    })
+    setSaleOpen(true)
   }
 
   const handleCreateCategory = async () => {
@@ -624,6 +645,69 @@ function InventoryPageContent() {
       })
     } finally {
       setSubmittingAdjustment(false)
+    }
+  }
+
+  const handleSaleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setSubmittingSale(true)
+    setNotice(null)
+
+    const quantityToDeduct = Number(saleValues.quantity)
+    if (quantityToDeduct <= 0 || quantityToDeduct > saleValues.currentStock) {
+      setNotice({
+        type: "error",
+        message: "Invalid quantity sold.",
+      })
+      setSubmittingSale(false)
+      return
+    }
+
+    try {
+      const response = await fetch("/api/stock-movements", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: saleValues.productId,
+          quantity: -quantityToDeduct,
+          type: "Sale",
+        }),
+      })
+
+      const payload = await response.json().catch(() => null)
+      if (!response.ok) {
+        throw new Error(
+          payload && typeof payload.error === "string"
+            ? payload.error
+            : "Unable to record sale.",
+        )
+      }
+
+      setSaleOpen(false)
+      setSaleValues({
+        productId: "",
+        productName: "",
+        currentStock: 0,
+        quantity: "",
+        reference: "Direct Sale",
+      })
+      setNotice({
+        type: "success",
+        message: `Recorded sale of ${quantityToDeduct} units successfully.`,
+      })
+      await refreshInventory()
+    } catch (saleError) {
+      setNotice({
+        type: "error",
+        message:
+          saleError instanceof Error
+            ? saleError.message
+            : "Unable to record sale.",
+      })
+    } finally {
+      setSubmittingSale(false)
     }
   }
 
@@ -910,9 +994,14 @@ function InventoryPageContent() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => beginRecordSale(product)} className="cursor-pointer font-medium text-primary focus:text-primary">
+                            <ShoppingCart className="mr-2 h-4 w-4" />
+                            Record Sale
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => beginEdit(product)} className="cursor-pointer">
                             <Edit className="mr-2 h-4 w-4 text-muted-foreground" />
-                            Edit Product
+                            Edit Catalog
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => beginAdjustment(product)} className="cursor-pointer">
                             <ArrowUpDown className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -1279,17 +1368,141 @@ function InventoryPageContent() {
                 </Button>
                 <Button
                   type="button"
+                  variant="outline"
                   onClick={() => {
                     setDetailsProductId(null)
                     beginEdit(selectedProduct)
                   }}
                 >
-                  <Edit className="mr-2 h-4 w-4" />
+                  <Edit className="mr-2 h-4 w-4 text-muted-foreground" />
                   Edit Catalog
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setDetailsProductId(null)
+                    beginRecordSale(selectedProduct)
+                  }}
+                >
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Record Sale
                 </Button>
               </div>
             </div>
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={saleOpen}
+        onOpenChange={(open) => {
+          setSaleOpen(open)
+          if (!open) {
+            setSaleValues({
+              productId: "",
+              productName: "",
+              currentStock: 0,
+              quantity: "",
+              reference: "Direct Sale",
+            })
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Record Product Sale</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Deduct inventory levels immediately by logging a customer sale.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form className="space-y-5 pt-2" onSubmit={handleSaleSubmit}>
+            <div className="grid gap-2">
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Product Context</Label>
+              <div className="flex items-center justify-between rounded-xl bg-muted/40 p-3.5 border border-muted/50">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background shadow-sm text-primary">
+                    <Package className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold truncate max-w-[200px]">{saleValues.productName}</p>
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase">Reference Product</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold font-mono">{saleValues.currentStock}</p>
+                  <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">Available Stock</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="sale-quantity" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Quantity Sold *</Label>
+              <Input
+                id="sale-quantity"
+                type="number"
+                min="1"
+                max={saleValues.currentStock}
+                step="1"
+                value={saleValues.quantity}
+                onChange={(e) => setSaleValues(current => ({ ...current, quantity: e.target.value }))}
+                placeholder="e.g. 5"
+                className="h-11 text-lg font-bold shadow-sm focus:ring-1"
+                required
+              />
+              {saleValues.quantity && Number(saleValues.quantity) > saleValues.currentStock && (
+                <p className="text-xs text-red-500 font-semibold">
+                  Warning: Cannot sell more than available stock ({saleValues.currentStock} units).
+                </p>
+              )}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="sale-reference" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sale Reference / Channel</Label>
+              <Select
+                value={saleValues.reference}
+                onValueChange={(value) =>
+                  setSaleValues((current) => ({
+                    ...current,
+                    reference: value,
+                  }))
+                }
+              >
+                <SelectTrigger id="sale-reference" className="h-11 shadow-sm focus:ring-1">
+                  <SelectValue placeholder="Select sale channel" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Direct Sale">Direct Sale (POS)</SelectItem>
+                  <SelectItem value="Online Order">Online Order</SelectItem>
+                  <SelectItem value="Retail Sale">Retail / Counter Sale</SelectItem>
+                  <SelectItem value="Wholesale">Wholesale Distribution</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setSaleOpen(false)}
+                className="h-11"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={submittingSale || !saleValues.quantity || Number(saleValues.quantity) <= 0 || Number(saleValues.quantity) > saleValues.currentStock} 
+                className="h-11 px-8 shadow-md"
+              >
+                {submittingSale ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                )}
+                Confirm Sale
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
