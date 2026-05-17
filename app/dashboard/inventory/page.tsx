@@ -1483,7 +1483,7 @@ function InventoryPageContent() {
                     }))
                   }
                 >
-                  <SelectTrigger id="sale-reference">
+                  <SelectTrigger id="sale-reference" className="w-full">
                     <SelectValue placeholder="Select sale channel" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1572,7 +1572,7 @@ function InventoryPageContent() {
                     }))
                   }
                 >
-                  <SelectTrigger id="adjustment-type">
+                  <SelectTrigger id="adjustment-type" className="w-full">
                     <SelectValue placeholder="Select movement type" />
                   </SelectTrigger>
                   <SelectContent>
