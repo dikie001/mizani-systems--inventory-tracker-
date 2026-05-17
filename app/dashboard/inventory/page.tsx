@@ -326,52 +326,122 @@ function InventoryPageContent() {
   const [uploadingImage, setUploadingImage] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
 
-  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const compressImage = (file: File, targetSizeKb: number = 100): Promise<File> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = (event) => {
+        const img = new Image()
+        img.src = event.target?.result as string
+        img.onload = () => {
+          const canvas = document.createElement("canvas")
+          let width = img.width
+          let height = img.height
+
+          const MAX_WIDTH = 1000
+          const MAX_HEIGHT = 1000
+          if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+            if (width > height) {
+              height = Math.round((height * MAX_WIDTH) / width)
+              width = MAX_WIDTH
+            } else {
+              width = Math.round((width * MAX_HEIGHT) / height)
+              height = MAX_HEIGHT
+            }
+          }
+
+          canvas.width = width
+          canvas.height = height
+
+          const ctx = canvas.getContext("2d")
+          if (!ctx) {
+            resolve(file)
+            return
+          }
+
+          ctx.drawImage(img, 0, 0, width, height)
+
+          const tryCompress = (q: number) => {
+            canvas.toBlob((blob) => {
+              if (!blob) {
+                resolve(file)
+                return
+              }
+              
+              if (blob.size > targetSizeKb * 1024 && q > 0.15) {
+                tryCompress(q - 0.15)
+              } else {
+                const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+                  type: "image/jpeg",
+                  lastModified: Date.now()
+                })
+                resolve(compressedFile)
+              }
+            }, "image/jpeg", q)
+          }
+
+          tryCompress(0.75)
+        }
+        img.onerror = () => resolve(file)
+      }
+      reader.onerror = () => resolve(file)
+    })
+  }
+
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const originalFile = e.target.files?.[0]
+    if (!originalFile) return
 
     setUploadingImage(true)
     setUploadProgress(0)
 
-    const formData = new FormData()
-    formData.append("file", file)
+    try {
+      const file = await compressImage(originalFile, 100)
 
-    const xhr = new XMLHttpRequest()
+      const formData = new FormData()
+      formData.append("file", file)
 
-    xhr.upload.addEventListener("progress", (event) => {
-      if (event.lengthComputable) {
-        const percentage = Math.round((event.loaded * 100) / event.total)
-        setUploadProgress(percentage)
-      }
-    })
+      const xhr = new XMLHttpRequest()
 
-    xhr.addEventListener("load", () => {
-      setUploadingImage(false)
-      setUploadProgress(0)
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const data = JSON.parse(xhr.responseText)
-          setFormValues((current) => ({
-            ...current,
-            image: data.url,
-          }))
-          toast.success("Product image uploaded successfully!")
-        } catch (err) {
-          toast.error("Failed to parse upload response.")
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          const percentage = Math.round((event.loaded * 100) / event.total)
+          setUploadProgress(percentage)
         }
-      } else {
-        toast.error("Failed to upload image. Please try again.")
-      }
-    })
+      })
 
-    xhr.addEventListener("error", () => {
+      xhr.addEventListener("load", () => {
+        setUploadingImage(false)
+        setUploadProgress(0)
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText)
+            setFormValues((current) => ({
+              ...current,
+              image: data.url,
+            }))
+            toast.success("Product image uploaded successfully!")
+          } catch (err) {
+            toast.error("Failed to parse upload response.")
+          }
+        } else {
+          toast.error("Failed to upload image. Please try again.")
+        }
+      })
+
+      xhr.addEventListener("error", () => {
+        setUploadingImage(false)
+        setUploadProgress(0)
+        toast.error("Upload encountered an error.")
+      })
+
+      xhr.open("POST", "/api/upload")
+      xhr.send(formData)
+    } catch (err) {
       setUploadingImage(false)
       setUploadProgress(0)
-      toast.error("Upload encountered an error.")
-    })
-
-    xhr.open("POST", "/api/upload")
-    xhr.send(formData)
+      toast.error("Image compression failed.")
+    }
   }
 
   const [exporting, setExporting] = useState(false)
