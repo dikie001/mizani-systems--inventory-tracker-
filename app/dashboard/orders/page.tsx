@@ -21,6 +21,11 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 
 // New Dialogs
 import { CreateOrderDialog } from "@/components/orders/create-order-dialog"
@@ -52,6 +57,12 @@ export default function OrdersPage() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
 
+  // Cancel Order States
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null)
+  const [cancelReason, setCancelReason] = useState("")
+  const [isSubmittingCancel, setIsSubmittingCancel] = useState(false)
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search)
@@ -71,22 +82,32 @@ export default function OrdersPage() {
 
   const totalRevenue = orders?.filter((o) => o.payment === "paid").reduce((s, o) => s + o.total, 0) || 0
 
-  const handleCancelOrder = async (id: string) => {
-    if (!confirm("Are you sure you want to cancel this order? This will restore product stock.")) return
+  const handleCancelSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!cancellingOrderId) return
+    setIsSubmittingCancel(true)
 
     try {
-      const res = await fetch(`/api/orders/${id}`, {
+      const res = await fetch(`/api/orders/${cancellingOrderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "cancelled" }),
+        body: JSON.stringify({ 
+          status: "cancelled",
+          reason: cancelReason 
+        }),
       })
 
       if (!res.ok) throw new Error("Failed to cancel order")
 
       toast.success("Order cancelled and stock restored")
+      setCancelConfirmOpen(false)
+      setCancellingOrderId(null)
+      setCancelReason("")
       mutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
     } catch (error: any) {
       toast.error(error.message)
+    } finally {
+      setIsSubmittingCancel(false)
     }
   }
 
@@ -294,7 +315,11 @@ export default function OrdersPage() {
                           <DropdownMenuItem 
                             className="text-destructive focus:text-destructive cursor-pointer"
                             disabled={order.status === "cancelled"}
-                            onClick={() => handleCancelOrder(order.id)}
+                            onClick={() => {
+                              setCancellingOrderId(order.id)
+                              setCancelReason("")
+                              setCancelConfirmOpen(true)
+                            }}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
                             <span>Cancel order</span>
@@ -318,6 +343,58 @@ export default function OrdersPage() {
       {/* Dialogs */}
       <CreateOrderDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
       <OrderDetailsDialog orderId={selectedOrderId} open={isDetailsOpen} onOpenChange={setIsDetailsOpen} />
+
+      <Dialog open={cancelConfirmOpen} onOpenChange={setCancelConfirmOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2 text-destructive">
+              Cancel Order <span className="font-mono text-xs font-normal text-muted-foreground">#{cancellingOrderId?.slice(0, 8)}</span>
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel this order? This action will automatically restore all product stock and cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCancelSubmit} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="cancel-reason" className="text-sm font-semibold">Reason for Cancellation *</Label>
+              <Textarea
+                id="cancel-reason"
+                placeholder="Please provide a clear reason for cancelling this order..."
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                required
+                className="min-h-[90px] text-sm resize-none bg-background border-border"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCancelConfirmOpen(false)}
+                disabled={isSubmittingCancel}
+              >
+                No, Keep Order
+              </Button>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={isSubmittingCancel}
+              >
+                {isSubmittingCancel ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Cancelling...
+                  </>
+                ) : (
+                  "Yes, Cancel Order"
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

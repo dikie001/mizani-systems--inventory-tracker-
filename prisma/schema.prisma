@@ -175,11 +175,12 @@ model Alert {
 // -----------------------------------------
 
 model Order {
-  id          String   @id @default(cuid())
-  customer    String
-  total       Float
-  status      String   @default("pending") // pending, processing, shipped, delivered, cancelled
-  payment     String   @default("unpaid") // unpaid, paid, refunded
+  id                 String   @id @default(cuid())
+  customer           String
+  total              Float
+  status             String   @default("pending") // pending, processing, shipped, delivered, cancelled
+  payment            String   @default("unpaid") // unpaid, paid, refunded
+  cancellationReason String?
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)

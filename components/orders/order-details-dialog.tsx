@@ -151,6 +151,13 @@ export function OrderDetailsDialog({
               </div>
             </div>
 
+            {order.status === "cancelled" && order.cancellationReason && (
+              <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-3.5 space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-destructive">Cancellation Reason</span>
+                <p className="text-xs text-muted-foreground leading-relaxed italic">"{order.cancellationReason}"</p>
+              </div>
+            )}
+
             {/* Items Section */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
