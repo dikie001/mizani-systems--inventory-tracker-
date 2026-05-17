@@ -128,7 +128,7 @@ export async function createWorkspace(data: {
     })
 
     revalidatePath("/")
-    return { success: true, workspaceId: workspace.id }
+    return { success: true, workspaceId: workspace.id, workspaceName: workspace.name }
   } catch (error) {
     console.error("Failed to create workspace:", error)
     return { success: false, error: "Failed to create workspace. Please try again." }

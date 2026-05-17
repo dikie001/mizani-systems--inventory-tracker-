@@ -83,7 +83,7 @@ export function CreateWorkspaceModal() {
     try {
       const result = await createWorkspace(formData)
       if (result.success) {
-        await update({ workspaceId: result.workspaceId })
+        await update({ workspaceId: result.workspaceId, workspaceName: result.workspaceName })
         toast.success("Workspace created successfully!")
         onClose()
         router.refresh()

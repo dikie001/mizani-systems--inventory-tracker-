@@ -60,10 +60,12 @@ export function WorkspaceSwitcher() {
       const data = await getWorkspaces()
       setWorkspaces(data)
     }
-    if (session?.user?.id) {
+    if (session?.user?.id && open) {
+      loadWorkspaces()
+    } else if (session?.user?.id && workspaces.length === 0) {
       loadWorkspaces()
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id, open])
 
   async function onWorkspaceSelect(workspace: Workspace) {
     if (workspace.id === currentWorkspaceId) {
