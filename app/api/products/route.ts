@@ -105,6 +105,7 @@ export async function POST(request: Request) {
           name: payload.name,
           sku: payload.sku,
           description: payload.description,
+          image: payload.image,
           price: payload.price,
           stock: payload.stock,
           minStock: payload.minStock,

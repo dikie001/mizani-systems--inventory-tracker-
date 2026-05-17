@@ -179,9 +179,22 @@ export function OrderDetailsDialog({
                     {order.orderItems.map((item: any) => (
                       <TableRow key={item.id} className="hover:bg-primary/5">
                         <TableCell className="py-2">
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-xs text-foreground">{item.product.name}</span>
-                            <span className="text-[9px] font-mono text-muted-foreground">SKU: {item.product.sku}</span>
+                          <div className="flex items-center gap-3">
+                            <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md border bg-muted flex items-center justify-center">
+                              {item.product.image ? (
+                                <img
+                                  src={item.product.image}
+                                  alt={item.product.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <Package className="h-4 w-4 text-muted-foreground/60" />
+                              )}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-xs text-foreground leading-tight">{item.product.name}</span>
+                              <span className="text-[9px] font-mono text-muted-foreground">SKU: {item.product.sku}</span>
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-mono text-xs py-2">{item.quantity}</TableCell>

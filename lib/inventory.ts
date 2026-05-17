@@ -24,6 +24,7 @@ export type InventoryProductPayload = {
   minStock: number
   maxStock: number
   description: string | null
+  image: string | null
 }
 
 type ProductWithRelations = Product & {
@@ -129,6 +130,7 @@ export function normalizeProductPayload(input: unknown): InventoryProductPayload
   const minStock = requireInteger(data.minStock ?? 10, "Minimum stock")
   const maxStock = requireInteger(data.maxStock ?? 100, "Maximum stock")
   const description = optionalString(data.description)
+  const image = optionalString(data.image)
 
   if (price < 0) {
     throw new Error("Price must be 0 or greater.")
@@ -156,6 +158,7 @@ export function normalizeProductPayload(input: unknown): InventoryProductPayload
     minStock,
     maxStock,
     description,
+    image,
   }
 }
 
@@ -165,6 +168,7 @@ export function formatProduct(product: ProductWithRelations) {
     name: product.name,
     sku: product.sku,
     description: product.description,
+    image: product.image,
     category: product.category.name,
     categoryId: product.categoryId,
 

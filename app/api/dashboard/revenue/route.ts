@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 
-import { subDays, subMonths, startOfMonth, format, eachMonthOfInterval, eachDayOfInterval } from "date-fns"
+import { subDays, format, startOfWeek, endOfWeek } from "date-fns"
 
 export async function GET(request: Request) {
   const session = await auth()
@@ -12,67 +12,95 @@ export async function GET(request: Request) {
 
   const workspaceId = session.user.workspaceId
   const { searchParams } = new URL(request.url)
-  const range = searchParams.get("range") || "12m"
+  const interval = searchParams.get("interval") || "monthly"
 
   try {
-    let startDate = new Date()
-    let isDaily = false
+    if (interval === "weekly") {
+      const endDate = new Date()
+      const startDate = subDays(endDate, 12 * 7) // Last 12 weeks
 
-    if (range === "7d") {
-      startDate = subDays(startDate, 7)
-      isDaily = true
-    } else if (range === "30d") {
-      startDate = subDays(startDate, 30)
-      isDaily = true
-    } else if (range === "3m") {
-      startDate = subMonths(startDate, 3)
-    } else {
-      startDate = subMonths(startDate, 12)
+      const orders = await prisma.order.findMany({
+        where: {
+          workspaceId,
+          createdAt: { gte: startDate, lte: endDate },
+          status: { not: "cancelled" }
+        },
+        select: {
+          total: true,
+          createdAt: true
+        },
+        orderBy: { createdAt: "asc" }
+      })
+
+      // Generate the last 12 weeks starting from 11 weeks ago, ending in the current week
+      const startOfCurrentWeek = startOfWeek(new Date(), { weekStartsOn: 1 }) // Monday start
+      const weeks = Array.from({ length: 12 }).map((_, i) => {
+        const weekStart = subDays(startOfCurrentWeek, (11 - i) * 7)
+        const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 })
+        return { start: weekStart, end: weekEnd }
+      })
+
+      const data = weeks.map((wk) => {
+        const wkOrders = orders.filter(
+          (o) => o.createdAt >= wk.start && o.createdAt <= wk.end
+        )
+        const revenue = wkOrders.reduce((sum, o) => sum + o.total, 0)
+        return {
+          month: format(wk.start, "MMM dd"), // Label as the week's starting Monday (kept under 'month' field for chart compatibility)
+          revenue,
+          costs: revenue * 0.65,
+          orders: wkOrders.length
+        }
+      })
+
+      return NextResponse.json(data)
     }
 
-    // Fetch real orders
+    // Default: Monthly Interval (Exactly January to December calendar year)
+    const currentYear = new Date().getFullYear()
+    const startDate = new Date(currentYear, 0, 1) // Jan 1st
+    const endDate = new Date(currentYear, 11, 31) // Dec 31st
+
     const orders = await prisma.order.findMany({
       where: {
         workspaceId,
-        createdAt: { gte: startDate },
+        createdAt: { gte: startDate, lte: endDate },
         status: { not: "cancelled" }
       },
       select: {
         total: true,
         createdAt: true
       },
-      orderBy: { createdAt: 'asc' }
+      orderBy: { createdAt: "asc" }
     })
-    let data: any[] = []
 
-    if (isDaily) {
-      const days = eachDayOfInterval({ start: startDate, end: new Date() })
-      data = days.map(day => {
-        const dayStr = format(day, "MMM dd")
-        const dayOrders = orders.filter(o => format(o.createdAt, "MMM dd") === dayStr)
-        const revenue = dayOrders.reduce((sum, o) => sum + o.total, 0)
-        return {
-          month: dayStr, // Label is day but field name kept for compatibility
-          revenue,
-          costs: revenue * 0.65, // Estimated
-          orders: dayOrders.length
-        }
-      })
-    } else {
-      const months = eachMonthOfInterval({ start: startDate, end: new Date() })
-      data = months.map(month => {
-        const monthStr = format(month, "MMM")
-        const monthOrders = orders.filter(o => format(o.createdAt, "MMM") === monthStr)
-        const revenue = monthOrders.reduce((sum, o) => sum + o.total, 0)
-        
-        return {
-          month: monthStr,
-          revenue,
-          costs: revenue * 0.65,
-          orders: monthOrders.length
-        }
-      })
-    }
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ]
+
+    const data = months.map((monthStr, index) => {
+      const monthOrders = orders.filter(
+        (o) => o.createdAt.getFullYear() === currentYear && o.createdAt.getMonth() === index
+      )
+      const revenue = monthOrders.reduce((sum, o) => sum + o.total, 0)
+      return {
+        month: monthStr,
+        revenue,
+        costs: revenue * 0.65,
+        orders: monthOrders.length
+      }
+    })
 
     return NextResponse.json(data)
   } catch (error) {

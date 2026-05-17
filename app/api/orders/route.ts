@@ -32,7 +32,15 @@ export async function GET(request: Request) {
     const orders = await prisma.order.findMany({
       where,
       include: {
-        orderItems: true,
+        orderItems: {
+          include: {
+            product: {
+              select: {
+                image: true
+              }
+            }
+          }
+        },
       },
       orderBy: { createdAt: "desc" },
     })
@@ -45,6 +53,9 @@ export async function GET(request: Request) {
       status: o.status,
       payment: o.payment,
       date: o.createdAt.toISOString().split("T")[0],
+      productImages: o.orderItems
+        .map((item) => item.product?.image)
+        .filter((img): img is string => typeof img === "string" && img.length > 0),
     }))
 
     return NextResponse.json(formatted)

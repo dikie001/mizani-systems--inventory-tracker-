@@ -19,6 +19,7 @@ import {
   Plus,
   ShieldAlert,
   ShoppingCart,
+  SlidersHorizontal,
   TrendingUp,
   Upload,
   Users,
@@ -60,6 +61,15 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
@@ -76,12 +86,13 @@ const categoryChartConfig: ChartConfig = {
 export default function DashboardPage() {
   const { data: session } = useSession()
   const [revMetric, setRevMetric] = useState<"revenue" | "orders">("revenue")
+  const [viewInterval, setViewInterval] = useState<"monthly" | "weekly">("monthly")
   const { data: stats, isLoading: statsLoading } = useSWR(
     "/api/dashboard/stats",
     fetcher
   )
   const { data: revenueData, isLoading: revLoading } = useSWR(
-    "/api/dashboard/revenue",
+    `/api/dashboard/revenue?interval=${viewInterval}`,
     fetcher
   )
   const { data: categoryData, isLoading: catLoading } = useSWR(
@@ -162,27 +173,48 @@ export default function DashboardPage() {
         {/* Revenue Chart */}
         <Card className="flex flex-col">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <CardTitle>Revenue Overview</CardTitle>
                 <CardDescription>
-                  Monthly revenue and order trends
+                  {viewInterval === "monthly" ? "Monthly" : "Weekly"} revenue and order trends
                 </CardDescription>
               </div>
-              <Tabs
-                value={revMetric}
-                onValueChange={(v) => setRevMetric(v as "revenue" | "orders")}
-                className="w-auto"
-              >
-                <TabsList className="h-8">
-                  <TabsTrigger value="revenue" className="text-xs">
-                    Revenue
-                  </TabsTrigger>
-                  <TabsTrigger value="orders" className="text-xs">
-                    Orders
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-lg border-border/50 text-xs font-semibold">
+                    <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>Options</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 p-1.5 space-y-1">
+                  <DropdownMenuLabel className="px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Time Interval</DropdownMenuLabel>
+                  <DropdownMenuRadioGroup
+                    value={viewInterval}
+                    onValueChange={(v) => setViewInterval(v as "monthly" | "weekly")}
+                  >
+                    <DropdownMenuRadioItem value="monthly" className="cursor-pointer text-xs rounded-md">
+                      Monthly View
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="weekly" className="cursor-pointer text-xs rounded-md">
+                      Weekly View
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                  <DropdownMenuSeparator className="my-1.5" />
+                  <DropdownMenuLabel className="px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Chart Metric</DropdownMenuLabel>
+                  <DropdownMenuRadioGroup
+                    value={revMetric}
+                    onValueChange={(v) => setRevMetric(v as "revenue" | "orders")}
+                  >
+                    <DropdownMenuRadioItem value="revenue" className="cursor-pointer text-xs rounded-md">
+                      Revenue ($)
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="orders" className="cursor-pointer text-xs rounded-md">
+                      Order Count
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </CardHeader>
           <CardContent className="flex-1">
@@ -228,7 +260,7 @@ export default function DashboardPage() {
                     tickMargin={8}
                     padding={{ left: 0, right: 0 }}
                     label={{
-                      value: "Month",
+                      value: viewInterval === "monthly" ? "Month" : "Week (Starting Mon)",
                       position: "insideBottom",
                       offset: -10,
                       fill: "var(--muted-foreground)",

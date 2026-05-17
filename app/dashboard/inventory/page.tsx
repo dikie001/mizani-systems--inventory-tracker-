@@ -3,6 +3,7 @@
 import { ChangeEvent, FormEvent, useId, useRef, useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import useSWR, { useSWRConfig } from "swr"
+import { toast } from "sonner"
 import {
   AlertCircle,
   AlertTriangle,
@@ -26,6 +27,8 @@ import {
   Upload,
   Check,
   ChevronsUpDown,
+  Camera,
+  X,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -94,6 +97,7 @@ type InventoryProduct = {
   name: string
   sku: string
   description: string | null
+  image: string | null
   category: string
   categoryId: string
 
@@ -139,6 +143,7 @@ type ProductFormValues = {
   minStock: string
   maxStock: string
   description: string
+  image: string
 }
 
 type StockAdjustmentValues = {
@@ -190,6 +195,7 @@ const emptyProductForm = (): ProductFormValues => ({
   minStock: "10",
   maxStock: "100",
   description: "",
+  image: "",
 })
 
 const emptyStockAdjustment = (): StockAdjustmentValues => ({
@@ -235,6 +241,7 @@ function productToFormValues(product: InventoryProduct): ProductFormValues {
     minStock: String(product.minStock),
     maxStock: String(product.maxStock),
     description: product.description ?? "",
+    image: product.image ?? "",
   }
 }
 
@@ -318,6 +325,199 @@ function InventoryPageContent() {
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyPage, setHistoryPage] = useState(1)
   const [historyProduct, setHistoryProduct] = useState<InventoryProduct | null>(null)
+  const [uploadStage, setUploadStage] = useState<"idle" | "compressing" | "uploading">("idle")
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
+
+  const compressImage = (file: File, targetSizeKb: number = 100): Promise<File> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = (event) => {
+        const img = new Image()
+        img.src = event.target?.result as string
+        img.onload = () => {
+          const canvas = document.createElement("canvas")
+          let width = img.width
+          let height = img.height
+
+          const MAX_WIDTH = 1000
+          const MAX_HEIGHT = 1000
+          if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+            if (width > height) {
+              height = Math.round((height * MAX_WIDTH) / width)
+              width = MAX_WIDTH
+            } else {
+              width = Math.round((width * MAX_HEIGHT) / height)
+              height = MAX_HEIGHT
+            }
+          }
+
+          canvas.width = width
+          canvas.height = height
+
+          const ctx = canvas.getContext("2d")
+          if (!ctx) {
+            resolve(file)
+            return
+          }
+
+          ctx.drawImage(img, 0, 0, width, height)
+
+          const tryCompress = (q: number) => {
+            canvas.toBlob((blob) => {
+              if (!blob) {
+                resolve(file)
+                return
+              }
+              
+              if (blob.size > targetSizeKb * 1024 && q > 0.15) {
+                tryCompress(q - 0.15)
+              } else {
+                const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+                  type: "image/jpeg",
+                  lastModified: Date.now()
+                })
+                resolve(compressedFile)
+              }
+            }, "image/jpeg", q)
+          }
+
+          tryCompress(0.75)
+        }
+        img.onerror = () => resolve(file)
+      }
+      reader.onerror = () => resolve(file)
+    })
+  }
+
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const originalFile = e.target.files?.[0]
+    if (!originalFile) return
+
+    setUploadStage("compressing")
+    setUploadProgress(0)
+
+    try {
+      const file = await compressImage(originalFile, 100)
+
+      setUploadStage("uploading")
+
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const xhr = new XMLHttpRequest()
+
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          const percentage = Math.round((event.loaded * 100) / event.total)
+          setUploadProgress(percentage)
+        }
+      })
+
+      xhr.addEventListener("load", () => {
+        setUploadStage("idle")
+        setUploadProgress(0)
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText)
+            setFormValues((current) => ({
+              ...current,
+              image: data.url,
+            }))
+            toast.success("Product image uploaded successfully!")
+          } catch (err) {
+            toast.error("Failed to parse upload response.")
+          }
+        } else {
+          toast.error("Failed to upload image. Please try again.")
+        }
+      })
+
+      xhr.addEventListener("error", () => {
+        setUploadStage("idle")
+        setUploadProgress(0)
+        toast.error("Upload encountered an error.")
+      })
+
+      xhr.open("POST", "/api/upload")
+      xhr.send(formData)
+    } catch (err) {
+      setUploadStage("idle")
+      setUploadProgress(0)
+      toast.error("Image compression failed.")
+    }
+  }
+
+  const handleDetailsImageChange = async (e: ChangeEvent<HTMLInputElement>, productId: string) => {
+    const originalFile = e.target.files?.[0]
+    if (!originalFile) return
+
+    setUploadStage("compressing")
+    setUploadProgress(0)
+
+    try {
+      const file = await compressImage(originalFile, 100)
+      setUploadStage("uploading")
+
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const xhr = new XMLHttpRequest()
+
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          const percentage = Math.round((event.loaded * 100) / event.total)
+          setUploadProgress(percentage)
+        }
+      })
+
+      xhr.addEventListener("load", async () => {
+        setUploadStage("idle")
+        setUploadProgress(0)
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText)
+            
+            const putRes = await fetch(`/api/products/${productId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                ...selectedProduct,
+                image: data.url,
+              }),
+            })
+
+            if (!putRes.ok) throw new Error("Failed to update product image.")
+
+            toast.success("Product image changed successfully!")
+            mutateSelectedProduct()
+            mutateProducts()
+          } catch (err) {
+            toast.error("Failed to save product image.")
+          }
+        } else {
+          toast.error("Failed to upload image. Please try again.")
+        }
+      })
+
+      xhr.addEventListener("error", () => {
+        setUploadStage("idle")
+        setUploadProgress(0)
+        toast.error("Upload encountered an error.")
+      })
+
+      xhr.open("POST", "/api/upload")
+      xhr.send(formData)
+    } catch (err) {
+      setUploadStage("idle")
+      setUploadProgress(0)
+      toast.error("Image compression failed.")
+    }
+  }
+
   const [exporting, setExporting] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -951,8 +1151,18 @@ function InventoryPageContent() {
                     </TableCell>
                     <TableCell className="py-2.5">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary shadow-inner transition-transform group-hover:scale-105">
-                          <span className="text-xs font-bold">{product.name.charAt(0).toUpperCase()}</span>
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted overflow-hidden border border-border/40 shadow-inner transition-transform group-hover:scale-105">
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-primary/5 text-primary font-bold text-xs">
+                              {product.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
                         </div>
                         <div className="min-w-0">
                           <div className="truncate font-semibold tracking-tight text-foreground text-sm">{product.name}</div>
@@ -1239,6 +1449,71 @@ function InventoryPageContent() {
             </div>
 
             <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Product Image</Label>
+              {formValues.image ? (
+                <div className="relative group rounded-xl border bg-muted/20 overflow-hidden flex items-center justify-center min-h-[120px] max-h-[140px]">
+                  <img
+                    src={formValues.image}
+                    alt="Product preview"
+                    className="object-contain max-h-[120px] w-full transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => setFormValues(current => ({ ...current, image: "" }))}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <label className="relative group border-2 border-dashed border-border hover:border-primary/40 rounded-xl bg-muted/5 hover:bg-muted/15 p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-200 min-h-[120px] max-h-[140px]">
+                  {uploadStage === "compressing" ? (
+                    <div className="flex flex-col items-center gap-2.5 text-muted-foreground w-full px-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
+                      <span className="text-[10px] font-semibold text-indigo-500 animate-pulse">Optimizing & Compressing...</span>
+                      <div className="w-full h-1 bg-muted rounded-full overflow-hidden border border-border/10">
+                        <div className="h-full bg-indigo-500 w-1/2 animate-[pulse_1.5s_infinite] rounded-full" />
+                      </div>
+                    </div>
+                  ) : uploadStage === "uploading" ? (
+                    <div className="flex flex-col items-center gap-2.5 text-muted-foreground w-full px-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      <span className="text-[10px] font-medium text-foreground/80">Uploading to CDN... {uploadProgress}%</span>
+                      <div className="w-full h-1 bg-muted rounded-full overflow-hidden border border-border/10">
+                        <div
+                          className="h-full bg-gradient-to-r from-primary to-indigo-500 transition-all duration-300 ease-out rounded-full"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="h-8 w-8 rounded-full bg-primary/5 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-inner">
+                        <Upload className="h-4.5 w-4.5" />
+                      </div>
+                      <div className="text-center">
+                        <span className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors">Upload product image</span>
+                        <p className="text-[9px] text-muted-foreground mt-0.5">PNG, JPG, WEBP up to 5MB</p>
+                      </div>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploadStage !== "idle"}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
               <Label htmlFor="product-description">Description / Notes</Label>
               <Textarea
                 id="product-description"
@@ -1265,7 +1540,7 @@ function InventoryPageContent() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={submittingForm}>
+              <Button type="submit" disabled={submittingForm || uploadStage !== "idle"}>
                 {submittingForm ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -1283,8 +1558,47 @@ function InventoryPageContent() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader className="space-y-1">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-base shadow-inner">
-                {selectedProduct?.name.charAt(0).toUpperCase()}
+              <div className="relative group flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted overflow-hidden border border-border/40 shadow-inner">
+                {uploadStage !== "idle" ? (
+                  <div className="flex h-full w-full items-center justify-center bg-muted">
+                    <Loader2 className="h-4.5 w-4.5 animate-spin text-primary" />
+                  </div>
+                ) : selectedProduct?.image ? (
+                  <>
+                    <img
+                      src={selectedProduct.image}
+                      alt={selectedProduct.name}
+                      className="h-full w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setZoomImageUrl(selectedProduct.image)}
+                    />
+                    <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex flex-col items-center justify-center cursor-pointer text-[8px] text-white font-bold leading-none gap-0.5 select-none">
+                      <Camera className="h-3 w-3" />
+                      <span>Change</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleDetailsImageChange(e, selectedProduct.id)}
+                        disabled={uploadStage !== "idle"}
+                        className="hidden"
+                      />
+                    </label>
+                  </>
+                ) : (
+                  <label className="relative group flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-base cursor-pointer hover:bg-primary/20 transition-colors">
+                    <span>{selectedProduct?.name.charAt(0).toUpperCase()}</span>
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex flex-col items-center justify-center text-[8px] text-white font-bold leading-none gap-0.5 select-none">
+                      <Camera className="h-3 w-3" />
+                      <span>Add</span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => selectedProduct && handleDetailsImageChange(e, selectedProduct.id)}
+                      disabled={uploadStage !== "idle"}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <DialogTitle className="text-2xl font-bold truncate leading-none mb-1">
@@ -1454,6 +1768,27 @@ function InventoryPageContent() {
               </div>
             </div>
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!zoomImageUrl} onOpenChange={(open) => !open && setZoomImageUrl(null)}>
+        <DialogContent className="sm:max-w-[420px] p-2 bg-background border rounded-2xl shadow-2xl flex flex-col items-center gap-2 overflow-hidden">
+          {zoomImageUrl && (
+            <div className="relative w-full flex items-center justify-center p-1 bg-muted/10 rounded-xl overflow-hidden min-h-[260px] max-h-[360px]">
+              <img
+                src={zoomImageUrl}
+                alt="Product zoomed preview"
+                className="object-contain max-h-[340px] w-full rounded-lg"
+              />
+              <button
+                type="button"
+                className="absolute top-3 right-3 h-6 w-6 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+                onClick={() => setZoomImageUrl(null)}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
