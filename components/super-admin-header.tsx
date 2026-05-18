@@ -144,7 +144,7 @@ export function SuperAdminHeader() {
           <DropdownMenuTrigger asChild disabled={!isProfileReady}>
             <Button
               variant="ghost"
-              className="h-7 w-7 p-0 rounded-full bg-transparent border-none shadow-none hover:bg-transparent md:h-10 md:w-auto md:px-2.5 md:border md:border-border/70 md:bg-background md:shadow-sm md:hover:bg-muted/40 disabled:cursor-wait disabled:opacity-100"
+              className="h-7 w-7 rounded-full border-none bg-transparent p-0 shadow-none hover:bg-transparent disabled:cursor-wait disabled:opacity-100 md:h-10 md:w-auto md:border md:border-border/70 md:bg-background md:px-2.5 md:shadow-sm md:hover:bg-muted/40"
             >
               {isProfileReady ? (
                 <div className="flex items-center gap-2">

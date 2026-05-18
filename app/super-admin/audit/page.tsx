@@ -5,10 +5,8 @@ import Image from "next/image"
 import useSWR from "swr"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  Activity,
   Clock,
   Search,
-  SlidersHorizontal,
   Shield,
   Loader2,
 } from "lucide-react"
@@ -34,6 +32,13 @@ type AuditLog = {
   user?: {
     name?: string | null
     email?: string | null
+  import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select"
     image?: string | null
   }
 }
@@ -66,6 +71,7 @@ export default function SuperAdminAuditPage() {
           <Shield className="h-6 w-6 text-destructive" />
         </div>
         <div>
+    const [auditTypeSort, setAuditTypeSort] = useState<"asc" | "desc">("asc")
           <h2 className="text-xl font-bold text-foreground">
             Failed to Load Activity Logs
           </h2>
@@ -126,11 +132,22 @@ export default function SuperAdminAuditPage() {
       case "create":
         return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
       case "update":
-        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-      case "delete":
-        return "bg-destructive/10 text-destructive border-destructive/20"
-      case "auth":
-        return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+    const sortedLogs = [...filteredLogs].sort((a, b) => {
+      const typeComparison = a.type.localeCompare(b.type)
+      if (typeComparison !== 0) {
+        return auditTypeSort === "asc" ? typeComparison : -typeComparison
+      }
+
+      return (
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      )
+    })
+
+    const totalPages = Math.ceil(sortedLogs.length / logsPerPage)
+    const paginatedLogs = sortedLogs.slice(
+      (auditPage - 1) * logsPerPage,
+      auditPage * logsPerPage
+    )
       default:
         return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
     }
@@ -148,7 +165,86 @@ export default function SuperAdminAuditPage() {
           <p className="text-xs text-muted-foreground">
             Trace global logins, logouts, administrative mutations, and
             workspace isolations.
-          </p>
+      <div className="flex flex-1 flex-col space-y-4 text-left">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+            Global Activity Trail
+          </h1>
+          <Badge
+            variant="outline"
+            className="border-border bg-background px-3 py-1 font-mono font-bold text-foreground shadow-sm"
+          >
+            {activities.length} logs
+          </Badge>
+        </div>
+
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="relative w-full lg:max-w-md">
+            <Search className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
+            <input
+              id="input-audit-search"
+              type="text"
+              placeholder="Search logs by action, email, or IP address..."
+              value={auditSearch}
+              onChange={(e) => {
+                setAuditSearch(e.target.value)
+                setAuditPage(1)
+              }}
+              className="h-10 w-full rounded-lg border border-border bg-background py-2 pr-4 pl-9 text-xs text-foreground placeholder-muted-foreground transition focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={auditFilterType}
+              onValueChange={(value) => {
+                setAuditFilterType(value)
+                setAuditPage(1)
+              }}
+            >
+              <SelectTrigger className="h-10 w-40 text-xs">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Logs</SelectItem>
+                <SelectItem value="auth">Auth</SelectItem>
+                <SelectItem value="create">Create</SelectItem>
+                <SelectItem value="update">Update</SelectItem>
+                <SelectItem value="delete">Delete</SelectItem>
+                <SelectItem value="settings">Settings</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={auditTypeSort}
+              onValueChange={(value) => {
+                setAuditTypeSort(value as "asc" | "desc")
+                setAuditPage(1)
+              }}
+            >
+              <SelectTrigger className="h-10 w-42.5 text-xs">
+                <SelectValue placeholder="Sort by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="asc">Type A-Z</SelectItem>
+                <SelectItem value="desc">Type Z-A</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={auditViewMode}
+              onValueChange={(value) => setAuditViewMode(value as "table" | "cards")}
+            >
+              <SelectTrigger className="h-10 w-37.5 text-xs">
+                <SelectValue placeholder="View" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="table">Table</SelectItem>
+                <SelectItem value="cards">Cards</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         </div>
         <Badge
           variant="outline"

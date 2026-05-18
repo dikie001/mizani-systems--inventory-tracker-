@@ -3,13 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
-import {
-  Database,
-  Users,
-  Activity,
-  Home,
-  ShieldAlert
-} from "lucide-react"
+import { Database, Users, Activity, Home, ShieldAlert } from "lucide-react"
 
 import { Separator } from "@/components/ui/separator"
 import {
@@ -29,7 +23,11 @@ import {
 const adminNavItems = [
   { title: "Overview", icon: Database, href: "/super-admin" },
   { title: "Users & Accounts", icon: Users, href: "/super-admin/users" },
-  { title: "Global Activity Trail", icon: Activity, href: "/super-admin/audit" },
+  {
+    title: "Global Activity Trail",
+    icon: Activity,
+    href: "/super-admin/audit",
+  },
 ]
 
 export function SuperAdminSidebar() {
@@ -43,17 +41,17 @@ export function SuperAdminSidebar() {
       {/* Brand Header */}
       <SidebarHeader className="h-16 justify-center border-b border-sidebar-border/60 px-3 py-0 group-data-[collapsible=icon]:h-16">
         <div className="flex items-center gap-2.5 px-1">
-          <img 
-            src="/mizani_logo.png" 
-            alt="Admin Logo" 
-            className="h-9 w-9 shrink-0 object-contain rounded-lg border border-sidebar-border" 
+          <img
+            src="/mizani_logo.png"
+            alt="Admin Logo"
+            className="h-9 w-9 shrink-0 rounded-lg border border-sidebar-border object-contain"
           />
           {!isCollapsed && (
             <div className="text-left">
               <span className="text-xs font-bold tracking-tight text-foreground">
                 StockVault Admin
               </span>
-              <p className="text-[9px] font-semibold text-muted-foreground tracking-widest uppercase -mt-0.5">
+              <p className="-mt-0.5 text-[9px] font-semibold tracking-widest text-muted-foreground uppercase">
                 Central Control
               </p>
             </div>
@@ -76,14 +74,12 @@ export function SuperAdminSidebar() {
                     isActive={pathname === item.href}
                     tooltip={item.title}
                     size="lg"
-                    className="h-9 rounded-lg px-2.5 text-[12px] font-medium text-sidebar-foreground/75 transition-all duration-200 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:px-0 cursor-pointer hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-foreground data-[active=true]:shadow-sm"
+                    className="h-9 cursor-pointer rounded-lg px-2.5 text-[12px] font-medium text-sidebar-foreground/75 transition-all duration-200 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-foreground data-[active=true]:shadow-sm"
                   >
                     <Link href={item.href}>
                       <item.icon className="h-4 w-4 shrink-0 text-muted-foreground group-data-[active=true]:text-primary" />
                       {!isCollapsed && (
-                        <span className="ml-2.5">
-                          {item.title}
-                        </span>
+                        <span className="ml-2.5">{item.title}</span>
                       )}
                     </Link>
                   </SidebarMenuButton>
@@ -112,9 +108,7 @@ export function SuperAdminSidebar() {
                   <Link href="/dashboard">
                     <Home className="h-4 w-4 shrink-0 text-muted-foreground" />
                     {!isCollapsed && (
-                      <span className="ml-2.5">
-                        Return to Dashboard
-                      </span>
+                      <span className="ml-2.5">Return to Dashboard</span>
                     )}
                   </Link>
                 </SidebarMenuButton>
@@ -128,24 +122,24 @@ export function SuperAdminSidebar() {
       <SidebarFooter className="mt-auto border-t border-sidebar-border/60 px-2.5 py-2.5 group-data-[collapsible=icon]:px-1.5 group-data-[collapsible=icon]:py-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex items-center gap-2.5 p-1 rounded-lg">
+            <div className="flex items-center gap-2.5 rounded-lg p-1">
               {session?.user?.image ? (
                 <img
                   src={session.user.image}
                   alt="Avatar"
-                  className="h-7 w-7 rounded-full object-cover ring-1 ring-border shrink-0"
+                  className="h-7 w-7 shrink-0 rounded-full object-cover ring-1 ring-border"
                 />
               ) : (
-                <div className="h-7 w-7 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                   SA
                 </div>
               )}
               {!isCollapsed && (
                 <div className="min-w-0 text-left">
-                  <p className="text-[10px] font-bold text-foreground truncate font-sans">
+                  <p className="truncate font-sans text-[10px] font-bold text-foreground">
                     {session?.user?.name || "Super Admin"}
                   </p>
-                  <p className="text-[8px] font-semibold text-muted-foreground truncate font-mono uppercase">
+                  <p className="truncate font-mono text-[8px] font-semibold text-muted-foreground uppercase">
                     {session?.user?.email || ""}
                   </p>
                 </div>
