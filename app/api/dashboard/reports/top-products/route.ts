@@ -29,8 +29,8 @@ export async function GET(request: Request) {
         order: {
           workspaceId,
           createdAt: { gte: startDate },
-          status: { not: "cancelled" }
-        }
+          status: { not: "cancelled" },
+        },
       },
       _sum: { quantity: true },
       orderBy: {
@@ -56,7 +56,9 @@ export async function GET(request: Request) {
       },
     })
 
-    const productNameById = new Map(products.map((product) => [product.id, product.name]))
+    const productNameById = new Map(
+      products.map((product) => [product.id, product.name])
+    )
 
     const topProducts = groupedItems.map((item) => ({
       product: productNameById.get(item.productId) || "Unknown Product",
@@ -66,6 +68,9 @@ export async function GET(request: Request) {
     return NextResponse.json(topProducts)
   } catch (error) {
     console.error("Failed to fetch top products:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    )
   }
 }

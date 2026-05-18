@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
-import {
-  startOfDay,
-  subDays,
-  subMilliseconds,
-  subMonths,
-} from "date-fns"
+import { startOfDay, subDays, subMilliseconds, subMonths } from "date-fns"
 
 type RangeKey = "7d" | "30d" | "3m" | "12m"
 
@@ -117,9 +112,9 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const requestedRange = searchParams.get("range") || "12m"
-  const range = (["7d", "30d", "3m", "12m"].includes(requestedRange)
-    ? requestedRange
-    : "12m") as RangeKey
+  const range = (
+    ["7d", "30d", "3m", "12m"].includes(requestedRange) ? requestedRange : "12m"
+  ) as RangeKey
   const { currentStart, currentEnd, previousStart, previousEnd } =
     resolveRangeWindow(range)
 
@@ -138,7 +133,9 @@ export async function GET(request: Request) {
       },
       orders: {
         value: currentPeriod.orders,
-        change: formatChange(getChange(currentPeriod.orders, previousPeriod.orders)),
+        change: formatChange(
+          getChange(currentPeriod.orders, previousPeriod.orders)
+        ),
       },
       itemsSold: {
         value: currentPeriod.itemsSold,
@@ -153,6 +150,9 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error("Failed to fetch report stats:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    )
   }
 }

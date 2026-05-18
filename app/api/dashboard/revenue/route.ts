@@ -28,13 +28,14 @@ function getRangeBuckets(range: string) {
 
   if (range === "7d") {
     const startDate = startOfDay(subDays(now, 6))
-    const buckets: Bucket[] = eachDayOfInterval({ start: startDate, end: now }).map(
-      (date) => ({
-        label: format(date, "MMM d"),
-        start: startOfDay(date),
-        end: endOfDay(date),
-      })
-    )
+    const buckets: Bucket[] = eachDayOfInterval({
+      start: startDate,
+      end: now,
+    }).map((date) => ({
+      label: format(date, "MMM d"),
+      start: startOfDay(date),
+      end: endOfDay(date),
+    }))
     return { startDate, endDate: now, buckets }
   }
 
@@ -67,13 +68,14 @@ function getRangeBuckets(range: string) {
   }
 
   const startDate = startOfMonth(subMonths(now, 11))
-  const buckets: Bucket[] = eachMonthOfInterval({ start: startDate, end: now }).map(
-    (monthStart) => ({
-      label: format(monthStart, "MMM"),
-      start: startOfMonth(monthStart),
-      end: endOfMonth(monthStart),
-    })
-  )
+  const buckets: Bucket[] = eachMonthOfInterval({
+    start: startDate,
+    end: now,
+  }).map((monthStart) => ({
+    label: format(monthStart, "MMM"),
+    start: startOfMonth(monthStart),
+    end: endOfMonth(monthStart),
+  }))
 
   return { startDate, endDate: now, buckets }
 }
@@ -107,9 +109,13 @@ export async function GET(request: Request) {
 
       const data = buckets.map((bucket) => {
         const bucketOrders = orders.filter(
-          (order) => order.createdAt >= bucket.start && order.createdAt <= bucket.end
+          (order) =>
+            order.createdAt >= bucket.start && order.createdAt <= bucket.end
         )
-        const revenue = bucketOrders.reduce((sum, order) => sum + order.total, 0)
+        const revenue = bucketOrders.reduce(
+          (sum, order) => sum + order.total,
+          0
+        )
 
         return {
           month: bucket.label,
@@ -129,13 +135,13 @@ export async function GET(request: Request) {
         where: {
           workspaceId,
           createdAt: { gte: startDate, lte: endDate },
-          status: { not: "cancelled" }
+          status: { not: "cancelled" },
         },
         select: {
           total: true,
-          createdAt: true
+          createdAt: true,
         },
-        orderBy: { createdAt: "asc" }
+        orderBy: { createdAt: "asc" },
       })
 
       // Generate the last 12 weeks starting from 11 weeks ago, ending in the current week
@@ -154,7 +160,7 @@ export async function GET(request: Request) {
         return {
           month: format(wk.start, "MMM dd"), // Label as the week's starting Monday (kept under 'month' field for chart compatibility)
           revenue,
-          orders: wkOrders.length
+          orders: wkOrders.length,
         }
       })
 
@@ -170,13 +176,13 @@ export async function GET(request: Request) {
       where: {
         workspaceId,
         createdAt: { gte: startDate, lte: endDate },
-        status: { not: "cancelled" }
+        status: { not: "cancelled" },
       },
       select: {
         total: true,
-        createdAt: true
+        createdAt: true,
       },
-      orderBy: { createdAt: "asc" }
+      orderBy: { createdAt: "asc" },
     })
 
     const months = [
@@ -191,24 +197,29 @@ export async function GET(request: Request) {
       "Sep",
       "Oct",
       "Nov",
-      "Dec"
+      "Dec",
     ]
 
     const data = months.map((monthStr, index) => {
       const monthOrders = orders.filter(
-        (o) => o.createdAt.getFullYear() === currentYear && o.createdAt.getMonth() === index
+        (o) =>
+          o.createdAt.getFullYear() === currentYear &&
+          o.createdAt.getMonth() === index
       )
       const revenue = monthOrders.reduce((sum, o) => sum + o.total, 0)
       return {
         month: monthStr,
         revenue,
-        orders: monthOrders.length
+        orders: monthOrders.length,
       }
     })
 
     return NextResponse.json(data)
   } catch (error) {
     console.error("Failed to fetch revenue data:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    )
   }
 }

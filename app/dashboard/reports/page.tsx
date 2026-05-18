@@ -128,8 +128,12 @@ export default function ReportsPage() {
   )
   const currency = workspace?.currency || "KES"
   const reportStats = (stats ?? {}) as ReportStats
-  const trendData = (Array.isArray(revenueData) ? revenueData : []) as RevenueTrend[]
-  const productData = (Array.isArray(topProducts) ? topProducts : []) as TopProduct[]
+  const trendData = (
+    Array.isArray(revenueData) ? revenueData : []
+  ) as RevenueTrend[]
+  const productData = (
+    Array.isArray(topProducts) ? topProducts : []
+  ) as TopProduct[]
   const pieData = (categoryData ?? []) as CategoryDistribution[]
 
   const handleExport = () => {
@@ -262,7 +266,13 @@ export default function ReportsPage() {
                   margin={{ top: 8, left: 4, right: 4, bottom: 0 }}
                 >
                   <defs>
-                    <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="fillRevenue"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop
                         offset="0%"
                         stopColor="var(--color-revenue)"
@@ -361,10 +371,7 @@ export default function ReportsPage() {
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <ChartContainer
-                config={productConfig}
-                className="h-52 w-full"
-              >
+              <ChartContainer config={productConfig} className="h-52 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={productData}
