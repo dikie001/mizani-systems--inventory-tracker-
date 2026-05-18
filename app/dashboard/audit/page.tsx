@@ -94,7 +94,7 @@ export default function AuditPage() {
   if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`
   if (typeFilter !== "all") url += `type=${encodeURIComponent(typeFilter)}&`
 
-  const { data: auditLogs, error, isLoading } = useSWR<AuditLog[]>(url, fetcher)
+  const { data: auditLogs, isLoading } = useSWR<AuditLog[]>(url, fetcher)
 
   return (
     <div className="space-y-6">

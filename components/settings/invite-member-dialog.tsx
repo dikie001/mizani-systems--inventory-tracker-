@@ -55,7 +55,7 @@ export function InviteMemberDialog() {
         const error = await response.json()
         toast.error(error.message || "Failed to send invitation")
       }
-    } catch (error) {
+    } catch {
       toast.error("An unexpected error occurred")
     } finally {
       setIsSubmitting(false)

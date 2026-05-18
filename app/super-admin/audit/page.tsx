@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import useSWR from "swr"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -245,9 +246,11 @@ export default function SuperAdminAuditPage() {
                     {/* Profile block */}
                     <div className="flex items-center gap-2">
                       {log.user?.image ? (
-                        <img
+                        <Image
                           src={log.user.image}
                           alt={log.user.name}
+                          width={24}
+                          height={24}
                           className="h-6 w-6 rounded-full object-cover"
                         />
                       ) : (

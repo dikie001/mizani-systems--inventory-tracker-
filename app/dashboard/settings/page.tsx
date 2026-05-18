@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import {
-  Building2,
   Globe,
   Key,
   Lock,
@@ -10,7 +9,6 @@ import {
   Palette,
   Save,
   Shield,
-  Sun,
   User,
   Users,
   Loader2,

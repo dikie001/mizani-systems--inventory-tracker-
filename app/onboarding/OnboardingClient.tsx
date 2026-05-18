@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -81,7 +80,6 @@ export default function OnboardingClient() {
     goals: [] as string[],
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const router = useRouter()
 
   const canAdvance =
     (currentStep === 0 && !!formData.name.trim()) ||

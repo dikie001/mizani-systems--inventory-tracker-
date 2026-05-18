@@ -136,7 +136,7 @@ export default function AlertsPage() {
         mutate("/api/alerts?status=active")
         mutate("/api/alerts/counts")
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to dismiss alert")
     }
   }

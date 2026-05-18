@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { ArrowLeft, LoaderCircle } from "lucide-react"
@@ -185,9 +186,11 @@ export default function AuthPage() {
         <Card className="rounded-2xl border bg-card text-card-foreground shadow-sm">
           <CardHeader className="items-center gap-3 px-6 pt-6 text-center">
             <div className="mb-1 flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden">
-              <img
+              <Image
                 src="/logo.png"
                 alt="Logo"
+                width={48}
+                height={48}
                 className="h-full w-full object-contain"
               />
             </div>

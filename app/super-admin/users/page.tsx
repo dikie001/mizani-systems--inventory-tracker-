@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import useSWR from "swr"
 import { motion, AnimatePresence } from "framer-motion"
 import { Users, ChevronRight, Shield, Loader2 } from "lucide-react"
@@ -117,9 +118,11 @@ export default function SuperAdminUsersPage() {
               {/* User Header Block */}
               <div className="flex items-center gap-3">
                 {user.image ? (
-                  <img
+                  <Image
                     src={user.image}
                     alt={user.name}
+                    width={44}
+                    height={44}
                     className="h-11 w-11 rounded-full object-cover ring-2 ring-primary/20"
                   />
                 ) : (

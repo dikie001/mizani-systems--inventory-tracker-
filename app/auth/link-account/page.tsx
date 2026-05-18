@@ -48,7 +48,7 @@ function LinkAccountContent() {
         signIn("google", { callbackUrl: "/dashboard" })
       }, 1500)
       
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Please try again.")
       setIsLoading(false)
     }
