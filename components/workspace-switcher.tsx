@@ -4,7 +4,6 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import {
-  Box,
   Check,
   ChevronsUpDown,
   PlusCircle,
@@ -111,8 +110,8 @@ export function WorkspaceSwitcher() {
           )}
         >
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm transition-transform group-hover:scale-105 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6">
-              <Box className="h-4 w-4 group-data-[collapsible=icon]:h-3.5 group-data-[collapsible=icon]:w-3.5" />
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-teal-500 to-emerald-500 text-white shadow-md shadow-emerald-950/25 ring-1 ring-white/10 transition-transform group-hover:scale-105 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6">
+              <Building2 className="h-4 w-4 group-data-[collapsible=icon]:h-3.5 group-data-[collapsible=icon]:w-3.5" />
             </div>
             <div className="flex flex-col items-start gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
               <span className="max-w-30 truncate text-[13px] font-bold tracking-tight text-white">
