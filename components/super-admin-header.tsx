@@ -158,7 +158,7 @@ export function SuperAdminHeader() {
                     </AvatarFallback>
                   </Avatar>
                   <span className="hidden max-w-40 truncate text-xs font-bold text-foreground md:inline">
-                    {userName}
+                    {userDisplayName}
                   </span>
                   <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground md:inline" />
                 </div>

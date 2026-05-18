@@ -216,7 +216,7 @@ export function DashboardHeader() {
                     </AvatarFallback>
                   </Avatar>
                   <span className="hidden max-w-40 truncate text-sm font-medium md:inline">
-                    {userName}
+                    {userDisplayName}
                   </span>
                   <ChevronDown className="hidden h-4 w-4 text-muted-foreground md:inline" />
                 </>
