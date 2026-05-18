@@ -95,9 +95,10 @@ export default function AuthPage() {
   }, [])
 
   useEffect(() => {
-    // Store selected plan in sessionStorage for use in onboarding
-    if (planId) {
-      if (typeof window !== "undefined") {
+    // Clear sessionStorage on visit and store selected plan if present in URL
+    if (typeof window !== "undefined") {
+      sessionStorage.clear()
+      if (planId) {
         sessionStorage.setItem("selectedPlan", planId)
       }
     }
