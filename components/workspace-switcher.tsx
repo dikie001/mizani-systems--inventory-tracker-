@@ -60,12 +60,11 @@ export function WorkspaceSwitcher() {
       const data = await getWorkspaces()
       setWorkspaces(data)
     }
-    if (session?.user?.id && open) {
-      loadWorkspaces()
-    } else if (session?.user?.id && workspaces.length === 0) {
+
+    if (session?.user?.id) {
       loadWorkspaces()
     }
-  }, [session?.user?.id, open])
+  }, [session?.user?.id, currentWorkspaceId, open])
 
   async function onWorkspaceSelect(workspace: Workspace) {
     if (workspace.id === currentWorkspaceId) {
@@ -113,7 +112,7 @@ export function WorkspaceSwitcher() {
               <Box className="h-4 w-4 group-data-[collapsible=icon]:h-3.5 group-data-[collapsible=icon]:w-3.5" />
             </div>
             <div className="flex flex-col items-start gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
-              <span className="text-[13px] font-bold tracking-tight text-white truncate max-w-[120px]">
+              <span className="text-[13px] font-bold tracking-tight text-white truncate max-w-30">
                 {currentWorkspaceName}
               </span>
               <span className="text-[10px] font-medium tracking-wide text-sidebar-foreground/45 uppercase">
@@ -124,7 +123,7 @@ export function WorkspaceSwitcher() {
           <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50 group-data-[collapsible=icon]:hidden" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[240px] p-0 bg-sidebar border-sidebar-border shadow-xl backdrop-blur-xl">
+      <PopoverContent className="w-60 p-0 bg-sidebar border-sidebar-border shadow-xl backdrop-blur-xl">
         <Command className="bg-transparent">
           <CommandList>
             <CommandInput placeholder="Search workspace..." className="h-9" />
