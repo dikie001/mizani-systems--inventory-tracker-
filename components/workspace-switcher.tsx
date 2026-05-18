@@ -55,8 +55,13 @@ export function WorkspaceSwitcher() {
 
   React.useEffect(() => {
     async function loadWorkspaces() {
-      const data = await getWorkspaces()
-      setWorkspaces(data)
+      setIsLoading(true)
+      try {
+        const data = await getWorkspaces()
+        setWorkspaces(data)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
     if (session?.user?.id) {
