@@ -104,15 +104,13 @@ function SuccessContent() {
 
       {/* Logo */}
       <div className="relative z-10 mb-8 flex items-center gap-2.5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted/20 border border-border">
-          <Image
-            src="/mizani_logo.png"
-            alt="Mizani Systems"
-            width={24}
-            height={24}
-            className="h-6 w-6 object-contain"
-          />
-        </div>
+        <Image
+          src="/mizani_logo.png"
+          alt="Mizani Systems"
+          width={36}
+          height={36}
+          className="h-9 w-9 object-contain rounded-lg border border-border shadow-sm"
+        />
         <span className="text-base font-bold tracking-tight text-foreground">Mizani Systems</span>
       </div>
 

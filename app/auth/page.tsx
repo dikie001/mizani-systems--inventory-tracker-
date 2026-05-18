@@ -210,15 +210,13 @@ function AuthContent() {
 
         <Card className="rounded-2xl border bg-card text-card-foreground shadow-sm">
           <CardHeader className="items-center gap-3 px-6 pt-6 text-center">
-            <div className="mb-1 flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted/20 border border-border p-1.5">
-              <Image
-                src="/mizani_logo.png"
-                alt="Logo"
-                width={48}
-                height={48}
-                className="h-full w-full object-contain"
-              />
-            </div>
+            <Image
+              src="/mizani_logo.png"
+              alt="Logo"
+              width={48}
+              height={48}
+              className="h-12 w-12 object-contain rounded-xl border border-border shadow-sm mb-1"
+            />
             <div className="space-y-1">
               <CardTitle className="text-2xl tracking-tight">
                 Continue to Mizani Systems
