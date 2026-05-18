@@ -67,10 +67,15 @@ function getBreadcrumbLabel(segment: string) {
   )
 }
 
+function getFirstName(name?: string | null, email?: string | null) {
+  const source = name?.trim() || email?.trim() || "User"
+  const firstPart = source.split(/\s+/)[0] ?? "User"
+
+  return firstPart.charAt(0).toUpperCase() + firstPart.slice(1).toLowerCase()
+}
 function breadcrumbSegmentsFromPath(pathname: string) {
   return pathname.split("/").filter(Boolean).slice(1)
 }
-
 export function DashboardHeader() {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
@@ -81,6 +86,7 @@ export function DashboardHeader() {
   const userEmail = session?.user?.email ?? ""
   const userImage = session?.user?.image ?? ""
   const userInitials = getInitials(session?.user?.name, session?.user?.email)
+  const userDisplayName = getFirstName(session?.user?.name, session?.user?.email)
 
   const breadcrumbPath = breadcrumbSegmentsFromPath(pathname)
   const breadcrumbSegments = breadcrumbPath.map((segment, index) => ({
@@ -130,7 +136,7 @@ export function DashboardHeader() {
     status === "authenticated" && Boolean(userName) && isAvatarReady
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/85 md:px-5">
+    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/85 md:px-5">
       <SidebarTrigger className="-ml-1 transition-all duration-200 ease-linear peer-data-[state=expanded]:peer-data-[collapsible=icon]:fixed peer-data-[state=expanded]:peer-data-[collapsible=icon]:top-3 peer-data-[state=expanded]:peer-data-[collapsible=icon]:left-[calc(var(--sidebar-width)-2.5rem)] peer-data-[state=expanded]:peer-data-[collapsible=icon]:z-40" />
       <Separator
         orientation="vertical"
@@ -212,7 +218,10 @@ export function DashboardHeader() {
                   <ChevronDown className="hidden h-4 w-4 text-muted-foreground md:inline" />
                 </>
               ) : (
-                <span className="flex w-[7.5rem] items-center justify-center md:w-[10.5rem]">
+                <span
+                  className="flex items-center justify-center"
+                  style={{ width: "7.5rem" }}
+                >
                   <LoaderCircle className="h-4 w-4 animate-spin text-muted-foreground" />
                 </span>
               )}

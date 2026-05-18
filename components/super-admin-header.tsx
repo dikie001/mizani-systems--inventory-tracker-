@@ -43,6 +43,13 @@ function getInitials(name?: string | null, email?: string | null) {
   return email?.[0]?.toUpperCase() ?? "A"
 }
 
+function getFirstName(name?: string | null, email?: string | null) {
+  const source = name?.trim() || email?.trim() || "Admin"
+  const firstPart = source.split(/\s+/)[0] ?? "Admin"
+
+  return firstPart.charAt(0).toUpperCase() + firstPart.slice(1).toLowerCase()
+}
+
 export function SuperAdminHeader() {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
@@ -53,6 +60,7 @@ export function SuperAdminHeader() {
   const userEmail = session?.user?.email ?? ""
   const userImage = session?.user?.image ?? ""
   const userInitials = getInitials(session?.user?.name, session?.user?.email)
+  const userDisplayName = getFirstName(session?.user?.name, session?.user?.email)
 
   useEffect(() => {
     if (status !== "authenticated" || !userName) {
@@ -104,7 +112,7 @@ export function SuperAdminHeader() {
   const isProfileReady = status === "authenticated" && isAvatarReady
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/85 md:px-5">
+    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/85 md:px-5">
       <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground transition-all duration-200" />
       <Separator orientation="vertical" className="mr-1 h-5 bg-border/60" />
 
@@ -147,7 +155,7 @@ export function SuperAdminHeader() {
                   <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground md:inline" />
                 </div>
               ) : (
-                <span className="flex w-[7.5rem] items-center justify-center">
+                <span className="flex w-30 items-center justify-center">
                   <LoaderCircle className="h-4 w-4 animate-spin text-muted-foreground" />
                 </span>
               )}
