@@ -68,7 +68,7 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!session?.user?.currentWorkspaceId) return
+    if (!(session?.user as any)?.currentWorkspaceId) return
 
     const fetchBillingData = async () => {
       try {
@@ -101,7 +101,7 @@ export default function BillingPage() {
     }
 
     fetchBillingData()
-  }, [session?.user?.currentWorkspaceId])
+  }, [(session?.user as any)?.currentWorkspaceId])
 
   const formatDate = (date: string | null) => {
     if (!date) return "—"
