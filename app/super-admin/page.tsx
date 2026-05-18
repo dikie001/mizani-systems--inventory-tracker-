@@ -280,7 +280,7 @@ export default function SuperAdminPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={registrationsChartData}
-                    margin={{ top: 8, left: 4, right: 8, bottom: 6 }}
+                    margin={{ top: 4, left: 0, right: 0, bottom: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis
@@ -288,11 +288,15 @@ export default function SuperAdminPage() {
                       tickLine={false}
                       axisLine={false}
                       minTickGap={8}
+                      tickMargin={4}
+                      padding={{ left: 0, right: 0 }}
                     />
                     <YAxis
                       allowDecimals={false}
                       tickLine={false}
                       axisLine={false}
+                      width={28}
+                      tickMargin={4}
                     />
                     <Tooltip />
                     <Bar

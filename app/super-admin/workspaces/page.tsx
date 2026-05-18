@@ -125,7 +125,7 @@ export default function SuperAdminRegistrationsPage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={chartData}
-                margin={{ top: 12, left: 8, right: 8, bottom: 6 }}
+                margin={{ top: 4, left: 0, right: 0, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
@@ -133,8 +133,10 @@ export default function SuperAdminRegistrationsPage() {
                   tickLine={false}
                   axisLine={false}
                   minTickGap={8}
+                  tickMargin={4}
+                  padding={{ left: 0, right: 0 }}
                 />
-                <YAxis tickLine={false} axisLine={false} />
+                <YAxis tickLine={false} axisLine={false} width={28} tickMargin={4} />
                 <Tooltip />
                 <defs>
                   <linearGradient id="fillReg" x1="0" y1="0" x2="0" y2="1">
