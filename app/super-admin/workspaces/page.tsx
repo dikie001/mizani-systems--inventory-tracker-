@@ -1,7 +1,13 @@
 "use client"
 
 import useSWR from "swr"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
 import { Loader2, Shield } from "lucide-react"
 import { ChartContainer } from "@/components/ui/chart"
 import {
@@ -46,7 +52,9 @@ export default function SuperAdminRegistrationsPage() {
           <Shield className="h-6 w-6 text-destructive" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground">Failed to Load Registration Stats</h2>
+          <h2 className="text-xl font-bold text-foreground">
+            Failed to Load Registration Stats
+          </h2>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
             There was an error communicating with the database or server.
           </p>
@@ -98,8 +106,12 @@ export default function SuperAdminRegistrationsPage() {
     <div className="flex flex-1 flex-col space-y-6 text-left">
       <div className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-5 shadow-md">
         <div className="space-y-1">
-          <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">User Registrations</h3>
-          <p className="text-xs text-muted-foreground">Registrations over the last 30 days</p>
+          <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
+            User Registrations
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Registrations over the last 30 days
+          </p>
         </div>
       </div>
 
@@ -111,18 +123,38 @@ export default function SuperAdminRegistrationsPage() {
         <CardContent>
           <ChartContainer config={chartConfig} className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 12, left: 8, right: 8, bottom: 6 }}>
+              <BarChart
+                data={chartData}
+                margin={{ top: 12, left: 8, right: 8, bottom: 6 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={8} />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  minTickGap={8}
+                />
                 <YAxis tickLine={false} axisLine={false} />
                 <Tooltip />
                 <defs>
                   <linearGradient id="fillReg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-registrations, #7c3aed)" stopOpacity={0.22} />
-                    <stop offset="100%" stopColor="var(--color-registrations, #7c3aed)" stopOpacity={0.02} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--color-registrations, #7c3aed)"
+                      stopOpacity={0.22}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--color-registrations, #7c3aed)"
+                      stopOpacity={0.02}
+                    />
                   </linearGradient>
                 </defs>
-                <Bar dataKey="registrations" fill="#7c3aed" radius={[4,4,0,0]} />
+                <Bar
+                  dataKey="registrations"
+                  fill="#7c3aed"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
