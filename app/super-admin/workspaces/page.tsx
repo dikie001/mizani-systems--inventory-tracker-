@@ -136,7 +136,12 @@ export default function SuperAdminRegistrationsPage() {
                   tickMargin={4}
                   padding={{ left: 0, right: 0 }}
                 />
-                <YAxis tickLine={false} axisLine={false} width={28} tickMargin={4} />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  width={28}
+                  tickMargin={4}
+                />
                 <Tooltip />
                 <defs>
                   <linearGradient id="fillReg" x1="0" y1="0" x2="0" y2="1">

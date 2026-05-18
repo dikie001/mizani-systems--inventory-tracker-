@@ -147,20 +147,25 @@ export default function SuperAdminPage() {
     }
   }
 
-  // Build 30-day registrations series from users
-  function getLastNDays(n: number) {
+  // Build an all-time daily registrations series from users
+  const registrationDates = users
+    .map((u: any) => (u.createdAt ? String(u.createdAt).split("T")[0] : null))
+    .filter((date): date is string => !!date)
+    .sort()
+
+  const buildDateRange = (startIso: string, endIso: string) => {
     const days: string[] = []
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    for (let i = n - 1; i >= 0; i--) {
-      const d = new Date(today)
-      d.setDate(today.getDate() - i)
-      days.push(d.toISOString().split("T")[0])
+    const current = new Date(`${startIso}T00:00:00`)
+    const end = new Date(`${endIso}T00:00:00`)
+
+    while (current <= end) {
+      days.push(current.toISOString().split("T")[0])
+      current.setDate(current.getDate() + 1)
     }
+
     return days
   }
 
-  const last30 = getLastNDays(30)
   const regCounts: Record<string, number> = {}
   users.forEach((u: any) => {
     const created = u.createdAt ? u.createdAt.split("T")[0] : u.createdAt
@@ -168,7 +173,12 @@ export default function SuperAdminPage() {
     regCounts[created] = (regCounts[created] || 0) + 1
   })
 
-  const registrationsChartData = last30.map((iso) => {
+  const registrationSeries =
+    registrationDates.length > 0
+      ? buildDateRange(registrationDates[0], registrationDates[registrationDates.length - 1])
+      : []
+
+  const registrationsChartData = registrationSeries.map((iso) => {
     const d = new Date(iso)
     const label = d.toLocaleDateString(undefined, {
       month: "short",
@@ -267,7 +277,7 @@ export default function SuperAdminPage() {
                 User Registrations
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Daily registered accounts (last 30 days)
+                Daily registered accounts (all time)
               </CardDescription>
             </CardHeader>
             <CardContent>
