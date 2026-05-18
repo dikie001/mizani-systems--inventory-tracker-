@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { startTransition, useEffect, useState } from "react"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -99,12 +99,13 @@ export function DashboardHeader() {
 
   useEffect(() => {
     if (status !== "authenticated" || !userName) {
-      setIsAvatarReady(false)
       return
     }
 
     if (!userImage) {
-      setIsAvatarReady(true)
+      startTransition(() => {
+        setIsAvatarReady(true)
+      })
       return
     }
 
@@ -116,14 +117,18 @@ export function DashboardHeader() {
 
     const finalize = () => {
       if (isMounted) {
-        setIsAvatarReady(true)
+        startTransition(() => {
+          setIsAvatarReady(true)
+        })
       }
     }
 
     if (image.complete) {
       finalize()
     } else {
-      setIsAvatarReady(false)
+      startTransition(() => {
+        setIsAvatarReady(false)
+      })
       image.onload = finalize
       image.onerror = finalize
     }
@@ -216,7 +221,7 @@ export function DashboardHeader() {
                     </AvatarFallback>
                   </Avatar>
                   <span className="hidden max-w-40 truncate text-sm font-medium md:inline">
-                    {userName}
+                    {userDisplayName}
                   </span>
                   <ChevronDown className="hidden h-4 w-4 text-muted-foreground md:inline" />
                 </>

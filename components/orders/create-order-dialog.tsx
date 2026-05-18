@@ -6,13 +6,13 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Table,
-  TableBody, 
+  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -41,6 +41,10 @@ interface OrderItem {
   image?: string | null
 }
 
+type WorkspaceSummary = {
+  currency?: string | null
+}
+
 export function CreateOrderDialog({
   open,
   onOpenChange,
@@ -49,8 +53,11 @@ export function CreateOrderDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const { mutate } = useSWRConfig()
-  const { data: workspace } = useSWR("/api/workspaces/current", (url) => fetch(url).then((res) => res.json()))
-  const currency = (workspace as any)?.currency || "KES"
+  const { data: workspace } = useSWR<WorkspaceSummary>(
+    "/api/workspaces/current",
+    (url: string) => fetch(url).then((res) => res.json())
+  )
+  const currency = workspace?.currency || "KES"
   const [loading, setLoading] = useState(false)
   const [customer, setCustomer] = useState("")
   const [search, setSearch] = useState("")
@@ -82,7 +89,16 @@ export function CreateOrderDialog({
         )
       )
     } else {
-      setItems([...items, { productId: product.id, name: product.name, quantity: 1, price: product.price, image: product.image }])
+      setItems([
+        ...items,
+        {
+          productId: product.id,
+          name: product.name,
+          quantity: 1,
+          price: product.price,
+          image: product.image,
+        },
+      ])
     }
     setSearch("")
   }
@@ -115,22 +131,30 @@ export function CreateOrderDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customer,
-          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          items: items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+          })),
         }),
       })
 
       if (!res.ok) {
-        const error = await res.json()
+        const error = (await res.json()) as { error?: string }
         throw new Error(error.error || "Failed to create order")
       }
 
       toast.success("Order created successfully")
-      mutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
+      mutate(
+        (key: string | readonly unknown[] | null) =>
+          typeof key === "string" && key.startsWith("/api/orders")
+      )
       onOpenChange(false)
       setCustomer("")
       setItems([])
-    } catch (error: any) {
-      toast.error(error.message)
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create order"
+      )
     } finally {
       setLoading(false)
     }
@@ -138,7 +162,7 @@ export function CreateOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Order</DialogTitle>
           <DialogDescription>
@@ -161,37 +185,39 @@ export function CreateOrderDialog({
           <div className="space-y-2">
             <Label>Add Products *</Label>
             <div className="relative mb-2">
-              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search by name or SKU..."
-                className="pl-9 h-9"
+                className="h-9 pl-9"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
 
-            <div className="rounded-xl border bg-muted/10 p-2 space-y-1">
-              <div className="px-3 py-1.5 flex justify-between items-center border-b border-border/40 pb-1.5 mb-1 bg-muted/30 -mx-2 -mt-2 rounded-t-xl">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Product Catalog</span>
-                <span className="text-[9px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">{filteredProducts.length} items</span>
+            <div className="space-y-1 rounded-xl border bg-muted/10 p-2">
+              <div className="-mx-2 -mt-2 mb-1 flex items-center justify-between rounded-t-xl border-b border-border/40 bg-muted/30 px-3 py-1.5 pb-1.5">
+                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  Product Catalog
+                </span>
+                <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
+                  {filteredProducts.length} items
+                </span>
               </div>
-              <div className="max-h-[140px] overflow-y-auto pr-1 space-y-0.5 divide-y divide-border/20">
+              <div className="max-h-[140px] space-y-0.5 divide-y divide-border/20 overflow-y-auto pr-1">
                 {filteredProducts.map((p) => {
                   const isOutOfStock = p.stock <= 0
                   const isLowStock = p.stock <= 10 && p.stock > 0
-                  
+
                   return (
                     <button
                       type="button"
                       key={p.id}
                       disabled={isOutOfStock}
                       onClick={() => addItem(p)}
-                      className={`flex w-full items-center justify-between py-1.5 px-2 rounded-lg transition-all text-xs text-left hover:bg-muted/50
-                        ${isOutOfStock ? "opacity-40 cursor-not-allowed" : ""}
-                      `}
+                      className={`flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs transition-all hover:bg-muted/50 ${isOutOfStock ? "cursor-not-allowed opacity-40" : ""} `}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 shrink-0 overflow-hidden rounded-md border bg-muted flex items-center justify-center">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
                           {p.image ? (
                             <img
                               src={p.image}
@@ -203,29 +229,34 @@ export function CreateOrderDialog({
                           )}
                         </div>
                         <div className="space-y-0.5">
-                          <p className="font-semibold text-foreground text-xs">{p.name}</p>
+                          <p className="text-xs font-semibold text-foreground">
+                            {p.name}
+                          </p>
                           <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                             <span>SKU: {p.sku}</span>
                             <span>•</span>
-                            <span className={`font-medium ${
-                              isOutOfStock 
-                                ? "text-red-500" 
-                                : isLowStock 
-                                  ? "text-amber-500 font-semibold" 
-                                  : "text-emerald-500 font-semibold"
-                            }`}>
-                              {isOutOfStock 
-                                ? "Out of Stock" 
-                                : `${p.stock} in stock`
-                              }
+                            <span
+                              className={`font-medium ${
+                                isOutOfStock
+                                  ? "text-red-500"
+                                  : isLowStock
+                                    ? "font-semibold text-amber-500"
+                                    : "font-semibold text-emerald-500"
+                              }`}
+                            >
+                              {isOutOfStock
+                                ? "Out of Stock"
+                                : `${p.stock} in stock`}
                             </span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <p className="font-mono font-bold text-foreground text-xs">{formatPrice(p.price, currency)}</p>
-                        <div className="h-5 w-5 rounded-md bg-primary/10 flex items-center justify-center text-primary transition-colors shrink-0">
-                          <Plus className="w-3 h-3" />
+                        <p className="font-mono text-xs font-bold text-foreground">
+                          {formatPrice(p.price, currency)}
+                        </p>
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary transition-colors">
+                          <Plus className="h-3 w-3" />
                         </div>
                       </div>
                     </button>
@@ -233,27 +264,34 @@ export function CreateOrderDialog({
                 })}
                 {filteredProducts.length === 0 && (
                   <div className="py-6 text-center text-xs text-muted-foreground italic">
-                    No products found matching "{search}".
+                    No products found matching &quot;{search}&quot;.
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="overflow-hidden rounded-xl border bg-card">
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow>
                   <TableHead className="text-xs font-medium">Product</TableHead>
-                  <TableHead className="w-[100px] text-xs font-medium text-center">Qty</TableHead>
-                  <TableHead className="text-right text-xs font-medium">Total</TableHead>
+                  <TableHead className="w-[100px] text-center text-xs font-medium">
+                    Qty
+                  </TableHead>
+                  <TableHead className="text-right text-xs font-medium">
+                    Total
+                  </TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-20 text-center text-xs text-muted-foreground italic">
+                    <TableCell
+                      colSpan={4}
+                      className="h-20 text-center text-xs text-muted-foreground italic"
+                    >
                       No items added yet. Search for products above to start.
                     </TableCell>
                   </TableRow>
@@ -262,7 +300,7 @@ export function CreateOrderDialog({
                     <TableRow key={item.productId}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md border bg-muted flex items-center justify-center">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
                             {item.image ? (
                               <img
                                 src={item.image}
@@ -274,8 +312,12 @@ export function CreateOrderDialog({
                             )}
                           </div>
                           <div>
-                            <p className="font-semibold text-sm leading-tight text-foreground">{item.name}</p>
-                            <p className="text-xs text-muted-foreground">{formatPrice(item.price, currency)} each</p>
+                            <p className="text-sm leading-tight font-semibold text-foreground">
+                              {item.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatPrice(item.price, currency)} each
+                            </p>
                           </div>
                         </div>
                       </TableCell>
@@ -285,13 +327,25 @@ export function CreateOrderDialog({
                             type="number"
                             className="h-8 w-16 text-center"
                             value={item.quantity}
-                            onChange={(e) => updateQuantity(item.productId, parseInt(e.target.value))}
+                            onChange={(e) =>
+                              updateQuantity(
+                                item.productId,
+                                parseInt(e.target.value)
+                              )
+                            }
                           />
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-mono text-sm font-semibold">{formatPrice(item.price * item.quantity, currency)}</TableCell>
+                      <TableCell className="text-right font-mono text-sm font-semibold">
+                        {formatPrice(item.price * item.quantity, currency)}
+                      </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => removeItem(item.productId)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          onClick={() => removeItem(item.productId)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -300,20 +354,32 @@ export function CreateOrderDialog({
                 )}
               </TableBody>
             </Table>
-            <div className="flex justify-between items-center py-2.5 px-4 border-t bg-muted/20">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total</span>
-              <span className="font-mono font-extrabold text-base text-primary">{formatPrice(total, currency)}</span>
+            <div className="flex items-center justify-between border-t bg-muted/20 px-4 py-2.5">
+              <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Total
+              </span>
+              <span className="font-mono text-base font-extrabold text-primary">
+                {formatPrice(total, currency)}
+              </span>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+          <div className="flex justify-end gap-3 border-t pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={loading}
+            >
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={loading || items.length === 0}>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || items.length === 0}
+            >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Creating...
                 </>
               ) : (

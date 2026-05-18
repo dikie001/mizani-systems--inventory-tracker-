@@ -7,33 +7,65 @@ import {
   ShoppingCart,
   Users,
   Shield,
-  Loader2
+  Loader2,
 } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
+type WorkspaceSummary = {
+  id: string
+  name: string
+  slug: string
+  currency: string
+  businessType: string
+  inventorySize: string
+  productCount: number
+  orderCount: number
+  memberCount: number
+  createdAt: string
+  owner?: {
+    name: string
+    email: string
+  } | null
+}
+
+type SuperAdminWorkspacesData = {
+  workspaces?: WorkspaceSummary[]
+}
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export default function SuperAdminWorkspacesPage() {
-  const { data, error, isLoading, mutate } = useSWR("/api/super-admin/data", fetcher, {
-    refreshInterval: 10000 // Refresh stats every 10 seconds
-  })
+  const { data, error, isLoading, mutate } = useSWR<SuperAdminWorkspacesData>(
+    "/api/super-admin/data",
+    fetcher,
+    {
+      refreshInterval: 10000, // Refresh stats every 10 seconds
+    }
+  )
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-        <div className="h-14 w-14 rounded-2xl bg-destructive/10 flex items-center justify-center border border-destructive/20 shadow-lg shadow-destructive/5">
+      <div className="flex flex-col items-center justify-center space-y-4 py-20 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/10 shadow-lg shadow-destructive/5">
           <Shield className="h-6 w-6 text-destructive" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground">Failed to Load Workspaces Grid</h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            There was an error communicating with the database or server. Ensure your database is running.
+          <h2 className="text-xl font-bold text-foreground">
+            Failed to Load Workspaces Grid
+          </h2>
+          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+            There was an error communicating with the database or server. Ensure
+            your database is running.
           </p>
         </div>
-        <Button variant="outline" onClick={() => mutate()} className="border-border bg-background text-foreground">
+        <Button
+          variant="outline"
+          onClick={() => mutate()}
+          className="border-border bg-background text-foreground"
+        >
           Retry Connection
         </Button>
       </div>
@@ -42,9 +74,9 @@ export default function SuperAdminWorkspacesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-40 space-y-4">
+      <div className="flex flex-col items-center justify-center space-y-4 py-40">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-sm font-semibold text-muted-foreground tracking-wide uppercase">
+        <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
           Opening Administrative Workspaces Directory...
         </p>
       </div>
@@ -54,83 +86,120 @@ export default function SuperAdminWorkspacesPage() {
   const { workspaces = [] } = data || {}
 
   return (
-    <div className="space-y-6 flex-1 flex flex-col text-left">
+    <div className="flex flex-1 flex-col space-y-6 text-left">
       {/* Workspaces statistics header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 rounded-2xl bg-card border border-border gap-4 shadow-md">
-        <div className="text-left space-y-1">
-          <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+      <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-md sm:flex-row sm:items-center">
+        <div className="space-y-1 text-left">
+          <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
             <Briefcase className="h-5 w-5 text-primary" />
             Workspaces Portfolio
           </h3>
-          <p className="text-xs text-muted-foreground">Analyze tenant business classifications, inventory levels, currencies, and membership counts.</p>
+          <p className="text-xs text-muted-foreground">
+            Analyze tenant business classifications, inventory levels,
+            currencies, and membership counts.
+          </p>
         </div>
-        <Badge variant="outline" className="px-3.5 py-1 bg-background border-border text-foreground font-bold font-mono shadow-sm">
+        <Badge
+          variant="outline"
+          className="border-border bg-background px-3.5 py-1 font-mono font-bold text-foreground shadow-sm"
+        >
           Total Workspaces: {workspaces.length}
         </Badge>
       </div>
 
       {/* Workspaces Cards Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {workspaces.map((ws: any) => (
+        {workspaces.map((ws) => (
           <Card
             key={ws.id}
-            className="bg-card border-border hover:border-primary/30 transition duration-300 shadow-xl flex flex-col text-left"
+            className="flex flex-col border-border bg-card text-left shadow-xl transition duration-300 hover:border-primary/30"
           >
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
-                  <CardTitle className="text-sm font-bold text-foreground tracking-tight">
+                  <CardTitle className="text-sm font-bold tracking-tight text-foreground">
                     {ws.name}
                   </CardTitle>
-                  <span className="font-mono text-[10px] text-muted-foreground block truncate">{ws.slug}</span>
+                  <span className="block truncate font-mono text-[10px] text-muted-foreground">
+                    {ws.slug}
+                  </span>
                 </div>
-                <Badge variant="outline" className="px-1.5 py-0.5 text-[8px] bg-muted border-border text-muted-foreground font-bold uppercase tracking-wider">
+                <Badge
+                  variant="outline"
+                  className="border-border bg-muted px-1.5 py-0.5 text-[8px] font-bold tracking-wider text-muted-foreground uppercase"
+                >
                   {ws.currency}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4 flex-1 flex flex-col justify-between">
+            <CardContent className="flex flex-1 flex-col justify-between space-y-4">
               {/* Meta Tags Row */}
               <div className="flex flex-wrap gap-1.5">
-                <Badge variant="outline" className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider bg-muted/50 text-muted-foreground border-border">
+                <Badge
+                  variant="outline"
+                  className="border-border bg-muted/50 px-1.5 py-0 text-[8px] font-bold tracking-wider text-muted-foreground uppercase"
+                >
                   {ws.businessType}
                 </Badge>
-                <Badge variant="outline" className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider bg-muted/50 text-muted-foreground border-border">
+                <Badge
+                  variant="outline"
+                  className="border-border bg-muted/50 px-1.5 py-0 text-[8px] font-bold tracking-wider text-muted-foreground uppercase"
+                >
                   {ws.inventorySize} Size
                 </Badge>
               </div>
 
               {/* Workspaces quantitative stats */}
-              <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-muted/30 border border-border my-3 text-center">
+              <div className="my-3 grid grid-cols-3 gap-2 rounded-lg border border-border bg-muted/30 p-2.5 text-center">
                 <div className="flex flex-col items-center">
-                  <Package className="h-3.5 w-3.5 text-primary mb-1" />
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Products</span>
-                  <span className="font-mono font-bold text-foreground text-xs mt-0.5">{ws.productCount}</span>
+                  <Package className="mb-1 h-3.5 w-3.5 text-primary" />
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                    Products
+                  </span>
+                  <span className="mt-0.5 font-mono text-xs font-bold text-foreground">
+                    {ws.productCount}
+                  </span>
                 </div>
                 <div className="flex flex-col items-center border-x border-border">
-                  <ShoppingCart className="h-3.5 w-3.5 text-primary mb-1" />
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Orders</span>
-                  <span className="font-mono font-bold text-foreground text-xs mt-0.5">{ws.orderCount}</span>
+                  <ShoppingCart className="mb-1 h-3.5 w-3.5 text-primary" />
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                    Orders
+                  </span>
+                  <span className="mt-0.5 font-mono text-xs font-bold text-foreground">
+                    {ws.orderCount}
+                  </span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <Users className="h-3.5 w-3.5 text-primary mb-1" />
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Members</span>
-                  <span className="font-mono font-bold text-foreground text-xs mt-0.5">{ws.memberCount}</span>
+                  <Users className="mb-1 h-3.5 w-3.5 text-primary" />
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                    Members
+                  </span>
+                  <span className="mt-0.5 font-mono text-xs font-bold text-foreground">
+                    {ws.memberCount}
+                  </span>
                 </div>
               </div>
 
               {/* Owner Details Footer */}
-              <div className="pt-3.5 border-t border-border flex flex-col gap-1 text-[11px]">
-                <span className="text-muted-foreground uppercase font-bold tracking-wider text-[9px]">Workspace Owner</span>
+              <div className="flex flex-col gap-1 border-t border-border pt-3.5 text-[11px]">
+                <span className="text-[9px] font-bold tracking-wider text-muted-foreground uppercase">
+                  Workspace Owner
+                </span>
                 {ws.owner ? (
                   <div className="flex items-center justify-between text-foreground">
-                    <span className="font-bold truncate">{ws.owner.name}</span>
-                    <span className="font-mono text-muted-foreground text-[10px] truncate max-w-[130px]">{ws.owner.email}</span>
+                    <span className="truncate font-bold">{ws.owner.name}</span>
+                    <span className="max-w-[130px] truncate font-mono text-[10px] text-muted-foreground">
+                      {ws.owner.email}
+                    </span>
                   </div>
                 ) : (
-                  <span className="text-muted-foreground italic">No Owner Linked</span>
+                  <span className="text-muted-foreground italic">
+                    No Owner Linked
+                  </span>
                 )}
-                <span className="text-[9px] text-muted-foreground font-mono mt-1">Created: {ws.createdAt}</span>
+                <span className="mt-1 font-mono text-[9px] text-muted-foreground">
+                  Created: {ws.createdAt}
+                </span>
               </div>
             </CardContent>
           </Card>

@@ -5,9 +5,11 @@ import { subDays, subMonths, startOfDay } from "date-fns"
 
 export async function GET(request: Request) {
   const session = await auth()
-  if (!session) {
+  if (!session?.user?.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+
+  const workspaceId = session.user.workspaceId
 
   const { searchParams } = new URL(request.url)
   const range = searchParams.get("range") || "12m"
@@ -21,42 +23,54 @@ export async function GET(request: Request) {
   startDate = startOfDay(startDate)
 
   try {
-    // Get all order items for orders within the range
-    const orderItems = await prisma.orderItem.findMany({
+    const groupedItems = await prisma.orderItem.groupBy({
+      by: ["productId"],
       where: {
         order: {
+          workspaceId,
           createdAt: { gte: startDate },
-          status: { not: "cancelled" }
-        }
+          status: { not: "cancelled" },
+        },
       },
-      include: {
-        product: {
-          select: { name: true }
-        }
-      }
+      _sum: { quantity: true },
+      orderBy: {
+        _sum: {
+          quantity: "desc",
+        },
+      },
+      take: 5,
     })
 
-    // Group by product
-    const productMap: Record<string, { product: string, units: number }> = {}
-    
-    orderItems.forEach(item => {
-      if (!productMap[item.productId]) {
-        productMap[item.productId] = {
-          product: item.product.name,
-          units: 0
-        }
-      }
-      productMap[item.productId].units += item.quantity
+    if (groupedItems.length === 0) {
+      return NextResponse.json([])
+    }
+
+    const products = await prisma.product.findMany({
+      where: {
+        workspaceId,
+        id: { in: groupedItems.map((item) => item.productId) },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
     })
 
-    // Convert to array and sort
-    const topProducts = Object.values(productMap)
-      .sort((a, b) => b.units - a.units)
-      .slice(0, 5)
+    const productNameById = new Map(
+      products.map((product) => [product.id, product.name])
+    )
+
+    const topProducts = groupedItems.map((item) => ({
+      product: productNameById.get(item.productId) || "Unknown Product",
+      units: item._sum.quantity || 0,
+    }))
 
     return NextResponse.json(topProducts)
   } catch (error) {
     console.error("Failed to fetch top products:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    )
   }
 }

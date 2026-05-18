@@ -79,6 +79,16 @@ function isNavItemActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
+function getUserInitials(name?: string | null, email?: string | null) {
+  const source = name?.trim() || email?.trim() || "User"
+  const parts = source.split(/\s+/).filter(Boolean)
+
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("")
+}
+
 export function DashboardSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
@@ -97,8 +107,7 @@ export function DashboardSidebar() {
     if (item.title === "Orders") {
       return {
         ...item,
-        badge:
-          counts?.pendingOrders > 0 ? String(counts.pendingOrders) : null,
+        badge: counts?.pendingOrders > 0 ? String(counts.pendingOrders) : null,
       }
     }
     return item
@@ -108,26 +117,36 @@ export function DashboardSidebar() {
     if (item.title === "Stock Alerts") {
       return {
         ...item,
-        badge:
-          counts?.activeAlerts > 0 ? String(counts.activeAlerts) : null,
+        badge: counts?.activeAlerts > 0 ? String(counts.activeAlerts) : null,
       }
     }
     return item
   })
 
+  const userInitials = getUserInitials(
+    session?.user?.name,
+    session?.user?.email
+  )
+
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="bg-transparent">
-      <SidebarHeader className="h-16 justify-center border-b border-sidebar-border/60 px-3 py-0 group-data-[collapsible=icon]:h-16">
-        <WorkspaceSwitcher />
+      <SidebarHeader className="flex h-16 items-center justify-center border-b border-sidebar-border/60 px-3 py-0 group-data-[collapsible=icon]:px-0!">
+        {isCollapsed ? (
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/50 text-sm font-semibold text-primary-foreground shadow-sm ring-1 ring-primary/25">
+            {userInitials}
+          </div>
+        ) : (
+          <WorkspaceSwitcher />
+        )}
       </SidebarHeader>
 
-      <SidebarContent className="gap-4 px-3 py-4 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3">
+      <SidebarContent className="gap-4 px-3 py-4 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-3 group-data-[collapsible=icon]:px-1.5 group-data-[collapsible=icon]:py-3">
         <SidebarGroup className="px-0 py-0 group-data-[collapsible=icon]:gap-2">
-          <SidebarGroupLabel className="px-2.5 pb-1.5 text-[9px] font-semibold tracking-normal text-sidebar-foreground/35 uppercase">
+          <SidebarGroupLabel className="px-2.5 pb-1.5 text-xs font-semibold tracking-normal text-muted-foreground uppercase group-data-[collapsible=icon]:hidden">
             Workspace
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1.5">
+            <SidebarMenu className="gap-1.5 group-data-[collapsible=icon]:gap-1">
               {mainNav.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
@@ -135,17 +154,17 @@ export function DashboardSidebar() {
                     isActive={isNavItemActive(pathname, item.href)}
                     tooltip={item.title}
                     size="lg"
-                    className="h-9 rounded-lg px-2.5 text-[12px] font-medium text-sidebar-foreground/75 transition-all duration-200 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-emerald-50 data-[active=true]:text-emerald-950 data-[active=true]:shadow-sm dark:data-[active=true]:bg-emerald-950/40 dark:data-[active=true]:text-emerald-100"
+                    className="flex h-10 w-full items-center rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-primary/50 data-[active=true]:text-primary-foreground data-[active=true]:shadow-sm"
                   >
                     <Link href={item.href} onClick={handleNavClick}>
-                      <item.icon className="h-4 w-4 text-sidebar-foreground/55 group-data-[active=true]/menu-button:text-emerald-700 dark:group-data-[active=true]/menu-button:text-emerald-300" />
+                      <item.icon className="h-4 w-4 shrink-0 text-muted-foreground group-data-[active=true]/menu-button:text-primary-foreground group-data-[collapsible=icon]:m-0!" />
                       <span className="group-data-[collapsible=icon]:hidden">
                         {item.title}
                       </span>
                       {item.badge && !isCollapsed && (
                         <Badge
                           variant="secondary"
-                          className="ml-auto h-[18px] min-w-[18px] justify-center rounded-full px-1.5 text-[10px]"
+                          className="ml-auto h-4.5 min-w-4.5 justify-center rounded-full px-1.5 text-[10px]"
                         >
                           {item.badge}
                         </Badge>
@@ -161,11 +180,11 @@ export function DashboardSidebar() {
         <Separator className="mx-3 w-auto bg-sidebar-border/70 group-data-[collapsible=icon]:hidden" />
 
         <SidebarGroup className="px-0 py-0 group-data-[collapsible=icon]:gap-2">
-          <SidebarGroupLabel className="px-2.5 pb-1.5 text-[9px] font-semibold tracking-normal text-sidebar-foreground/35 uppercase">
+          <SidebarGroupLabel className="px-2.5 pb-1.5 text-xs font-semibold tracking-normal text-muted-foreground uppercase group-data-[collapsible=icon]:hidden">
             More
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1.5">
+            <SidebarMenu className="gap-1.5 group-data-[collapsible=icon]:gap-1">
               {secondaryNav.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
@@ -173,17 +192,17 @@ export function DashboardSidebar() {
                     isActive={isNavItemActive(pathname, item.href)}
                     tooltip={item.title}
                     size="lg"
-                    className="h-9 rounded-lg px-2.5 text-[12px] font-medium text-sidebar-foreground/75 transition-all duration-200 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-emerald-50 data-[active=true]:text-emerald-950 data-[active=true]:shadow-sm dark:data-[active=true]:bg-emerald-950/40 dark:data-[active=true]:text-emerald-100"
+                    className="flex h-10 w-full items-center rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-sm"
                   >
                     <Link href={item.href} onClick={handleNavClick}>
-                      <item.icon className="h-4 w-4 text-sidebar-foreground/55 group-data-[active=true]/menu-button:text-emerald-700 dark:group-data-[active=true]/menu-button:text-emerald-300" />
+                      <item.icon className="h-4 w-4 shrink-0 text-muted-foreground group-data-[active=true]/menu-button:text-primary-foreground group-data-[collapsible=icon]:m-0!" />
                       <span className="group-data-[collapsible=icon]:hidden">
                         {item.title}
                       </span>
                       {item.badge && !isCollapsed && (
                         <Badge
                           variant="destructive"
-                          className="ml-auto h-[18px] min-w-[18px] justify-center rounded-full px-1.5 text-[10px]"
+                          className="ml-auto h-4.5 min-w-4.5 justify-center rounded-full px-1.5 text-[10px]"
                         >
                           {item.badge}
                         </Badge>
@@ -195,7 +214,6 @@ export function DashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
       </SidebarContent>
 
       <SidebarFooter className="mt-auto border-t border-sidebar-border/60 px-2.5 py-2.5 group-data-[collapsible=icon]:px-1.5 group-data-[collapsible=icon]:py-2">
@@ -206,10 +224,10 @@ export function DashboardSidebar() {
               isActive={isNavItemActive(pathname, "/dashboard/settings")}
               tooltip="Settings"
               size="lg"
-              className="h-9 rounded-lg border border-sidebar-border/50 bg-sidebar-accent/25 px-2.5 text-[12px] font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:border-sidebar-border/40 group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent/50 data-[active=true]:border-sidebar-accent/50 data-[active=true]:bg-sidebar-accent/60 data-[active=true]:text-sidebar-foreground"
+              className="flex h-10 w-full items-center rounded-lg border border-sidebar-border/50 bg-sidebar-accent/25 px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 data-[active=true]:border-transparent data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-sm"
             >
               <Link href="/dashboard/settings" onClick={handleNavClick}>
-                <Settings className="h-4 w-4 text-sidebar-foreground/65 transition-transform duration-300 group-hover/menu-button:rotate-90 group-data-[active=true]/menu-button:rotate-90" />
+                <Settings className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 group-hover/menu-button:rotate-90 group-data-[active=true]/menu-button:rotate-90 group-data-[active=true]/menu-button:text-primary-foreground group-data-[collapsible=icon]:m-0!" />
                 <span className="group-data-[collapsible=icon]:hidden">
                   Settings
                 </span>
@@ -221,4 +239,3 @@ export function DashboardSidebar() {
     </Sidebar>
   )
 }
-

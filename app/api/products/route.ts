@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import type { Prisma } from "@prisma/client"
 import { auth } from "@/auth"
 import {
   computeProductStatus,
@@ -8,6 +7,7 @@ import {
   productQueryInclude,
 } from "@/lib/inventory"
 import prisma from "@/lib/prisma"
+import type { Prisma } from "@prisma/client"
 
 export async function GET(request: Request) {
   const session = await auth()
@@ -20,7 +20,9 @@ export async function GET(request: Request) {
   const category = searchParams.get("category")
   const status = searchParams.get("status")
 
-  const where: Prisma.ProductWhereInput = {
+  type ProductWhereInput = Prisma.ProductWhereInput
+
+  const where: ProductWhereInput = {
     workspaceId: session.user.workspaceId,
   }
 
@@ -55,7 +57,7 @@ export async function GET(request: Request) {
     console.error("Failed to fetch products:", error)
     return NextResponse.json(
       { error: "Failed to fetch products." },
-      { status: 500 },
+      { status: 500 }
     )
   }
 }
@@ -73,28 +75,30 @@ export async function POST(request: Request) {
 
     const product = await prisma.$transaction(async (tx) => {
       const existingProduct = await tx.product.findUnique({
-        where: { 
+        where: {
           workspaceId_sku: {
             workspaceId,
             sku: payload.sku,
-          }
+          },
         },
         select: { id: true },
       })
 
       if (existingProduct) {
-        throw new Error("A product with that SKU already exists in this workspace.")
+        throw new Error(
+          "A product with that SKU already exists in this workspace."
+        )
       }
 
       const category = await tx.category.upsert({
-        where: { 
+        where: {
           workspaceId_name: {
             workspaceId,
             name: payload.category,
-          }
+          },
         },
         update: {},
-        create: { 
+        create: {
           name: payload.category,
           workspaceId,
         },
@@ -141,7 +145,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { error: message },
-      { status: message.includes("already exists") ? 409 : 400 },
+      { status: message.includes("already exists") ? 409 : 400 }
     )
   }
 }

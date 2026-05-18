@@ -2,7 +2,15 @@
 
 import useSWR, { useSWRConfig } from "swr"
 import { formatPrice } from "@/lib/utils"
-import { Loader2, Package, User, Calendar, CreditCard, Activity, DollarSign } from "lucide-react"
+import {
+  Loader2,
+  Package,
+  User,
+  Calendar,
+  CreditCard,
+  Activity,
+  DollarSign,
+} from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -32,17 +40,64 @@ import {
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 const statusConfig: Record<string, { style: string; label: string }> = {
-  delivered: { style: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", label: "Delivered" },
-  shipped: { style: "bg-blue-500/10 text-blue-600 dark:text-blue-400", label: "Shipped" },
-  processing: { style: "bg-violet-500/10 text-violet-600 dark:text-violet-400", label: "Processing" },
-  pending: { style: "bg-amber-500/10 text-amber-600 dark:text-amber-400", label: "Pending" },
-  cancelled: { style: "bg-red-500/10 text-red-600 dark:text-red-400", label: "Cancelled" },
+  delivered: {
+    style: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    label: "Delivered",
+  },
+  shipped: {
+    style: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    label: "Shipped",
+  },
+  processing: {
+    style: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+    label: "Processing",
+  },
+  pending: {
+    style: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    label: "Pending",
+  },
+  cancelled: {
+    style: "bg-red-500/10 text-red-600 dark:text-red-400",
+    label: "Cancelled",
+  },
 }
 
 const paymentConfig: Record<string, { style: string; label: string }> = {
-  paid: { style: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", label: "Paid" },
-  unpaid: { style: "bg-amber-500/10 text-amber-600 dark:text-amber-400", label: "Unpaid" },
+  paid: {
+    style: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    label: "Paid",
+  },
+  unpaid: {
+    style: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    label: "Unpaid",
+  },
   refunded: { style: "bg-muted text-muted-foreground", label: "Refunded" },
+}
+
+type WorkspaceSummary = {
+  currency?: string | null
+}
+
+type OrderLineItem = {
+  id: string
+  quantity: number
+  price: number
+  product: {
+    name: string
+    sku: string
+    image: string | null
+  }
+}
+
+type OrderDetails = {
+  id: string
+  customer: string
+  createdAt: string
+  status: string
+  payment: string
+  total: number
+  cancellationReason?: string | null
+  orderItems: OrderLineItem[]
 }
 
 export function OrderDetailsDialog({
@@ -55,23 +110,35 @@ export function OrderDetailsDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const { mutate: globalMutate } = useSWRConfig()
-  const { data: order, isLoading, mutate } = useSWR(
+  const {
+    data: order,
+    isLoading,
+    mutate,
+  } = useSWR<OrderDetails | null>(
     orderId ? `/api/orders/${orderId}` : null,
     fetcher
   )
-  const { data: workspace } = useSWR("/api/workspaces/current", fetcher)
-  const currency = (workspace as any)?.currency || "KES"
+  const { data: workspace } = useSWR<WorkspaceSummary>(
+    "/api/workspaces/current",
+    fetcher
+  )
+  const currency = workspace?.currency || "KES"
 
   if (!orderId) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            Order <span className="font-mono text-primary font-semibold">#{orderId.slice(0, 8)}</span>
+            Order{" "}
+            <span className="font-mono font-semibold text-primary">
+              #{orderId.slice(0, 8)}
+            </span>
           </DialogTitle>
-          <DialogDescription>Full breakdown and status of the selected order.</DialogDescription>
+          <DialogDescription>
+            Full breakdown and status of the selected order.
+          </DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
@@ -83,17 +150,27 @@ export function OrderDetailsDialog({
             {/* Metadata Preview Box */}
             <div className="grid grid-cols-2 gap-4 rounded-xl border bg-muted/5 p-4">
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Customer</span>
-                <p className="font-semibold text-sm text-foreground truncate">{order.customer}</p>
-              </div>
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Order Date</span>
-                <p className="font-semibold text-sm text-foreground">
-                  {new Date(order.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  Customer
+                </span>
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {order.customer}
                 </p>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Status</span>
+                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  Order Date
+                </span>
+                <p className="text-sm font-semibold text-foreground">
+                  {new Date(order.createdAt).toLocaleDateString(undefined, {
+                    dateStyle: "medium",
+                  })}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  Status
+                </span>
                 <Select
                   value={order.status}
                   onValueChange={async (val) => {
@@ -105,13 +182,17 @@ export function OrderDetailsDialog({
                       })
                       if (!res.ok) throw new Error("Failed to update status")
                       await mutate()
-                      globalMutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
-                    } catch (err: any) {
+                      globalMutate(
+                        (key: string | readonly unknown[] | null) =>
+                          typeof key === "string" &&
+                          key.startsWith("/api/orders")
+                      )
+                    } catch (err: unknown) {
                       console.error(err)
                     }
                   }}
                 >
-                  <SelectTrigger className="h-7 text-xs bg-muted/20 border-border/60">
+                  <SelectTrigger className="h-7 border-border/60 bg-muted/20 text-xs">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -124,7 +205,9 @@ export function OrderDetailsDialog({
                 </Select>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Payment</span>
+                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  Payment
+                </span>
                 <Select
                   value={order.payment}
                   onValueChange={async (val) => {
@@ -134,15 +217,20 @@ export function OrderDetailsDialog({
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ payment: val }),
                       })
-                      if (!res.ok) throw new Error("Failed to update payment status")
+                      if (!res.ok)
+                        throw new Error("Failed to update payment status")
                       await mutate()
-                      globalMutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
-                    } catch (err: any) {
+                      globalMutate(
+                        (key: string | readonly unknown[] | null) =>
+                          typeof key === "string" &&
+                          key.startsWith("/api/orders")
+                      )
+                    } catch (err: unknown) {
                       console.error(err)
                     }
                   }}
                 >
-                  <SelectTrigger className="h-7 text-xs bg-muted/20 border-border/60">
+                  <SelectTrigger className="h-7 border-border/60 bg-muted/20 text-xs">
                     <SelectValue placeholder="Payment" />
                   </SelectTrigger>
                   <SelectContent>
@@ -155,35 +243,51 @@ export function OrderDetailsDialog({
             </div>
 
             {order.status === "cancelled" && order.cancellationReason && (
-              <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-3.5 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-destructive">Cancellation Reason</span>
-                <p className="text-xs text-muted-foreground leading-relaxed italic">"{order.cancellationReason}"</p>
+              <div className="space-y-1 rounded-xl border border-destructive/20 bg-destructive/5 p-3.5">
+                <span className="text-[10px] font-bold tracking-wider text-destructive uppercase">
+                  Cancellation Reason
+                </span>
+                <p className="text-xs leading-relaxed text-muted-foreground italic">
+                  &quot;{order.cancellationReason}&quot;
+                </p>
               </div>
             )}
 
             {/* Items Section */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Items Included</span>
-                <span className="text-[9px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">{order.orderItems.length} Products</span>
+                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                  Items Included
+                </span>
+                <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
+                  {order.orderItems.length} Products
+                </span>
               </div>
-              
-              <div className="rounded-xl border bg-card overflow-hidden">
+
+              <div className="overflow-hidden rounded-xl border bg-card">
                 <Table>
                   <TableHeader className="bg-muted/30">
                     <TableRow>
-                      <TableHead className="text-xs font-medium">Product</TableHead>
-                      <TableHead className="text-right text-xs font-medium">Qty</TableHead>
-                      <TableHead className="text-right text-xs font-medium">Unit</TableHead>
-                      <TableHead className="text-right text-xs font-medium">Total</TableHead>
+                      <TableHead className="text-xs font-medium">
+                        Product
+                      </TableHead>
+                      <TableHead className="text-right text-xs font-medium">
+                        Qty
+                      </TableHead>
+                      <TableHead className="text-right text-xs font-medium">
+                        Unit
+                      </TableHead>
+                      <TableHead className="text-right text-xs font-medium">
+                        Total
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {order.orderItems.map((item: any) => (
+                    {order.orderItems.map((item) => (
                       <TableRow key={item.id} className="hover:bg-primary/5">
                         <TableCell className="py-2">
                           <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md border bg-muted flex items-center justify-center">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
                               {item.product.image ? (
                                 <img
                                   src={item.product.image}
@@ -195,48 +299,72 @@ export function OrderDetailsDialog({
                               )}
                             </div>
                             <div className="flex flex-col">
-                              <span className="font-semibold text-xs text-foreground leading-tight">{item.product.name}</span>
-                              <span className="text-[9px] font-mono text-muted-foreground">SKU: {item.product.sku}</span>
+                              <span className="text-xs leading-tight font-semibold text-foreground">
+                                {item.product.name}
+                              </span>
+                              <span className="font-mono text-[9px] text-muted-foreground">
+                                SKU: {item.product.sku}
+                              </span>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right font-mono text-xs py-2">{item.quantity}</TableCell>
-                        <TableCell className="text-right font-mono text-xs py-2">{formatPrice(item.price, currency)}</TableCell>
-                        <TableCell className="text-right font-mono text-xs font-semibold py-2">{formatPrice(item.price * item.quantity, currency)}</TableCell>
+                        <TableCell className="py-2 text-right font-mono text-xs">
+                          {item.quantity}
+                        </TableCell>
+                        <TableCell className="py-2 text-right font-mono text-xs">
+                          {formatPrice(item.price, currency)}
+                        </TableCell>
+                        <TableCell className="py-2 text-right font-mono text-xs font-semibold">
+                          {formatPrice(item.price * item.quantity, currency)}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
 
                 {/* Compact integrated order sum footer */}
-                <div className="bg-muted/20 border-t px-4 py-3 space-y-1.5 text-xs text-muted-foreground">
+                <div className="space-y-1.5 border-t bg-muted/20 px-4 py-3 text-xs text-muted-foreground">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="font-mono">{formatPrice(order.total, currency)}</span>
+                    <span className="font-mono">
+                      {formatPrice(order.total, currency)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax (0%)</span>
-                    <span className="font-mono">{formatPrice(0, currency)}</span>
+                    <span className="font-mono">
+                      {formatPrice(0, currency)}
+                    </span>
                   </div>
-                  <div className="border-t border-border/40 my-1 pt-1.5 flex justify-between items-baseline text-foreground">
-                    <span className="font-bold uppercase text-[10px] tracking-wider">Total</span>
-                    <span className="font-mono font-extrabold text-base text-primary">{formatPrice(order.total, currency)}</span>
+                  <div className="my-1 flex items-baseline justify-between border-t border-border/40 pt-1.5 text-foreground">
+                    <span className="text-[10px] font-bold tracking-wider uppercase">
+                      Total
+                    </span>
+                    <span className="font-mono text-base font-extrabold text-primary">
+                      {formatPrice(order.total, currency)}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Dialog Footer Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <div className="flex justify-end gap-3 border-t pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
                 Close
               </Button>
             </div>
           </div>
         ) : (
-          <div className="text-center text-destructive py-12 space-y-2">
+          <div className="space-y-2 py-12 text-center text-destructive">
             <p className="font-bold">Error loading order</p>
-            <p className="text-xs text-muted-foreground">Please try again or contact support.</p>
+            <p className="text-xs text-muted-foreground">
+              Please try again or contact support.
+            </p>
           </div>
         )}
       </DialogContent>

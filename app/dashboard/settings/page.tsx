@@ -1,55 +1,107 @@
 "use client"
 
 import * as React from "react"
-import { Building2, Globe, Key, Lock, Moon, Palette, Save, Shield, Sun, User, Users, Loader2 } from "lucide-react"
+import {
+  Globe,
+  Key,
+  Lock,
+  Moon,
+  Palette,
+  Save,
+  Shield,
+  User,
+  Users,
+  Loader2,
+} from "lucide-react"
 import useSWR from "swr"
 import { useSession } from "next-auth/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table"
 import { updateWorkspace } from "@/lib/actions/workspace"
 import { toast } from "sonner"
 import { InviteMemberDialog } from "@/components/settings/invite-member-dialog"
 
+type WorkspaceSummary = {
+  id: string
+  name?: string | null
+  businessType?: string | null
+  currency?: string | null
+}
+
+type WorkspaceMember = {
+  id: string
+  role: string
+  user: {
+    id: string
+    name: string | null
+    email: string
+    image: string | null
+  }
+}
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export default function SettingsPage() {
   const { data: session } = useSession()
-  const { data: workspace, mutate: mutateWorkspace } = useSWR("/api/workspaces/current", fetcher)
-  const { data: members, isLoading: membersLoading } = useSWR("/api/workspaces/members", fetcher)
-  
+  const { data: workspace, mutate: mutateWorkspace } = useSWR<WorkspaceSummary>(
+    "/api/workspaces/current",
+    fetcher
+  )
+  const { data: members, isLoading: membersLoading } = useSWR<
+    WorkspaceMember[]
+  >("/api/workspaces/members", fetcher)
+
   const [isUpdatingWorkspace, setIsUpdatingWorkspace] = React.useState(false)
   const [workspaceForm, setWorkspaceForm] = React.useState({
     name: "",
     businessType: "",
-    currency: "KES"
+    currency: "KES",
   })
 
   React.useEffect(() => {
     if (workspace) {
-      setWorkspaceForm({
-        name: workspace.name || "",
-        businessType: workspace.businessType || "",
-        currency: workspace.currency || "KES"
+      React.startTransition(() => {
+        setWorkspaceForm({
+          name: workspace.name || "",
+          businessType: workspace.businessType || "",
+          currency: workspace.currency || "KES",
+        })
       })
     }
   }, [workspace])
 
   async function handleUpdateWorkspace() {
     if (!workspace?.id) return
-    
+
     setIsUpdatingWorkspace(true)
     try {
       const result = await updateWorkspace(workspace.id, workspaceForm)
@@ -59,8 +111,10 @@ export default function SettingsPage() {
       } else {
         toast.error(result.error || "Failed to update workspace")
       }
-    } catch (error) {
-      toast.error("An unexpected error occurred")
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      )
     } finally {
       setIsUpdatingWorkspace(false)
     }
@@ -70,15 +124,29 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage your account, team, and preferences</p>
+        <p className="text-sm text-muted-foreground">
+          Manage your account, team, and preferences
+        </p>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="general"><User className="mr-1.5 h-3.5 w-3.5" />General</TabsTrigger>
-          <TabsTrigger value="team"><Users className="mr-1.5 h-3.5 w-3.5" />Team</TabsTrigger>
-          <TabsTrigger value="notifications"><Globe className="mr-1.5 h-3.5 w-3.5" />Notifications</TabsTrigger>
-          <TabsTrigger value="security"><Shield className="mr-1.5 h-3.5 w-3.5" />Security</TabsTrigger>
+          <TabsTrigger value="general">
+            <User className="mr-1.5 h-3.5 w-3.5" />
+            General
+          </TabsTrigger>
+          <TabsTrigger value="team">
+            <Users className="mr-1.5 h-3.5 w-3.5" />
+            Team
+          </TabsTrigger>
+          <TabsTrigger value="notifications">
+            <Globe className="mr-1.5 h-3.5 w-3.5" />
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger value="security">
+            <Shield className="mr-1.5 h-3.5 w-3.5" />
+            Security
+          </TabsTrigger>
         </TabsList>
 
         {/* General */}
@@ -86,7 +154,9 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Profile</CardTitle>
-              <CardDescription>Your personal account information</CardDescription>
+              <CardDescription>
+                Your personal account information
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
@@ -97,51 +167,79 @@ export default function SettingsPage() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <Button variant="outline" size="sm">Change avatar</Button>
-                  <p className="mt-1 text-xs text-muted-foreground">JPG, PNG or GIF. Max 2MB.</p>
+                  <Button variant="outline" size="sm">
+                    Change avatar
+                  </Button>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    JPG, PNG or GIF. Max 2MB.
+                  </p>
                 </div>
               </div>
               <Separator />
               <div className="grid gap-2">
                 <Label htmlFor="full-name">Full Name</Label>
-                <Input id="full-name" defaultValue={session?.user?.name || ""} />
+                <Input
+                  id="full-name"
+                  defaultValue={session?.user?.name || ""}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue={session?.user?.email || ""} disabled />
+                <Input
+                  id="email"
+                  type="email"
+                  defaultValue={session?.user?.email || ""}
+                  disabled
+                />
               </div>
             </CardContent>
             <CardFooter>
-              <Button size="sm"><Save className="mr-1.5 h-3.5 w-3.5" />Save changes</Button>
+              <Button size="sm">
+                <Save className="mr-1.5 h-3.5 w-3.5" />
+                Save changes
+              </Button>
             </CardFooter>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle>Business</CardTitle>
-              <CardDescription>Organization details for your workspace</CardDescription>
+              <CardDescription>
+                Organization details for your workspace
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="company">Company name</Label>
-                  <Input 
-                    id="company" 
-                    value={workspaceForm.name} 
-                    onChange={(e) => setWorkspaceForm({ ...workspaceForm, name: e.target.value })}
+                  <Input
+                    id="company"
+                    value={workspaceForm.name}
+                    onChange={(e) =>
+                      setWorkspaceForm({
+                        ...workspaceForm,
+                        name: e.target.value,
+                      })
+                    }
                   />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="industry">Industry</Label>
-                  <Select 
-                    value={workspaceForm.businessType} 
-                    onValueChange={(v) => setWorkspaceForm({ ...workspaceForm, businessType: v })}
+                  <Select
+                    value={workspaceForm.businessType}
+                    onValueChange={(v) =>
+                      setWorkspaceForm({ ...workspaceForm, businessType: v })
+                    }
                   >
-                    <SelectTrigger id="industry"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="industry">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="retail">Retail</SelectItem>
                       <SelectItem value="wholesale">Wholesale</SelectItem>
-                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                      <SelectItem value="manufacturing">
+                        Manufacturing
+                      </SelectItem>
                       <SelectItem value="ecommerce">E-Commerce</SelectItem>
                       <SelectItem value="services">Services</SelectItem>
                     </SelectContent>
@@ -149,11 +247,15 @@ export default function SettingsPage() {
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
                   <Label htmlFor="currency">Currency</Label>
-                  <Select 
-                    value={workspaceForm.currency} 
-                    onValueChange={(v) => setWorkspaceForm({ ...workspaceForm, currency: v })}
+                  <Select
+                    value={workspaceForm.currency}
+                    onValueChange={(v) =>
+                      setWorkspaceForm({ ...workspaceForm, currency: v })
+                    }
                   >
-                    <SelectTrigger id="currency"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="currency">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="KES">Kenyan Shilling (KES)</SelectItem>
                       <SelectItem value="USD">US Dollar (USD)</SelectItem>
@@ -165,8 +267,16 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button size="sm" onClick={handleUpdateWorkspace} disabled={isUpdatingWorkspace}>
-                {isUpdatingWorkspace ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Save className="mr-1.5 h-3.5 w-3.5" />}
+              <Button
+                size="sm"
+                onClick={handleUpdateWorkspace}
+                disabled={isUpdatingWorkspace}
+              >
+                {isUpdatingWorkspace ? (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Save className="mr-1.5 h-3.5 w-3.5" />
+                )}
                 Save changes
               </Button>
             </CardFooter>
@@ -174,8 +284,13 @@ export default function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Palette className="h-4 w-4" />Appearance</CardTitle>
-              <CardDescription>Customize how the system looks for you</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-4 w-4" />
+                Appearance
+              </CardTitle>
+              <CardDescription>
+                Customize how the system looks for you
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
@@ -183,7 +298,9 @@ export default function SettingsPage() {
                   <Moon className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm font-medium">Dark mode</p>
-                    <p className="text-xs text-muted-foreground">Toggle dark theme</p>
+                    <p className="text-xs text-muted-foreground">
+                      Toggle dark theme
+                    </p>
                   </div>
                 </div>
                 <Switch />
@@ -199,7 +316,9 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>Team Members</CardTitle>
-                  <CardDescription>Manage who has access to this workspace</CardDescription>
+                  <CardDescription>
+                    Manage who has access to this workspace
+                  </CardDescription>
                 </div>
                 <InviteMemberDialog />
               </div>
@@ -219,19 +338,27 @@ export default function SettingsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {members?.map((membership: any) => (
+                    {members?.map((membership) => (
                       <TableRow key={membership.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
-                              <AvatarImage src={membership.user.image} />
+                              <AvatarImage
+                                src={membership.user.image ?? undefined}
+                              />
                               <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">
-                                {membership.user.name?.slice(0, 2).toUpperCase()}
+                                {membership.user.name
+                                  ?.slice(0, 2)
+                                  .toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="text-sm font-medium">{membership.user.name}</p>
-                              <p className="text-xs text-muted-foreground">{membership.user.email}</p>
+                              <p className="text-sm font-medium">
+                                {membership.user.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {membership.user.email}
+                              </p>
                             </div>
                           </div>
                         </TableCell>
@@ -241,11 +368,14 @@ export default function SettingsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-xs text-destructive hover:text-destructive" 
-                            disabled={membership.role === "OWNER" || membership.user.id === session?.user?.id}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs text-destructive hover:text-destructive"
+                            disabled={
+                              membership.role === "OWNER" ||
+                              membership.user.id === session?.user?.id
+                            }
                           >
                             Remove
                           </Button>
@@ -264,14 +394,27 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Choose what you want to be notified about</CardDescription>
+              <CardDescription>
+                Choose what you want to be notified about
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {[
-                { title: "Low stock alerts", desc: "When items fall below minimum threshold", default: true },
-                { title: "Order updates", desc: "Status changes for orders", default: true },
+                {
+                  title: "Low stock alerts",
+                  desc: "When items fall below minimum threshold",
+                  default: true,
+                },
+                {
+                  title: "Order updates",
+                  desc: "Status changes for orders",
+                  default: true,
+                },
               ].map((pref) => (
-                <div key={pref.title} className="flex items-center justify-between">
+                <div
+                  key={pref.title}
+                  className="flex items-center justify-between"
+                >
                   <div>
                     <p className="text-sm font-medium">{pref.title}</p>
                     <p className="text-xs text-muted-foreground">{pref.desc}</p>
@@ -281,7 +424,10 @@ export default function SettingsPage() {
               ))}
             </CardContent>
             <CardFooter>
-              <Button size="sm"><Save className="mr-1.5 h-3.5 w-3.5" />Save preferences</Button>
+              <Button size="sm">
+                <Save className="mr-1.5 h-3.5 w-3.5" />
+                Save preferences
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -289,7 +435,10 @@ export default function SettingsPage() {
         <TabsContent value="security" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Key className="h-4 w-4" />Password</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Key className="h-4 w-4" />
+                Password
+              </CardTitle>
               <CardDescription>Update your password</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -303,7 +452,10 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button size="sm"><Lock className="mr-1.5 h-3.5 w-3.5" />Update password</Button>
+              <Button size="sm">
+                <Lock className="mr-1.5 h-3.5 w-3.5" />
+                Update password
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>

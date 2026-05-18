@@ -1,7 +1,7 @@
-import type { Prisma } from "@prisma/client"
 import { auth } from "@/auth"
 import { createProductCsv } from "@/lib/inventory"
 import prisma from "@/lib/prisma"
+import type { Prisma } from "@prisma/client"
 
 export async function GET(request: Request) {
   const session = await auth()
@@ -20,8 +20,9 @@ export async function GET(request: Request) {
     const category = searchParams.get("category")
     const status = searchParams.get("status")
 
+    type ProductWhereInput = Prisma.ProductWhereInput
 
-    const where: Prisma.ProductWhereInput = {}
+    const where: ProductWhereInput = {}
 
     if (search) {
       where.OR = [
@@ -41,13 +42,10 @@ export async function GET(request: Request) {
       where.status = status
     }
 
-
-
     const products = await prisma.product.findMany({
       where,
       include: {
         category: true,
-
       },
       orderBy: { createdAt: "desc" },
     })
@@ -58,17 +56,19 @@ export async function GET(request: Request) {
       status: 200,
       headers: {
         "content-type": "text/csv; charset=utf-8",
-        "content-disposition":
-          'attachment; filename="inventory-products.csv"',
+        "content-disposition": 'attachment; filename="inventory-products.csv"',
       },
     })
   } catch (error) {
     console.error("Failed to export products:", error)
-    return new Response(JSON.stringify({ error: "Failed to export products." }), {
-      status: 500,
-      headers: {
-        "content-type": "application/json",
-      },
-    })
+    return new Response(
+      JSON.stringify({ error: "Failed to export products." }),
+      {
+        status: 500,
+        headers: {
+          "content-type": "application/json",
+        },
+      }
+    )
   }
 }

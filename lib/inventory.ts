@@ -1,4 +1,7 @@
-import type { Product, Prisma } from "@prisma/client"
+import type { Prisma, Product } from "@prisma/client"
+
+type PrismaTransactionClient = Prisma.TransactionClient
+type ProductInclude = Prisma.ProductInclude
 
 export const productExportHeaders = [
   "name",
@@ -57,7 +60,7 @@ export function computeProductStatus(stock: number, minStock: number) {
   }
 
   if (stock <= minStock) {
-    return "low-stock"
+    return "low-stock" 
   }
 
   return "in-stock"
@@ -67,10 +70,13 @@ export function computeProductStatus(stock: number, minStock: number) {
  * Checks product stock levels and manages alerts.
  * Should be called within a Prisma transaction whenever stock changes.
  */
-export async function updateProductAlerts(tx: any, productId: string) {
+export async function updateProductAlerts(
+  tx: PrismaTransactionClient,
+  productId: string
+) {
   const product = await tx.product.findUnique({
     where: { id: productId },
-    select: { stock: true, minStock: true },
+    select: { stock: true, minStock: true, workspaceId: true },
   })
 
   if (!product) return
@@ -79,7 +85,7 @@ export async function updateProductAlerts(tx: any, productId: string) {
 
   // Find active alerts for this product
   const activeAlert = await tx.alert.findFirst({
-    where: { productId, status: "active" },
+    where: { productId, workspaceId: product.workspaceId, status: "active" },
   })
 
   if (status === "in-stock") {
@@ -108,14 +114,17 @@ export async function updateProductAlerts(tx: any, productId: string) {
         data: {
           productId,
           severity,
-          status: "active"
+          status: "active",
+          workspaceId: product.workspaceId,
         },
       })
     }
   }
 }
 
-export function normalizeProductPayload(input: unknown): InventoryProductPayload {
+export function normalizeProductPayload(
+  input: unknown
+): InventoryProductPayload {
   if (!input || typeof input !== "object") {
     throw new Error("Product payload is required.")
   }
@@ -145,7 +154,9 @@ export function normalizeProductPayload(input: unknown): InventoryProductPayload
   }
 
   if (maxStock < minStock) {
-    throw new Error("Maximum stock must be greater than or equal to minimum stock.")
+    throw new Error(
+      "Maximum stock must be greater than or equal to minimum stock."
+    )
   }
 
   return {
@@ -179,7 +190,8 @@ export function formatProduct(product: ProductWithRelations) {
     status: product.status,
     createdAt: product.createdAt.toISOString(),
     updatedAt: product.updatedAt.toISOString(),
-    movementCount: product._count?.stockMovements ?? product.stockMovements?.length ?? 0,
+    movementCount:
+      product._count?.stockMovements ?? product.stockMovements?.length ?? 0,
     orderCount: product._count?.orderItems ?? 0,
     recentMovements: product.stockMovements?.map((movement) => ({
       id: movement.id,
@@ -209,14 +221,17 @@ export function createProductCsv(products: ProductWithRelations[]) {
         product.description ?? "",
       ]
         .map((value) => formatCsvValue(value))
-        .join(","),
+        .join(",")
     ),
   ]
 
   return lines.join("\n")
 }
 
-export function parseProductImport(input: { content?: unknown; format?: unknown }) {
+export function parseProductImport(input: {
+  content?: unknown
+  format?: unknown
+}) {
   const format =
     typeof input.format === "string" && input.format.trim().length > 0
       ? input.format.trim().toLowerCase()
@@ -257,7 +272,7 @@ export function productQueryInclude(includeMovements = false) {
           },
         }
       : {}),
-  } satisfies Prisma.ProductInclude
+  } satisfies ProductInclude
 }
 
 function parseCsvImport(content: unknown) {
@@ -267,36 +282,42 @@ function parseCsvImport(content: unknown) {
 
   const rows = splitCsvRows(content)
   if (rows.length < 2) {
-    throw new Error("CSV file must include a header row and at least one product row.")
+    throw new Error(
+      "CSV file must include a header row and at least one product row."
+    )
   }
 
   const header = parseCsvRow(rows[0]).map((cell) => cell.trim())
-  const missingHeaders = productExportHeaders.filter((column) => !header.includes(column))
+  const missingHeaders = productExportHeaders.filter(
+    (column) => !header.includes(column)
+  )
   if (missingHeaders.length > 0) {
-    throw new Error(`CSV is missing required columns: ${missingHeaders.join(", ")}`)
+    throw new Error(
+      `CSV is missing required columns: ${missingHeaders.join(", ")}`
+    )
   }
 
-  return rows.slice(1).filter((row) => row.trim().length > 0).map((row, rowIndex) => {
-    const values = parseCsvRow(row)
-    const entry = header.reduce<Record<string, string>>((acc, key, index) => {
-      acc[key] = values[index] ?? ""
-      return acc
-    }, {})
+  return rows
+    .slice(1)
+    .filter((row) => row.trim().length > 0)
+    .map((row, rowIndex) => {
+      const values = parseCsvRow(row)
+      const entry = header.reduce<Record<string, string>>((acc, key, index) => {
+        acc[key] = values[index] ?? ""
+        return acc
+      }, {})
 
-    try {
-      return normalizeProductPayload(entry)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Invalid row."
-      throw new Error(`Row ${rowIndex + 2}: ${message}`)
-    }
-  })
+      try {
+        return normalizeProductPayload(entry)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Invalid row."
+        throw new Error(`Row ${rowIndex + 2}: ${message}`)
+      }
+    })
 }
 
 function parseJsonImport(content: unknown) {
-  const value =
-    typeof content === "string"
-      ? JSON.parse(content)
-      : content
+  const value = typeof content === "string" ? JSON.parse(content) : content
 
   if (!Array.isArray(value) || value.length === 0) {
     throw new Error("JSON import must contain an array of products.")
@@ -322,10 +343,10 @@ function splitCsvRows(content: string) {
     const character = normalized[index]
     const next = normalized[index + 1]
 
-    if (character === "\"") {
+    if (character === '"') {
       current += character
 
-      if (inQuotes && next === "\"") {
+      if (inQuotes && next === '"') {
         current += next
         index += 1
       } else {
@@ -360,9 +381,9 @@ function parseCsvRow(row: string) {
     const character = row[index]
     const next = row[index + 1]
 
-    if (character === "\"") {
-      if (inQuotes && next === "\"") {
-        current += "\""
+    if (character === '"') {
+      if (inQuotes && next === '"') {
+        current += '"'
         index += 1
       } else {
         inQuotes = !inQuotes
@@ -386,7 +407,7 @@ function parseCsvRow(row: string) {
 function formatCsvValue(value: string | number) {
   const stringValue = String(value)
   if (/[",\n]/.test(stringValue)) {
-    return `"${stringValue.replace(/"/g, "\"\"")}"`
+    return `"${stringValue.replace(/"/g, '""')}"`
   }
 
   return stringValue

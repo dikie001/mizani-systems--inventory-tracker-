@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 import { updateProductAlerts } from "@/lib/inventory"
+import type { Prisma } from "@prisma/client"
 
 export async function GET(request: Request) {
   const session = await auth()
@@ -14,10 +15,12 @@ export async function GET(request: Request) {
   const search = searchParams.get("search")
   const status = searchParams.get("status")
 
-  const where: any = {
+  type OrderWhereInput = Prisma.OrderWhereInput
+
+  const where: OrderWhereInput = {
     workspaceId,
   }
-  
+
   if (search) {
     where.OR = [
       { id: { contains: search, mode: "insensitive" } },
@@ -36,10 +39,10 @@ export async function GET(request: Request) {
           include: {
             product: {
               select: {
-                image: true
-              }
-            }
-          }
+                image: true,
+              },
+            },
+          },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -55,13 +58,18 @@ export async function GET(request: Request) {
       date: o.createdAt.toISOString().split("T")[0],
       productImages: o.orderItems
         .map((item) => item.product?.image)
-        .filter((img): img is string => typeof img === "string" && img.length > 0),
+        .filter(
+          (img): img is string => typeof img === "string" && img.length > 0
+        ),
     }))
 
     return NextResponse.json(formatted)
   } catch (error) {
     console.error("Failed to fetch orders:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    )
   }
 }
 
@@ -78,7 +86,10 @@ export async function POST(request: Request) {
     const { customer, items } = body
 
     if (!customer || !items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      )
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -87,14 +98,16 @@ export async function POST(request: Request) {
 
       for (const item of items) {
         const product = await tx.product.findFirst({
-          where: { 
+          where: {
             id: item.productId,
             workspaceId,
-          }
+          },
         })
 
         if (!product) {
-          throw new Error(`Product ${item.productId} not found in this workspace`)
+          throw new Error(
+            `Product ${item.productId} not found in this workspace`
+          )
         }
 
         if (product.stock < item.quantity) {
@@ -106,15 +119,15 @@ export async function POST(request: Request) {
         orderItemsToCreate.push({
           productId: item.productId,
           quantity: item.quantity,
-          price: product.price
+          price: product.price,
         })
 
         // Update product stock
         await tx.product.update({
           where: { id: item.productId },
           data: {
-            stock: { decrement: item.quantity }
-          }
+            stock: { decrement: item.quantity },
+          },
         })
 
         await updateProductAlerts(tx, item.productId)
@@ -123,12 +136,12 @@ export async function POST(request: Request) {
         await tx.stockMovement.create({
           data: {
             productId: item.productId,
-            userId: session.user.id as string,
+            userId: session.user.id,
             workspaceId,
             type: "Sale",
             quantity: -item.quantity,
-            status: "completed"
-          }
+            status: "completed",
+          },
         })
       }
 
@@ -141,12 +154,12 @@ export async function POST(request: Request) {
           payment: "unpaid",
           workspaceId,
           orderItems: {
-            create: orderItemsToCreate
-          }
+            create: orderItemsToCreate,
+          },
         },
         include: {
-          orderItems: true
-        }
+          orderItems: true,
+        },
       })
 
       // Audit log
@@ -155,17 +168,19 @@ export async function POST(request: Request) {
           action: `Created order ${order.id}`,
           entity: "Order",
           type: "create",
-          userId: session.user.id as string,
+          userId: session.user.id,
           workspaceId,
-        }
+        },
       })
 
       return order
     })
 
     return NextResponse.json(result)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Order creation failed:", error)
-    return NextResponse.json({ error: error.message || "Failed to create order" }, { status: 500 })
+    const message =
+      error instanceof Error ? error.message : "Failed to create order"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

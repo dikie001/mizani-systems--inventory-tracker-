@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
+import type { Prisma } from "@prisma/client"
 
 export async function GET(request: Request) {
   const session = await auth()
@@ -13,10 +14,12 @@ export async function GET(request: Request) {
   const search = searchParams.get("search")
   const type = searchParams.get("type")
 
-  const where: any = {
+  type AuditLogWhereInput = Prisma.AuditLogWhereInput
+
+  const where: AuditLogWhereInput = {
     workspaceId,
   }
-  
+
   if (search) {
     where.OR = [
       { action: { contains: search, mode: "insensitive" } },
@@ -36,13 +39,18 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" },
     })
 
-    const formatted = logs.map(l => ({
+    const formatted = logs.map((l) => ({
       id: l.id,
       action: l.action,
       entity: l.entity,
       type: l.type,
       user: l.user.name || l.user.email,
-      initials: l.user.name ? l.user.name.split(" ").map(n => n[0]).join("") : "U",
+      initials: l.user.name
+        ? l.user.name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+        : "U",
       timestamp: l.createdAt.toISOString().replace("T", " ").substring(0, 19),
       ip: l.ip || "Unknown",
     }))
@@ -50,6 +58,9 @@ export async function GET(request: Request) {
     return NextResponse.json(formatted)
   } catch (error) {
     console.error("Failed to fetch audit logs:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    )
   }
 }
