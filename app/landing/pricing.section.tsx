@@ -50,7 +50,7 @@ const PLANS = [
     id: "pro",
     name: "Professional",
     badge: "Most Popular",
-    monthly: 1200, // KES 3,999
+    monthly: 3999, // KES 3,999
     desc: "For growing teams that need the full platform.",
     features: [
       "Unlimited SKUs",
@@ -68,7 +68,7 @@ const PLANS = [
     id: "basic",
     name: "Basic",
     badge: null,
-    monthly: 699, 
+    monthly: 999, // KES 999
     desc: "For small operations getting off spreadsheets.",
     features: [
       "Up to 1,000 SKUs",
@@ -98,14 +98,12 @@ export default function PricingSection() {
   }
 
   return (
-    <section
-      className="bg-background px-5 py-16 text-foreground md:px-6 md:py-20"
-    >
+    <section className="bg-background px-5 py-16 text-foreground md:px-6 md:py-20">
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-12 max-w-2xl text-center md:mb-14">
           <Badge
             variant="secondary"
-            className="mb-4 rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]"
+            className="mb-4 rounded-full px-3 py-1 text-xs tracking-[0.18em] uppercase"
           >
             Pricing
           </Badge>
@@ -113,7 +111,8 @@ export default function PricingSection() {
             Simple, <span className="text-primary">transparent</span> pricing
           </h2>
           <p className="mt-4 text-sm leading-6 text-muted-foreground sm:text-base">
-            No hidden fees. No seat limits on the plans that matter. Cancel anytime.
+            No hidden fees. No seat limits on the plans that matter. Cancel
+            anytime.
           </p>
         </div>
 
@@ -129,21 +128,27 @@ export default function PricingSection() {
                 key={plan.id}
                 className={
                   isGold
-                    ? "relative border-primary/30 bg-card shadow-lg shadow-primary/10 ring-1 ring-primary/10 transition-transform duration-200 hover:-translate-y-1"
+                    ? "relative border-primary/30 bg-card shadow-lg ring-1 shadow-primary/10 ring-primary/10 transition-transform duration-200 hover:-translate-y-1"
                     : "relative border-border/70 bg-card/90 transition-transform duration-200 hover:-translate-y-1 hover:border-border hover:shadow-md"
                 }
               >
                 <CardHeader className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <CardTitle className={isGold ? "text-primary" : "text-foreground"}>
+                      <CardTitle
+                        className={isGold ? "text-primary" : "text-foreground"}
+                      >
                         {plan.name}
                       </CardTitle>
-                      <CardDescription className="mt-1">{plan.desc}</CardDescription>
+                      <CardDescription className="mt-1">
+                        {plan.desc}
+                      </CardDescription>
                     </div>
                     {plan.badge && (
                       <Badge
-                        variant={isGold ? "default" : isFree ? "secondary" : "outline"}
+                        variant={
+                          isGold ? "default" : isFree ? "secondary" : "outline"
+                        }
                         className={
                           isGold
                             ? "bg-primary text-primary-foreground shadow-sm"
@@ -161,7 +166,9 @@ export default function PricingSection() {
                       {price}
                     </span>
                     {plan.id !== "trial" && (
-                      <span className="pb-1 text-sm text-muted-foreground">/mo</span>
+                      <span className="pb-1 text-sm text-muted-foreground">
+                        /mo
+                      </span>
                     )}
                   </div>
                 </CardHeader>
@@ -193,7 +200,12 @@ export default function PricingSection() {
                 </CardContent>
 
                 <CardFooter className="border-t-0 bg-transparent p-4 pt-0">
-                  <Button variant={plan.variant as "default" | "secondary" | "outline"} className="w-full">
+                  <Button
+                    variant={
+                      plan.variant as "default" | "secondary" | "outline"
+                    }
+                    className="w-full"
+                  >
                     {plan.cta}
                   </Button>
                 </CardFooter>
@@ -204,7 +216,9 @@ export default function PricingSection() {
 
         <div className="mt-4 flex flex-col gap-4 rounded-xl border border-border bg-muted/30 p-5 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="text-sm font-medium text-foreground">Enterprise</div>
+            <div className="text-sm font-medium text-foreground">
+              Enterprise
+            </div>
             <div className="mt-1 text-sm text-muted-foreground">
               Custom contracts · SLA guarantees · SSO · Dedicated infrastructure
             </div>
@@ -217,4 +231,3 @@ export default function PricingSection() {
     </section>
   )
 }
- 
