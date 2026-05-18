@@ -1,7 +1,5 @@
 "use client"
 
-import { useState } from "react"
-
 const CHECK = ({ color = "#7a7890" }) => (
   <svg viewBox="0 0 10 10" fill="none" width="9" height="9">
     <path
@@ -21,7 +19,6 @@ const PLANS = [
     badge: "14 days",
     badgeStyle: "green",
     monthly: 0,
-    annual: 0,
     desc: "No card required. Try the full platform risk-free.",
     features: [
       "Up to 200 SKUs",
@@ -38,9 +35,7 @@ const PLANS = [
     name: "Professional",
     badge: "Most Popular",
     badgeStyle: "gold",
-    // Prices are in Kenyan Shillings (KES) and set to be affordable
     monthly: 3999, // KES 3,999
-    annual: 3199, // KES 3,199 (~20% off)
     desc: "For growing teams that need the full platform.",
     features: [
       "Unlimited SKUs",
@@ -59,7 +54,6 @@ const PLANS = [
     name: "Basic",
     badge: null,
     monthly: 999, // KES 999
-    annual: 799, // KES 799 (discounted)
     desc: "For small operations getting off spreadsheets.",
     features: [
       "Up to 1,000 SKUs",
@@ -74,15 +68,7 @@ const PLANS = [
   },
 ]
 
-const colors = {
-  gold: "#c8a96e",
-  green: "#5ec97a",
-  muted: "#7a7890",
-}
-
 export default function PricingSection() {
-  const [annual, setAnnual] = useState(false)
-
   const formatKES = (n: number) => {
     try {
       return new Intl.NumberFormat("en-KE", {
@@ -99,11 +85,12 @@ export default function PricingSection() {
   return (
     <section
       style={{
-        background: "#0c0c0f",
+        // Shadcn default dark background (Zinc-950) and foreground (Zinc-50)
+        background: "#09090b",
         minHeight: "100vh",
         padding: "64px 20px",
         fontFamily: "'DM Sans', sans-serif",
-        color: "#f0ede8",
+        color: "#fafafa",
       }}
     >
       <style>{`
@@ -116,7 +103,6 @@ export default function PricingSection() {
         .pricing-btn:active { transform: translateY(0); }
         .ent-btn { transition: border-color 0.2s, color 0.2s, transform 0.15s; cursor: pointer; }
         .ent-btn:hover { border-color: #c8a96e !important; color: #c8a96e !important; transform: translateY(-1px); }
-        .toggle-knob { transition: transform 0.25s, background 0.2s; }
       `}</style>
 
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
@@ -178,7 +164,7 @@ export default function PricingSection() {
           <p
             style={{
               fontSize: 15,
-              color: "#7a7890",
+              color: "#a1a1aa", // Shadcn muted-foreground (Zinc-400)
               maxWidth: 400,
               margin: "0 auto",
               lineHeight: 1.65,
@@ -190,64 +176,7 @@ export default function PricingSection() {
           </p>
         </div>
 
-        {/* Billing Toggle */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: 44,
-            fontSize: 13,
-            color: "#7a7890",
-          }}
-        >
-          <span>Monthly</span>
-          <div
-            onClick={() => setAnnual(!annual)}
-            style={{
-              position: "relative",
-              width: 44,
-              height: 24,
-              borderRadius: 99,
-              background: "#1a1a22",
-              border: "1px solid rgba(255,255,255,0.18)",
-              cursor: "pointer",
-              flexShrink: 0,
-            }}
-          >
-            <div
-              className="toggle-knob"
-              style={{
-                position: "absolute",
-                top: 3,
-                left: 3,
-                width: 16,
-                height: 16,
-                borderRadius: "50%",
-                background: annual ? "#c8a96e" : "#7a7890",
-                transform: annual ? "translateX(20px)" : "translateX(0)",
-              }}
-            />
-          </div>
-          <span>Annual</span>
-          <span
-            style={{
-              background: "rgba(200,169,110,0.12)",
-              color: "#c8a96e",
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              padding: "2px 9px",
-              borderRadius: 99,
-              textTransform: "uppercase",
-            }}
-          >
-            Save 20%
-          </span>
-        </div>
-
-        {/* Cards */}
+        {/* Cards - Premium Colors Maintained */}
         <div
           style={{
             display: "grid",
@@ -259,9 +188,8 @@ export default function PricingSection() {
           {PLANS.map((plan) => {
             const isGold = plan.highlight
             const isFree = plan.id === "trial"
-            const rawPrice = annual ? plan.annual : plan.monthly
             const price =
-              plan.id === "trial" ? formatKES(0) : formatKES(rawPrice)
+              plan.id === "trial" ? formatKES(0) : formatKES(plan.monthly)
             const checkColor = isGold
               ? "#c8a96e"
               : isFree
@@ -369,6 +297,7 @@ export default function PricingSection() {
                       fontSize: "2.4rem",
                       lineHeight: 1,
                       letterSpacing: "-0.03em",
+                      color: "#fafafa",
                     }}
                   >
                     {price}
@@ -385,14 +314,6 @@ export default function PricingSection() {
                     </span>
                   )}
                 </div>
-
-                {annual && plan.id !== "trial" && (
-                  <div
-                    style={{ fontSize: 11, color: "#5ec97a", marginBottom: 4 }}
-                  >
-                    {formatKES(plan.monthly - plan.annual)} saved per month
-                  </div>
-                )}
 
                 <p
                   style={{
@@ -425,6 +346,7 @@ export default function PricingSection() {
                     display: "flex",
                     flexDirection: "column",
                     gap: 9,
+                    padding: 0,
                   }}
                 >
                   {plan.features.map((f) => (
@@ -527,7 +449,7 @@ export default function PricingSection() {
             className="ent-btn"
             style={{
               background: "transparent",
-              color: "#f0ede8",
+              color: "#fafafa",
               border: "1px solid rgba(255,255,255,0.18)",
               padding: "9px 20px",
               borderRadius: 9,
@@ -544,3 +466,4 @@ export default function PricingSection() {
     </section>
   )
 }
+ 
