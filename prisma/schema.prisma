@@ -47,6 +47,14 @@ model Workspace {
   
   members       WorkspaceMember[]
   
+  // Subscription & Billing
+  subscriptionId String?
+  subscription   Subscription?
+  selectedPlanId String?
+  selectedPlan   Plan? @relation(fields: [selectedPlanId], references: [id])
+  payments       Payment[]
+  invoices       Invoice[]
+  
   // Scoped Data
   categories    Category[]
   products      Product[]
@@ -247,5 +255,113 @@ model AuditLog {
   workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+}
+
+// -----------------------------------------
+// Subscription & Billing Models
+// -----------------------------------------
+
+model Plan {
+  id          String   @id @default(cuid())
+  name        String   @unique // free, basic, pro
+  displayName String   // Free Trial, Basic, Professional
+  badge       String?  // "14 days", "Most Popular", etc.
+  description String
+  monthlyPrice Float   // in KES
+  features    String[] // JSON array of features
+  isActive    Boolean  @default(true)
+  
+  subscriptions Subscription[]
+  workspaces    Workspace[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subscription {
+  id            String   @id @default(cuid())
+  workspaceId   String   @unique
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  planId        String
+  plan          Plan     @relation(fields: [planId], references: [id])
+  
+  status        String   @default("active") // active, cancelled, expired, pending
+  paymentStatus String   @default("unpaid") // unpaid, paid, failed
+  
+  // Paystack integration
+  paystackAuthorizationCode String?
+  paystackCustomerId        String?
+  paystackSubscriptionCode  String?
+  
+  currentBillingCycleStart DateTime?
+  currentBillingCycleEnd   DateTime?
+  nextBillingDate          DateTime?
+  
+  cancelledAt   DateTime?
+  cancelReason  String?
+  
+  payments      Payment[]
+  invoices      Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  
+  amount        Float
+  currency      String   @default("KES")
+  status        String   @default("pending") // pending, success, failed, cancelled
+  
+  // Paystack integration
+  paystackReference String?
+  paystackAccessCode String?
+  paystackAuthCode  String?
+  
+  paymentMethod String?
+  
+  invoiceId     String?
+  invoice       Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  
+  errorMessage  String?
+  
+  paidAt        DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  
+  invoiceNumber String   @unique
+  amount        Float
+  currency      String   @default("KES")
+  status        String   @default("draft") // draft, issued, paid, overdue, cancelled
+  
+  billingPeriodStart DateTime
+  billingPeriodEnd   DateTime
+  dueDate           DateTime
+  paidAt            DateTime?
+  
+  payments      Payment[]
+  
+  description   String?
+  notes         String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
