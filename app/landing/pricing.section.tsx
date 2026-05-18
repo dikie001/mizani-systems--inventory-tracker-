@@ -40,7 +40,7 @@ const PLANS = [
     badgeStyle: "gold",
     // Prices are in Kenyan Shillings (KES) and set to be affordable
     monthly: 3999, // KES 3,999
-    annual: 3199,  // KES 3,199 (~20% off)
+    annual: 3199, // KES 3,199 (~20% off)
     desc: "For growing teams that need the full platform.",
     features: [
       "Unlimited SKUs",
@@ -59,7 +59,7 @@ const PLANS = [
     name: "Basic",
     badge: null,
     monthly: 999, // KES 999
-    annual: 799,  // KES 799 (discounted)
+    annual: 799, // KES 799 (discounted)
     desc: "For small operations getting off spreadsheets.",
     features: [
       "Up to 1,000 SKUs",
@@ -260,7 +260,8 @@ export default function PricingSection() {
             const isGold = plan.highlight
             const isFree = plan.id === "trial"
             const rawPrice = annual ? plan.annual : plan.monthly
-            const price = plan.id === "trial" ? formatKES(0) : formatKES(rawPrice)
+            const price =
+              plan.id === "trial" ? formatKES(0) : formatKES(rawPrice)
             const checkColor = isGold
               ? "#c8a96e"
               : isFree
