@@ -297,10 +297,10 @@ function HeroSection({ session }: { session: Session | null }) {
           <motion.h1
             variants={fadeUp}
             custom={0.08}
-            className="text-[clamp(2.4rem,5vw,3.8rem)] leading-[1.08] font-bold tracking-tight text-foreground"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] font-bold tracking-tight text-foreground"
           >
-            Inventory tracking built
-            <br />
+            Inventory tracking built{" "}
+            <br className="hidden sm:inline" />
             <span className="font-normal text-muted-foreground">
               for the modern enterprise
             </span>
@@ -309,7 +309,7 @@ function HeroSection({ session }: { session: Session | null }) {
           <motion.p
             variants={fadeUp}
             custom={0.16}
-            className="mx-auto mt-5 max-w-xl text-[1.05rem] leading-relaxed text-muted-foreground"
+            className="mx-auto mt-4 max-w-xl text-sm sm:text-base md:text-[1.05rem] leading-relaxed text-muted-foreground px-4 sm:px-0"
           >
             Monitor stock levels, automate replenishment, and surface insights
             across your entire catalog — all in one place.
@@ -479,7 +479,7 @@ function FeatureSection() {
   return (
     <section
       id="features"
-      className="relative overflow-hidden border-y border-border/50 bg-muted/20 py-24"
+      className="relative overflow-hidden border-y border-border/50 bg-muted/20 py-16 md:py-24"
     >
       {/* Section background grid */}
       <div
@@ -559,7 +559,7 @@ function FeatureSection() {
 
 function ManageSection() {
   return (
-    <section className="bg-background py-24">
+    <section className="bg-background py-16 md:py-24">
       <div className="container mx-auto grid items-center gap-16 px-6 lg:grid-cols-2">
         <motion.div
           initial="hidden"
