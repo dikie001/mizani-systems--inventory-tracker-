@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { PLANS, formatKES } from "@/lib/plans"
 
 const CHECK = ({ className = "text-primary" }: { className?: string }) => (
   <svg
@@ -29,76 +31,18 @@ const CHECK = ({ className = "text-primary" }: { className?: string }) => (
   </svg>
 )
 
-const PLANS = [
-  {
-    id: "trial",
-    name: "Free Trial",
-    badge: "14 days",
-    monthly: 0,
-    desc: "No card required. Try the full platform risk-free.",
-    features: [
-      "Up to 200 SKUs",
-      "1 admin user",
-      "Standard dashboard",
-      "Email support",
-    ],
-    cta: "Start Free Trial",
-    highlight: false,
-    variant: "secondary",
-  },
-  {
-    id: "pro",
-    name: "Professional",
-    badge: "Most Popular",
-    monthly: 3999, // KES 3,999
-    desc: "For growing teams that need the full platform.",
-    features: [
-      "Unlimited SKUs",
-      "Unlimited users",
-      "Advanced analytics",
-      "API access",
-      "Priority 24/7 support",
-      "Custom integrations",
-    ],
-    cta: "Start Professional",
-    highlight: true,
-    variant: "default",
-  },
-  {
-    id: "basic",
-    name: "Basic",
-    badge: null,
-    monthly: 999, // KES 999
-    desc: "For small operations getting off spreadsheets.",
-    features: [
-      "Up to 1,000 SKUs",
-      "2 admin users",
-      "Standard dashboard",
-      "Email support",
-      "CSV import/export",
-    ],
-    cta: "Start Basic",
-    highlight: false,
-    variant: "outline",
-  },
-]
-
 export default function PricingSection() {
-  const formatKES = (n: number) => {
-    try {
-      return new Intl.NumberFormat("en-KE", {
-        style: "currency",
-        currency: "KES",
-        currencyDisplay: "code",
-        maximumFractionDigits: 0,
-      }).format(n)
-    } catch (e) {
-      return `KES ${n}`
-    }
+  const router = useRouter()
+
+  const handleSelectPlan = (planId: string) => {
+    router.push(`/auth?plan=${planId}`)
   }
 
   return (
-    <section className="bg-background px-5 py-16 text-foreground md:px-6 md:py-20">
+    <section
+      id="pricing"
+      className="bg-background px-5 py-16 text-foreground md:px-6 md:py-20"
+    >
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-12 max-w-2xl text-center md:mb-14">
           <Badge
@@ -121,7 +65,9 @@ export default function PricingSection() {
             const isGold = plan.highlight
             const isFree = plan.id === "trial"
             const price =
-              plan.id === "trial" ? formatKES(0) : formatKES(plan.monthly)
+              plan.id === "trial"
+                ? formatKES(0)
+                : formatKES(plan.monthlyPrice)
 
             return (
               <Card
@@ -138,10 +84,10 @@ export default function PricingSection() {
                       <CardTitle
                         className={isGold ? "text-primary" : "text-foreground"}
                       >
-                        {plan.name}
+                        {plan.displayName}
                       </CardTitle>
                       <CardDescription className="mt-1">
-                        {plan.desc}
+                        {plan.description}
                       </CardDescription>
                     </div>
                     {plan.badge && (
@@ -205,6 +151,7 @@ export default function PricingSection() {
                       plan.variant as "default" | "secondary" | "outline"
                     }
                     className="w-full"
+                    onClick={() => handleSelectPlan(plan.id)}
                   >
                     {plan.cta}
                   </Button>

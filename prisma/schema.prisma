@@ -11,16 +11,16 @@ datasource db {
 // -----------------------------------------
 
 model User {
-  id            String          @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String          @unique
+  email         String    @unique
   emailVerified DateTime?
   image         String?
-  role          String          @default("user") // owner, admin, manager, viewer
-  status        String          @default("active") // active, pending
+  role          String    @default("user") // owner, admin, manager, viewer
+  status        String    @default("active") // active, pending
   accounts      Account[]
   sessions      Session[]
-  
+
   // Multi-tenancy
   currentWorkspaceId String?
   memberships        WorkspaceMember[]
@@ -31,7 +31,7 @@ model User {
 
   allowGoogleLink Boolean @default(false)
   loginCount      Int     @default(0)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -44,29 +44,37 @@ model Workspace {
   inventorySize String?
   goals         String[] @default([])
   currency      String   @default("KES")
-  
-  members       WorkspaceMember[]
-  
+
+  members WorkspaceMember[]
+
+  // Subscription & Billing
+  subscriptionId String?
+  subscription   Subscription?
+  selectedPlanId String?
+  selectedPlan   Plan?         @relation(fields: [selectedPlanId], references: [id])
+  payments       Payment[]
+  invoices       Invoice[]
+
   // Scoped Data
-  categories    Category[]
-  products      Product[]
-  orders        Order[]
+  categories     Category[]
+  products       Product[]
+  orders         Order[]
   stockMovements StockMovement[]
-  auditLogs     AuditLog[]
-  alerts        Alert[]
+  auditLogs      AuditLog[]
+  alerts         Alert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model WorkspaceMember {
-  id          String    @id @default(cuid())
+  id          String @id @default(cuid())
   workspaceId String
   userId      String
-  role        String    @default("MEMBER") // OWNER, ADMIN, MEMBER
-  
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String @default("MEMBER") // OWNER, ADMIN, MEMBER
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -86,12 +94,12 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([provider, providerAccountId])
 }
 
@@ -100,7 +108,7 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -109,7 +117,7 @@ model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@id([identifier, token])
 }
 
@@ -118,10 +126,10 @@ model VerificationToken {
 // -----------------------------------------
 
 model Category {
-  id          String    @id @default(cuid())
-  name        String
-  products    Product[]
-  
+  id       String    @id @default(cuid())
+  name     String
+  products Product[]
+
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
@@ -132,19 +140,19 @@ model Category {
 }
 
 model Product {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   sku         String
   description String?
   image       String?
   price       Float
-  stock       Int      @default(0)
-  minStock    Int      @default(10)
-  maxStock    Int      @default(100)
-  status      String   @default("in-stock") // in-stock, low-stock, critical
+  stock       Int     @default(0)
+  minStock    Int     @default(10)
+  maxStock    Int     @default(100)
+  status      String  @default("in-stock") // in-stock, low-stock, critical
 
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -160,15 +168,15 @@ model Product {
 }
 
 model Alert {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  severity  String   // warning, critical
-  status    String   @default("active") // active, dismissed, resolved
-  
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  severity  String // warning, critical
+  status    String  @default("active") // active, dismissed, resolved
+
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -178,11 +186,11 @@ model Alert {
 // -----------------------------------------
 
 model Order {
-  id                 String   @id @default(cuid())
+  id                 String  @id @default(cuid())
   customer           String
   total              Float
-  status             String   @default("pending") // pending, processing, shipped, delivered, cancelled
-  payment            String   @default("unpaid") // unpaid, paid, refunded
+  status             String  @default("pending") // pending, processing, shipped, delivered, cancelled
+  payment            String  @default("unpaid") // unpaid, paid, refunded
   cancellationReason String?
 
   workspaceId String
@@ -195,15 +203,15 @@ model Order {
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
   productId String
   product   Product @relation(fields: [productId], references: [id])
-  
-  quantity  Int
-  price     Float
+
+  quantity Int
+  price    Float
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -214,34 +222,34 @@ model OrderItem {
 // -----------------------------------------
 
 model StockMovement {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
-  
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  type      String   // Restock, Sale, Transfer
-  quantity  Int      // Positive for restock, negative for sale/transfer
-  status    String   @default("completed") // completed, pending, processing
-  notes     String?  // Additional details or notes about this movement
+  type     String // Restock, Sale, Transfer
+  quantity Int // Positive for restock, negative for sale/transfer
+  status   String  @default("completed") // completed, pending, processing
+  notes    String? // Additional details or notes about this movement
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model AuditLog {
-  id        String   @id @default(cuid())
-  action    String
-  entity    String
-  type      String   // create, update, delete, auth, transfer, settings
-  ip        String?
-  
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id     String  @id @default(cuid())
+  action String
+  entity String
+  type   String // create, update, delete, auth, transfer, settings
+  ip     String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   workspaceId String?
   workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -249,3 +257,110 @@ model AuditLog {
   createdAt DateTime @default(now())
 }
 
+// -----------------------------------------
+// Subscription & Billing Models
+// -----------------------------------------
+
+model Plan {
+  id           String   @id @default(cuid())
+  name         String   @unique // free, basic, pro
+  displayName  String // Free Trial, Basic, Professional
+  badge        String? // "14 days", "Most Popular", etc.
+  description  String
+  monthlyPrice Float // in KES
+  features     String[] // JSON array of features
+  isActive     Boolean  @default(true)
+
+  subscriptions Subscription[]
+  workspaces    Workspace[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subscription {
+  id          String    @id @default(cuid())
+  workspaceId String    @unique
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  status        String @default("active") // active, cancelled, expired, pending
+  paymentStatus String @default("unpaid") // unpaid, paid, failed
+
+  // Paystack integration
+  paystackAuthorizationCode String?
+  paystackCustomerId        String?
+  paystackSubscriptionCode  String?
+
+  currentBillingCycleStart DateTime?
+  currentBillingCycleEnd   DateTime?
+  nextBillingDate          DateTime?
+
+  cancelledAt  DateTime?
+  cancelReason String?
+
+  payments Payment[]
+  invoices Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  amount   Float
+  currency String @default("KES")
+  status   String @default("pending") // pending, success, failed, cancelled
+
+  // Paystack integration
+  paystackReference  String? @unique
+  paystackAccessCode String?
+  paystackAuthCode   String?
+
+  paymentMethod String?
+
+  invoiceId String?
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  errorMessage String?
+
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Invoice {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  invoiceNumber String @unique
+  amount        Float
+  currency      String @default("KES")
+  status        String @default("draft") // draft, issued, paid, overdue, cancelled
+
+  billingPeriodStart DateTime
+  billingPeriodEnd   DateTime
+  dueDate            DateTime
+  paidAt             DateTime?
+
+  payments Payment[]
+
+  description String?
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

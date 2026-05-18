@@ -1,14 +1,16 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, Suspense } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
-import { ArrowLeft, LoaderCircle } from "lucide-react"
+import { ArrowLeft, LoaderCircle, Info } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { getPlanById } from "@/lib/plans"
 
 function GoogleIcon() {
   return (
@@ -55,8 +57,9 @@ function getAuthErrorMessage(error: string | null) {
   }
 }
 
-export default function AuthPage() {
+function AuthContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(() => {
     if (typeof window === "undefined") {
@@ -71,6 +74,9 @@ export default function AuthPage() {
     return getAuthErrorMessage(error)
   })
   const popupCheckRef = useRef<number | null>(null)
+
+  const planId = searchParams.get("plan")
+  const selectedPlan = planId ? getPlanById(planId) : null
 
   useEffect(() => {
     const error = new URLSearchParams(window.location.search).get("error")
@@ -87,6 +93,16 @@ export default function AuthPage() {
     )
     window.close()
   }, [])
+
+  useEffect(() => {
+    // Clear sessionStorage on visit and store selected plan if present in URL
+    if (typeof window !== "undefined") {
+      sessionStorage.clear()
+      if (planId) {
+        sessionStorage.setItem("selectedPlan", planId)
+      }
+    }
+  }, [planId])
 
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
@@ -135,7 +151,14 @@ export default function AuthPage() {
     setErrorMessage(null)
 
     const popupUrl = new URL("/auth/google", window.location.origin)
-    popupUrl.searchParams.set("callbackUrl", "/dashboard")
+    // After auth, go to onboarding (with plan if present)
+    const onboardingUrl = planId
+      ? `/onboarding?plan=${planId}`
+      : "/onboarding"
+    popupUrl.searchParams.set("callbackUrl", onboardingUrl)
+    if (planId) {
+      popupUrl.searchParams.set("plan", planId)
+    }
 
     const width = 520
     const height = 640
@@ -149,7 +172,9 @@ export default function AuthPage() {
     )
 
     if (!popup) {
-      await signIn("google", { callbackUrl: "/dashboard" })
+      await signIn("google", {
+        callbackUrl: onboardingUrl,
+      })
       return
     }
 
@@ -185,23 +210,43 @@ export default function AuthPage() {
 
         <Card className="rounded-2xl border bg-card text-card-foreground shadow-sm">
           <CardHeader className="items-center gap-3 px-6 pt-6 text-center">
-            <div className="mb-1 flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden">
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={48}
-                height={48}
-                className="h-full w-full object-contain"
-              />
-            </div>
+            <Image
+              src="/mizani_logo.png"
+              alt="Logo"
+              width={48}
+              height={48}
+              className="h-12 w-12 object-contain rounded-xl border border-border shadow-sm mb-1"
+            />
             <div className="space-y-1">
               <CardTitle className="text-2xl tracking-tight">
-                Continue to StockVault
+                Continue to Mizani Systems
               </CardTitle>
+              {selectedPlan && (
+                <p className="text-sm text-muted-foreground">
+                  Signing up for{" "}
+                  <span className="font-semibold text-foreground">
+                    {selectedPlan.displayName}
+                  </span>
+                </p>
+              )}
             </div>
           </CardHeader>
 
           <CardContent className="px-6 pt-0 pb-6">
+            {selectedPlan && (
+              <Alert className="mb-4 border-primary/30 bg-primary/5">
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  You&apos;re signing up for the{" "}
+                  <span className="font-semibold">{selectedPlan.displayName}</span>{" "}
+                  plan —{" "}
+                  {selectedPlan.monthlyPrice === 0
+                    ? "Free"
+                    : `KES ${selectedPlan.monthlyPrice.toLocaleString()}/mo`}
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Button
               className="h-11 w-full rounded-xl"
               onClick={handleGoogleSignIn}
@@ -228,5 +273,17 @@ export default function AuthPage() {
         </Card>
       </div>
     </main>
+  )
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
+      </div>
+    }>
+      <AuthContent />
+    </Suspense>
   )
 }

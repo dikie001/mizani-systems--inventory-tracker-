@@ -134,15 +134,13 @@ function Navbar({ session }: { session: Session | null }) {
           href="/"
           className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight"
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-foreground">
-            <Image
-              src="/logo.png"
-              alt="Mizani Systems"
-              width={16}
-              height={16}
-              className="h-4 w-4 object-contain invert"
-            />
-          </div>
+          <Image
+            src="/mizani_logo.png"
+            alt="Mizani Systems"
+            width={32}
+            height={32}
+            className="h-8 w-8 object-contain rounded-lg border border-border shadow-sm"
+          />
           <span>Mizani Systems</span>
         </Link>
 
@@ -880,16 +878,14 @@ function Footer() {
       <div className="container mx-auto px-6 py-10">
         <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           <div>
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md bg-foreground">
-                <Image
-                  src="/logo.png"
-                  alt="Mizani Systems"
-                  width={14}
-                  height={14}
-                  className="h-3.5 w-3.5 object-contain invert"
-                />
-              </div>
+            <div className="mb-2 flex items-center gap-2.5 text-sm font-semibold">
+              <Image
+                src="/mizani_logo.png"
+                alt="Mizani Systems"
+                width={28}
+                height={28}
+                className="h-7 w-7 object-contain rounded-lg border border-border shadow-sm"
+              />
               Mizani Systems
             </div>
             <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">

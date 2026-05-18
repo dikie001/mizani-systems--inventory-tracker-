@@ -24,6 +24,29 @@ async function main() {
     },
   })
 
+  // 1.5 Create Workspace
+  const workspace = await prisma.workspace.create({
+    data: {
+      name: "Acme Corp Workspace",
+      slug: "acme-corp",
+      businessType: "retail",
+      inventorySize: "medium",
+    }
+  })
+
+  await prisma.workspaceMember.create({
+    data: {
+      workspaceId: workspace.id,
+      userId: user.id,
+      role: "OWNER"
+    }
+  })
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { currentWorkspaceId: workspace.id }
+  })
+
   // 2. Create Categories
   const categories = [
     "Electronics",
@@ -35,7 +58,7 @@ async function main() {
   ]
   const catMap = new Map()
   for (const name of categories) {
-    const c = await prisma.category.create({ data: { name } })
+    const c = await prisma.category.create({ data: { name, workspaceId: workspace.id } })
     catMap.set(name, c.id)
   }
 
@@ -43,14 +66,14 @@ async function main() {
 
   // 4. Create Products
   const productsData = [
-    { name: "Wireless Earbuds Pro", sku: "WEP-2024-BK", categoryId: catMap.get("Electronics"), price: 79.99, stock: 342, status: "in-stock" },
-    { name: "Organic Coffee Beans 1kg", sku: "OCB-1KG-AR", categoryId: catMap.get("Food & Bev"), price: 24.50, stock: 189, status: "in-stock" },
-    { name: "Running Shoes V2", sku: "RSV2-42-BL", categoryId: catMap.get("Sports"), price: 129.99, stock: 67, status: "low-stock" },
-    { name: "Smart Watch Elite", sku: "SWE-2024-SL", categoryId: catMap.get("Electronics"), price: 299.99, stock: 156, status: "in-stock" },
-    { name: "Yoga Mat Premium", sku: "YMP-BL-6MM", categoryId: catMap.get("Sports"), price: 45.00, stock: 8, status: "critical" },
-    { name: "USB-C Hub Adapter", sku: "UCH-7P-GR", categoryId: catMap.get("Electronics"), price: 49.99, stock: 12, status: "low-stock" },
-    { name: "Face Serum 30ml", sku: "FS-30-HY", categoryId: catMap.get("Beauty"), price: 34.99, stock: 15, status: "low-stock" },
-    { name: "Bamboo Cutting Board", sku: "BCB-LG-NT", categoryId: catMap.get("Home"), price: 28.00, stock: 5, status: "critical" },
+    { name: "Wireless Earbuds Pro", sku: "WEP-2024-BK", categoryId: catMap.get("Electronics"), price: 79.99, stock: 342, status: "in-stock", workspaceId: workspace.id },
+    { name: "Organic Coffee Beans 1kg", sku: "OCB-1KG-AR", categoryId: catMap.get("Food & Bev"), price: 24.50, stock: 189, status: "in-stock", workspaceId: workspace.id },
+    { name: "Running Shoes V2", sku: "RSV2-42-BL", categoryId: catMap.get("Sports"), price: 129.99, stock: 67, status: "low-stock", workspaceId: workspace.id },
+    { name: "Smart Watch Elite", sku: "SWE-2024-SL", categoryId: catMap.get("Electronics"), price: 299.99, stock: 156, status: "in-stock", workspaceId: workspace.id },
+    { name: "Yoga Mat Premium", sku: "YMP-BL-6MM", categoryId: catMap.get("Sports"), price: 45.00, stock: 8, status: "critical", workspaceId: workspace.id },
+    { name: "USB-C Hub Adapter", sku: "UCH-7P-GR", categoryId: catMap.get("Electronics"), price: 49.99, stock: 12, status: "low-stock", workspaceId: workspace.id },
+    { name: "Face Serum 30ml", sku: "FS-30-HY", categoryId: catMap.get("Beauty"), price: 34.99, stock: 15, status: "low-stock", workspaceId: workspace.id },
+    { name: "Bamboo Cutting Board", sku: "BCB-LG-NT", categoryId: catMap.get("Home"), price: 28.00, stock: 5, status: "critical", workspaceId: workspace.id },
   ]
 
   const createdProducts = []
@@ -71,6 +94,7 @@ async function main() {
     await prisma.order.create({
       data: {
         ...o,
+        workspaceId: workspace.id,
         orderItems: {
           create: [
             {
@@ -94,6 +118,7 @@ async function main() {
     data: {
       productId: createdProducts[0].id,
       userId: user.id,
+      workspaceId: workspace.id,
       type: "Restock",
       quantity: 250,
       status: "completed",
@@ -104,6 +129,7 @@ async function main() {
     data: {
       productId: createdProducts[1].id,
       userId: user.id,
+      workspaceId: workspace.id,
       type: "Sale",
       quantity: -48,
       status: "completed",
@@ -117,6 +143,7 @@ async function main() {
       entity: "Wireless Earbuds Pro",
       type: "create",
       userId: user.id,
+      workspaceId: workspace.id,
       ip: "192.168.1.42",
     }
   })

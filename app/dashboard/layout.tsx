@@ -45,6 +45,25 @@ export default async function DashboardLayout({
     redirect("/onboarding")
   }
 
+  // Check if current workspace has an active subscription
+  let requiresPayment = false
+  let workspace = null
+  if (user?.currentWorkspaceId) {
+    workspace = await prisma.workspace.findUnique({
+      where: { id: user.currentWorkspaceId },
+      include: { subscription: true, selectedPlan: true }
+    })
+    
+    // If no subscription or status is not active/trial, prompt payment
+    if (workspace && (!workspace.subscription || (workspace.subscription.status !== "active" && workspace.subscription.status !== "trial"))) {
+      requiresPayment = true
+    }
+  }
+
+  if (requiresPayment) {
+    redirect("/onboarding")
+  }
+
   return (
     <>
       <DashboardShell>{children}</DashboardShell>
