@@ -12,7 +12,7 @@ import {
   Moon,
   Sun,
   Home,
-  ChevronDown
+  ChevronDown,
 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -60,7 +60,10 @@ export function SuperAdminHeader() {
   const userEmail = session?.user?.email ?? ""
   const userImage = session?.user?.image ?? ""
   const userInitials = getInitials(session?.user?.name, session?.user?.email)
-  const userDisplayName = getFirstName(session?.user?.name, session?.user?.email)
+  const userDisplayName = getFirstName(
+    session?.user?.name,
+    session?.user?.email
+  )
 
   useEffect(() => {
     if (status !== "authenticated" || !userName) {
@@ -102,10 +105,14 @@ export function SuperAdminHeader() {
 
   const getActiveTabLabel = (path: string) => {
     switch (path) {
-      case "/super-admin/users": return "Users & Accounts"
-      case "/super-admin/workspaces": return "Workspaces Portfolio"
-      case "/super-admin/audit": return "Global Activity Trail"
-      default: return "Overview"
+      case "/super-admin/users":
+        return "Users & Accounts"
+      case "/super-admin/workspaces":
+        return "Workspaces Portfolio"
+      case "/super-admin/audit":
+        return "Global Activity Trail"
+      default:
+        return "Overview"
     }
   }
 
@@ -113,14 +120,15 @@ export function SuperAdminHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/85 md:px-5">
-      <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground transition-all duration-200" />
+      <SidebarTrigger className="-ml-1 text-muted-foreground transition-all duration-200 hover:text-foreground" />
       <Separator orientation="vertical" className="mr-1 h-5 bg-border/60" />
 
       {/* Admin Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        <span className="truncate">
-          Admin Console
-        </span>
+      <nav
+        aria-label="Breadcrumb"
+        className="flex min-w-0 items-center gap-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+      >
+        <span className="truncate">Admin Console</span>
         <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
         <span className="truncate text-foreground">
           {getActiveTabLabel(pathname)}
@@ -133,7 +141,7 @@ export function SuperAdminHeader() {
           <DropdownMenuTrigger asChild disabled={!isProfileReady}>
             <Button
               variant="ghost"
-              className="h-10 rounded-full border border-border/70 bg-background px-2.5 hover:bg-muted/40 transition-all"
+              className="h-10 rounded-full border border-border/70 bg-background px-2.5 transition-all hover:bg-muted/40"
             >
               {isProfileReady ? (
                 <div className="flex items-center gap-2">
@@ -164,7 +172,7 @@ export function SuperAdminHeader() {
           <DropdownMenuContent
             align="end"
             sideOffset={10}
-            className="w-72 rounded-3xl border border-border/70 bg-background p-2 shadow-2xl text-foreground"
+            className="w-72 rounded-3xl border border-border/70 bg-background p-2 text-foreground shadow-2xl"
           >
             <DropdownMenuLabel className="px-2 py-2">
               <div className="flex items-center gap-3 rounded-2xl px-2 py-1">
@@ -184,46 +192,61 @@ export function SuperAdminHeader() {
                   <p className="truncate text-sm font-bold text-foreground">
                     {userName}
                   </p>
-                  <p className="truncate text-[10px] font-semibold text-primary font-mono">
+                  <p className="truncate font-mono text-[10px] font-semibold text-primary">
                     {userEmail}
                   </p>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            
-            <DropdownMenuItem asChild className="h-10 rounded-2xl px-3 text-xs font-semibold text-foreground/80 hover:bg-muted focus:bg-muted cursor-pointer">
+
+            <DropdownMenuItem
+              asChild
+              className="h-10 cursor-pointer rounded-2xl px-3 text-xs font-semibold text-foreground/80 hover:bg-muted focus:bg-muted"
+            >
               <Link href="/dashboard">
-                <Home className="h-4 w-4 text-muted-foreground mr-2" />
+                <Home className="mr-2 h-4 w-4 text-muted-foreground" />
                 Return to Dashboard
               </Link>
             </DropdownMenuItem>
-            
+
             <DropdownMenuSeparator />
-            
-            <DropdownMenuRadioGroup value={theme ?? "system"} onValueChange={setTheme}>
-              <DropdownMenuRadioItem value="light" className="h-10 rounded-2xl px-3 text-xs font-semibold text-foreground/80 hover:bg-muted focus:bg-muted cursor-pointer">
-                <Sun className="h-4 w-4 text-muted-foreground mr-2" />
+
+            <DropdownMenuRadioGroup
+              value={theme ?? "system"}
+              onValueChange={setTheme}
+            >
+              <DropdownMenuRadioItem
+                value="light"
+                className="h-10 cursor-pointer rounded-2xl px-3 text-xs font-semibold text-foreground/80 hover:bg-muted focus:bg-muted"
+              >
+                <Sun className="mr-2 h-4 w-4 text-muted-foreground" />
                 Light Mode
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="dark" className="h-10 rounded-2xl px-3 text-xs font-semibold text-foreground/80 hover:bg-muted focus:bg-muted cursor-pointer">
-                <Moon className="h-4 w-4 text-muted-foreground mr-2" />
+              <DropdownMenuRadioItem
+                value="dark"
+                className="h-10 cursor-pointer rounded-2xl px-3 text-xs font-semibold text-foreground/80 hover:bg-muted focus:bg-muted"
+              >
+                <Moon className="mr-2 h-4 w-4 text-muted-foreground" />
                 Dark Mode
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="system" className="h-10 rounded-2xl px-3 text-xs font-semibold text-foreground/80 hover:bg-muted focus:bg-muted cursor-pointer">
-                <Monitor className="h-4 w-4 text-muted-foreground mr-2" />
+              <DropdownMenuRadioItem
+                value="system"
+                className="h-10 cursor-pointer rounded-2xl px-3 text-xs font-semibold text-foreground/80 hover:bg-muted focus:bg-muted"
+              >
+                <Monitor className="mr-2 h-4 w-4 text-muted-foreground" />
                 System Theme
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
-            
+
             <DropdownMenuSeparator />
-            
+
             <DropdownMenuItem
               variant="destructive"
-              className="h-10 rounded-2xl px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 focus:bg-destructive/10 cursor-pointer"
+              className="h-10 cursor-pointer rounded-2xl px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 focus:bg-destructive/10"
               onClick={() => signOut({ callbackUrl: "/auth" })}
             >
-              <LogOut className="h-4 w-4 mr-2" />
+              <LogOut className="mr-2 h-4 w-4" />
               Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>

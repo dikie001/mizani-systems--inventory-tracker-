@@ -86,7 +86,10 @@ export function DashboardHeader() {
   const userEmail = session?.user?.email ?? ""
   const userImage = session?.user?.image ?? ""
   const userInitials = getInitials(session?.user?.name, session?.user?.email)
-  const userDisplayName = getFirstName(session?.user?.name, session?.user?.email)
+  const userDisplayName = getFirstName(
+    session?.user?.name,
+    session?.user?.email
+  )
 
   const breadcrumbPath = breadcrumbSegmentsFromPath(pathname)
   const breadcrumbSegments = breadcrumbPath.map((segment, index) => ({
