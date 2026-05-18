@@ -55,6 +55,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Skeleton } from "@/components/ui/skeleton"
 
 // New Dialogs
 import { CreateOrderDialog } from "@/components/orders/create-order-dialog"
@@ -274,32 +275,44 @@ export default function OrdersPage() {
         {[
           {
             label: "Total Orders",
-            value: isLoading ? "-" : orders?.length.toString(),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              orders?.length.toString()
+            ),
             icon: Package,
             color: "text-primary",
             bg: "bg-primary/10",
           },
           {
             label: "Pending",
-            value: isLoading
-              ? "-"
-              : orders?.filter((o) => o.status === "pending").length.toString(),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              orders?.filter((o) => o.status === "pending").length.toString()
+            ),
             icon: Clock,
             color: "text-amber-500",
             bg: "bg-amber-500/10",
           },
           {
             label: "In Transit",
-            value: isLoading
-              ? "-"
-              : orders?.filter((o) => o.status === "shipped").length.toString(),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              orders?.filter((o) => o.status === "shipped").length.toString()
+            ),
             icon: Truck,
             color: "text-blue-500",
             bg: "bg-blue-500/10",
           },
           {
             label: "Revenue",
-            value: isLoading ? "-" : formatPrice(totalRevenue, currency),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-20" />
+            ) : (
+              formatPrice(totalRevenue, currency)
+            ),
             icon: DollarSign,
             color: "text-emerald-500",
             bg: "bg-emerald-500/10",
@@ -362,8 +375,23 @@ export default function OrdersPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="space-y-3">
+              {[...Array(6)].map((_, idx) => (
+                <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3.5 pt-3.5 last:border-b-0 last:pb-0">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-4 w-4 bg-muted/50" />
+                    <Skeleton className="h-5 w-20 rounded bg-muted/60" />
+                    <Skeleton className="h-4 w-28 bg-muted/70" />
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <Skeleton className="h-4 w-12 bg-muted/60" />
+                    <Skeleton className="h-4 w-16 bg-muted/60" />
+                    <Skeleton className="h-5 w-20 rounded bg-muted/60" />
+                    <Skeleton className="h-5 w-20 rounded bg-muted/60" />
+                    <Skeleton className="h-8 w-8 rounded bg-muted/50" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="p-8 text-center text-red-500">

@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Loader2, Package, Plus, Search, Trash2 } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import useSWR, { useSWRConfig } from "swr"
@@ -59,6 +60,7 @@ export function CreateOrderDialog({
   )
   const currency = workspace?.currency || "KES"
   const [loading, setLoading] = useState(false)
+  const [productsLoading, setProductsLoading] = useState(false)
   const [customer, setCustomer] = useState("")
   const [search, setSearch] = useState("")
   const [allProducts, setAllProducts] = useState<Product[]>([])
@@ -68,12 +70,15 @@ export function CreateOrderDialog({
   useEffect(() => {
     if (open) {
       const fetchProducts = async () => {
+        setProductsLoading(true)
         try {
           const res = await fetch("/api/products")
           const data = await res.json()
           setAllProducts(data)
         } catch (error) {
           console.error("Failed to fetch products:", error)
+        } finally {
+          setProductsLoading(false)
         }
       }
       fetchProducts()
@@ -204,68 +209,88 @@ export function CreateOrderDialog({
                 </span>
               </div>
               <div className="max-h-[140px] space-y-0.5 divide-y divide-border/20 overflow-y-auto pr-1">
-                {filteredProducts.map((p) => {
-                  const isOutOfStock = p.stock <= 0
-                  const isLowStock = p.stock <= 10 && p.stock > 0
-
-                  return (
-                    <button
-                      type="button"
-                      key={p.id}
-                      disabled={isOutOfStock}
-                      onClick={() => addItem(p)}
-                      className={`flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs transition-all hover:bg-muted/50 ${isOutOfStock ? "cursor-not-allowed opacity-40" : ""} `}
-                    >
+                {productsLoading ? (
+                  [...Array(3)].map((_, idx) => (
+                    <div key={idx} className="flex w-full items-center justify-between py-1.5 px-2 animate-pulse">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
-                          {p.image ? (
-                            <img
-                              src={p.image}
-                              alt={p.name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <Package className="h-4 w-4 text-muted-foreground/60" />
-                          )}
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-xs font-semibold text-foreground">
-                            {p.name}
-                          </p>
-                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                            <span>SKU: {p.sku}</span>
-                            <span>•</span>
-                            <span
-                              className={`font-medium ${
-                                isOutOfStock
-                                  ? "text-red-500"
-                                  : isLowStock
-                                    ? "font-semibold text-amber-500"
-                                    : "font-semibold text-emerald-500"
-                              }`}
-                            >
-                              {isOutOfStock
-                                ? "Out of Stock"
-                                : `${p.stock} in stock`}
-                            </span>
-                          </div>
+                        <Skeleton className="h-8 w-8 rounded-md bg-muted/70 shrink-0" />
+                        <div className="space-y-1.5 flex-1">
+                          <Skeleton className="h-3 w-28 bg-muted/70" />
+                          <Skeleton className="h-2.5 w-16 bg-muted/50" />
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <p className="font-mono text-xs font-bold text-foreground">
-                          {formatPrice(p.price, currency)}
-                        </p>
-                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary transition-colors">
-                          <Plus className="h-3 w-3" />
-                        </div>
+                        <Skeleton className="h-3 w-12 bg-muted/60" />
+                        <Skeleton className="h-5 w-5 bg-muted/50" />
                       </div>
-                    </button>
-                  )
-                })}
-                {filteredProducts.length === 0 && (
-                  <div className="py-6 text-center text-xs text-muted-foreground italic">
-                    No products found matching &quot;{search}&quot;.
-                  </div>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    {filteredProducts.map((p) => {
+                      const isOutOfStock = p.stock <= 0
+                      const isLowStock = p.stock <= 10 && p.stock > 0
+
+                      return (
+                        <button
+                          type="button"
+                          key={p.id}
+                          disabled={isOutOfStock}
+                          onClick={() => addItem(p)}
+                          className={`flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs transition-all hover:bg-muted/50 ${isOutOfStock ? "cursor-not-allowed opacity-40" : ""} `}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
+                              {p.image ? (
+                                <img
+                                  src={p.image}
+                                  alt={p.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <Package className="h-4 w-4 text-muted-foreground/60" />
+                              )}
+                            </div>
+                            <div className="space-y-0.5">
+                              <p className="text-xs font-semibold text-foreground">
+                                {p.name}
+                              </p>
+                              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                <span>SKU: {p.sku}</span>
+                                <span>•</span>
+                                <span
+                                  className={`font-medium ${
+                                    isOutOfStock
+                                      ? "text-red-500"
+                                      : isLowStock
+                                        ? "font-semibold text-amber-500"
+                                        : "font-semibold text-emerald-500"
+                                  }`}
+                                >
+                                  {isOutOfStock
+                                    ? "Out of Stock"
+                                    : `${p.stock} in stock`}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-mono text-xs font-bold text-foreground">
+                              {formatPrice(p.price, currency)}
+                            </p>
+                            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary transition-colors">
+                              <Plus className="h-3 w-3" />
+                            </div>
+                          </div>
+                        </button>
+                      )
+                    })}
+                    {filteredProducts.length === 0 && (
+                      <div className="py-6 text-center text-xs text-muted-foreground italic">
+                        No products found matching &quot;{search}&quot;.
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
@@ -169,19 +170,31 @@ export default function AlertsPage() {
         {[
           {
             label: "Critical Alerts",
-            value: isLoading ? "-" : criticalAlerts.length,
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              criticalAlerts.length
+            ),
             icon: Flame,
             color: "text-rose-600 dark:text-rose-400",
           },
           {
             label: "Low Stock Warnings",
-            value: isLoading ? "-" : lowStockAlerts.length,
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              lowStockAlerts.length
+            ),
             icon: AlertCircle,
             color: "text-orange-600 dark:text-orange-400",
           },
           {
             label: "Resolved Recently",
-            value: rLoading ? "-" : resolved.length,
+            value: rLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              resolved.length
+            ),
             icon: CheckCircle2,
             color: "text-emerald-600 dark:text-emerald-400",
           },
@@ -214,8 +227,34 @@ export default function AlertsPage() {
 
         <TabsContent value="active" className="mt-4 space-y-4">
           {isLoading ? (
-            <div className="flex justify-center p-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="grid gap-4 md:grid-cols-2">
+              {[...Array(4)].map((_, idx) => (
+                <Card key={idx}>
+                  <CardContent className="pt-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3 w-full">
+                        <Skeleton className="h-10 w-10 rounded-lg shrink-0 bg-muted/70" />
+                        <div className="space-y-1.5 flex-1">
+                          <Skeleton className="h-4 w-3/4 bg-muted/70" />
+                          <Skeleton className="h-3 w-1/2 bg-muted/50" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-6 w-16 rounded-full bg-muted/60" />
+                    </div>
+                    <div className="mt-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-3 w-16 bg-muted/50" />
+                        <Skeleton className="h-3.5 w-12 bg-muted/60" />
+                      </div>
+                      <Skeleton className="h-2 w-full rounded-full" />
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      <Skeleton className="h-9 flex-1 rounded bg-muted/60" />
+                      <Skeleton className="h-9 w-20 rounded bg-muted/50" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           ) : (
             <>

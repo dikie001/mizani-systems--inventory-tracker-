@@ -18,6 +18,7 @@ import { useSession } from "next-auth/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
   CardContent,
@@ -325,8 +326,22 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               {membersLoading ? (
-                <div className="flex justify-center p-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <div className="space-y-3.5 py-1">
+                  {[...Array(3)].map((_, idx) => (
+                    <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3 pt-3 last:border-b-0 last:pb-0">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-9 w-9 rounded-full bg-muted/70" />
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-4 w-32 bg-muted/70" />
+                          <Skeleton className="h-3 w-44 bg-muted/50" />
+                        </div>
+                      </div>
+                      <div className="flex gap-4 items-center">
+                        <Skeleton className="h-6 w-16 rounded-full bg-muted/60" />
+                        <Skeleton className="h-8 w-8 rounded bg-muted/50" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <Table>

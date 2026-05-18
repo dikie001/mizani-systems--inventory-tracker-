@@ -42,6 +42,7 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
   CardContent,
@@ -285,15 +286,81 @@ function formatDate(value: string) {
   }).format(new Date(value))
 }
 
+function InventoryPageSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      {/* Header Skeleton */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48 bg-muted/80" />
+          <Skeleton className="h-4 w-72 bg-muted/60" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-24 bg-muted/70" />
+          <Skeleton className="h-9 w-28 bg-muted/70" />
+        </div>
+      </div>
+
+      {/* KPI Cards Skeleton */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 rounded-lg bg-muted/70" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-3/4 bg-muted/60" />
+                  <Skeleton className="h-6 w-12 bg-muted/80" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Table Card Skeleton */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-32 bg-muted/80" />
+              <Skeleton className="h-4 w-48 bg-muted/60" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-8 w-48 bg-muted/60" />
+              <Skeleton className="h-8 w-32 bg-muted/60" />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[...Array(6)].map((_, idx) => (
+              <div key={idx} className="flex items-center justify-between border-b pb-3.5 pt-3.5 last:border-0 last:pb-0">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 rounded-lg bg-muted/70" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-36 bg-muted/70" />
+                    <Skeleton className="h-3 w-20 bg-muted/50" />
+                  </div>
+                </div>
+                <div className="flex gap-4 items-center">
+                  <Skeleton className="h-4 w-12 bg-muted/60" />
+                  <Skeleton className="h-4 w-16 bg-muted/60" />
+                  <Skeleton className="h-5 w-20 rounded bg-muted/60" />
+                  <Skeleton className="h-8 w-8 rounded bg-muted/50" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export default function InventoryPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-[400px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/40" />
-        </div>
-      }
-    >
+    <Suspense fallback={<InventoryPageSkeleton />}>
       <InventoryPageContent />
     </Suspense>
   )
@@ -1078,25 +1145,41 @@ function InventoryPageContent() {
         {[
           {
             label: "Critical Alerts",
-            value: isLoading ? "-" : String(criticalCount),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              String(criticalCount)
+            ),
             icon: Flame,
             color: "text-rose-600 dark:text-rose-400",
           },
           {
             label: "Low Stock Warnings",
-            value: isLoading ? "-" : String(lowStockCount),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              String(lowStockCount)
+            ),
             icon: AlertCircle,
             color: "text-orange-600 dark:text-orange-400",
           },
           {
             label: "Total Inventory",
-            value: isLoading ? "-" : totalUnits.toLocaleString(),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-20" />
+            ) : (
+              totalUnits.toLocaleString()
+            ),
             icon: Box,
             color: "text-blue-600 dark:text-blue-400",
           },
           {
             label: "Catalog Items",
-            value: isLoading ? "-" : String(products?.length ?? 0),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              String(products?.length ?? 0)
+            ),
             icon: Package,
             color: "text-emerald-600 dark:text-emerald-400",
           },
@@ -1168,8 +1251,24 @@ function InventoryPageContent() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="space-y-3">
+              {[...Array(6)].map((_, idx) => (
+                <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3.5 pt-3.5 last:border-b-0 last:pb-0">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded-lg bg-muted/70" />
+                    <div className="space-y-1.5">
+                      <Skeleton className="h-4 w-36 bg-muted/70" />
+                      <Skeleton className="h-3 w-20 bg-muted/50" />
+                    </div>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <Skeleton className="h-4 w-12 bg-muted/60" />
+                    <Skeleton className="h-4 w-16 bg-muted/60" />
+                    <Skeleton className="h-5 w-20 rounded bg-muted/60" />
+                    <Skeleton className="h-8 w-8 rounded bg-muted/50" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="p-8 text-center text-red-500">

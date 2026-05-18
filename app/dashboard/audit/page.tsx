@@ -22,6 +22,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
   CardContent,
@@ -150,8 +151,23 @@ export default function AuditPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="space-y-3.5 py-1">
+              {[...Array(6)].map((_, idx) => (
+                <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3 pt-3 last:border-b-0 last:pb-0">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded bg-muted/70" />
+                    <div className="space-y-1.5">
+                      <Skeleton className="h-4 w-36 bg-muted/70" />
+                      <Skeleton className="h-3.5 w-44 bg-muted/50" />
+                    </div>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <Skeleton className="h-5 w-16 rounded-full bg-muted/60" />
+                    <Skeleton className="h-4 w-28 bg-muted/50" />
+                    <Skeleton className="h-4 w-24 bg-muted/50" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="p-8 text-center text-red-500">

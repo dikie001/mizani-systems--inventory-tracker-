@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import {
   Select,
@@ -142,8 +143,44 @@ export function OrderDetailsDialog({
         </DialogHeader>
 
         {isLoading ? (
-          <div className="flex h-64 items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+          <div className="space-y-6 pt-4 animate-pulse">
+            {/* Metadata Preview Box Skeleton */}
+            <div className="grid grid-cols-2 gap-4 rounded-xl border bg-muted/5 p-4">
+              {[...Array(4)].map((_, idx) => (
+                <div key={idx} className="space-y-2">
+                  <Skeleton className="h-3 w-16 bg-muted/70" />
+                  <Skeleton className="h-5 w-full bg-muted/60" />
+                </div>
+              ))}
+            </div>
+            
+            {/* Items Table Title Skeleton */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28 bg-muted/70" />
+              <div className="rounded-lg border">
+                <div className="border-b p-3 flex justify-between">
+                  <Skeleton className="h-3 w-20 bg-muted/50" />
+                  <Skeleton className="h-3 w-12 bg-muted/50" />
+                  <Skeleton className="h-3 w-12 bg-muted/50" />
+                </div>
+                {[...Array(3)].map((_, idx) => (
+                  <div key={idx} className="p-3 flex justify-between items-center border-b last:border-b-0">
+                    <div className="space-y-1.5 flex-1">
+                      <Skeleton className="h-4 w-3/4 bg-muted/70" />
+                      <Skeleton className="h-3 w-1/3 bg-muted/50" />
+                    </div>
+                    <Skeleton className="h-4 w-8 bg-muted/60" />
+                    <Skeleton className="h-4 w-12 bg-muted/60" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Total Skeleton */}
+            <div className="flex justify-between items-center pt-2">
+              <Skeleton className="h-4 w-16 bg-muted/60" />
+              <Skeleton className="h-5 w-24 bg-muted/80" />
+            </div>
           </div>
         ) : order ? (
           <div className="space-y-6 pt-4">

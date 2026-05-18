@@ -30,6 +30,7 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
   CardContent,
@@ -156,27 +157,41 @@ export default function DashboardPage() {
         {[
           {
             title: "Total Products",
-            value: statsLoading ? "-" : stats?.totalProducts,
+            value: statsLoading ? (
+              <Skeleton className="h-5 w-16" />
+            ) : (
+              stats?.totalProducts
+            ),
             icon: Layers,
             color: "text-blue-600 dark:text-blue-400",
           },
           {
             title: "Low Stock Alerts",
-            value: statsLoading ? "-" : stats?.lowStock,
+            value: statsLoading ? (
+              <Skeleton className="h-5 w-16" />
+            ) : (
+              stats?.lowStock
+            ),
             icon: AlertCircle,
             color: "text-orange-600 dark:text-orange-400",
           },
           {
             title: "Monthly Revenue",
-            value: statsLoading
-              ? "-"
-              : formatPrice(stats?.totalRevenue ?? 0, currency),
+            value: statsLoading ? (
+              <Skeleton className="h-5 w-24" />
+            ) : (
+              formatPrice(stats?.totalRevenue ?? 0, currency)
+            ),
             icon: BarChart3,
             color: "text-emerald-600 dark:text-emerald-400",
           },
           {
             title: "Pending Orders",
-            value: statsLoading ? "-" : stats?.pendingOrders,
+            value: statsLoading ? (
+              <Skeleton className="h-5 w-16" />
+            ) : (
+              stats?.pendingOrders
+            ),
             icon: ShoppingCart,
             color: "text-indigo-600 dark:text-indigo-400",
           },
@@ -278,8 +293,20 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {revLoading ? (
-              <div className="flex h-[252px] items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="space-y-4 h-[252px] flex flex-col justify-end pb-4">
+                <div className="flex justify-between items-center w-full px-2">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-3.5 w-16" />
+                </div>
+                <div className="flex items-end gap-3 h-40 w-full px-2">
+                  {[...Array(12)].map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="w-full rounded-t opacity-70 bg-muted/60"
+                      style={{ height: `${25 + (i % 4) * 15 + Math.sin(i) * 10}%` }}
+                    />
+                  ))}
+                </div>
               </div>
             ) : (
               <ChartContainer
@@ -407,8 +434,16 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {catLoading ? (
-              <div className="flex h-[248px] items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="space-y-4.5 h-[248px] justify-center flex flex-col px-2">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="flex justify-between">
+                      <Skeleton className="h-3 w-24 bg-muted/70" />
+                      <Skeleton className="h-3 w-8 bg-muted/50" />
+                    </div>
+                    <Skeleton className="h-4 w-full rounded" />
+                  </div>
+                ))}
               </div>
             ) : (
               <ChartContainer
@@ -507,8 +542,20 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           {actLoading ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="space-y-4 py-2">
+              {[...Array(5)].map((_, idx) => (
+                <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3.5 pt-3.5 last:border-0 last:pb-0">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-36" />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                    <Skeleton className="h-5 w-14 rounded-full" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <Table>
@@ -587,8 +634,19 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {lowLoading ? (
-              <div className="flex justify-center p-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="space-y-4">
+                {[...Array(3)].map((_, idx) => (
+                  <div key={idx} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                      <Skeleton className="h-3 w-8" />
+                    </div>
+                    <Skeleton className="h-2 w-full rounded-full" />
+                  </div>
+                ))}
               </div>
             ) : lowStockItems.length === 0 ? (
               <div className="p-4 text-center text-sm text-muted-foreground">

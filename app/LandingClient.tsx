@@ -957,7 +957,7 @@ function Footer() {
                   {links.map((l) => (
                     <li key={l}>
                       <Link
-                        href="#"
+                        href={l === "Privacy" ? "/privacy" : l === "Terms" ? "/terms" : "#"}
                         className="text-xs text-muted-foreground transition-colors hover:text-foreground"
                       >
                         {l}
