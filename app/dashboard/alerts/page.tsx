@@ -171,46 +171,55 @@ export default function AlertsPage() {
           {
             label: "Critical Alerts",
             value: isLoading ? (
-              <Skeleton className="h-6 w-12" />
+              <Skeleton className="h-7 w-12" />
             ) : (
               criticalAlerts.length
             ),
             icon: Flame,
-            color: "text-rose-600 dark:text-rose-400",
+            valColor: "text-red-500",
+            iconColor: "text-red-500",
+            description: "Needs replenishment",
           },
           {
             label: "Low Stock Warnings",
             value: isLoading ? (
-              <Skeleton className="h-6 w-12" />
+              <Skeleton className="h-7 w-12" />
             ) : (
               lowStockAlerts.length
             ),
             icon: AlertCircle,
-            color: "text-orange-600 dark:text-orange-400",
+            valColor: "text-orange-500",
+            iconColor: "text-orange-500",
+            description: "Under safe threshold",
           },
           {
             label: "Resolved Recently",
             value: rLoading ? (
-              <Skeleton className="h-6 w-12" />
+              <Skeleton className="h-7 w-12" />
             ) : (
               resolved.length
             ),
             icon: CheckCircle2,
-            color: "text-emerald-600 dark:text-emerald-400",
+            valColor: "text-emerald-500",
+            iconColor: "text-emerald-500",
+            description: "Active corrections",
           },
         ].map((metric) => (
-          <Card key={metric.label}>
-            <CardContent className="p-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase">
-                    {metric.label}
-                  </p>
-                  <h3 className={`text-lg font-bold ${metric.color}`}>
-                    {metric.value}
-                  </h3>
-                </div>
-                <metric.icon className={`h-4 w-4 ${metric.color} opacity-70`} />
+          <Card key={metric.label} className="border-border/60 bg-card">
+            <CardContent className="p-4 sm:p-5 flex flex-col justify-between h-full min-h-[110px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  {metric.label}
+                </span>
+                <metric.icon className={`h-4.5 w-4.5 ${metric.iconColor}`} />
+              </div>
+              <div className="mt-2.5">
+                <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${metric.valColor}`}>
+                  {metric.value}
+                </span>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">
+                {metric.description}
               </div>
             </CardContent>
           </Card>

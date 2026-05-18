@@ -276,60 +276,67 @@ export default function OrdersPage() {
           {
             label: "Total Orders",
             value: isLoading ? (
-              <Skeleton className="h-6 w-12" />
+              <Skeleton className="h-7 w-12" />
             ) : (
               orders?.length.toString()
             ),
             icon: Package,
-            color: "text-primary",
-            bg: "bg-primary/10",
+            valColor: "text-blue-500",
+            iconColor: "text-blue-500",
+            description: "Full transactions",
           },
           {
             label: "Pending",
             value: isLoading ? (
-              <Skeleton className="h-6 w-12" />
+              <Skeleton className="h-7 w-12" />
             ) : (
               orders?.filter((o) => o.status === "pending").length.toString()
             ),
             icon: Clock,
-            color: "text-amber-500",
-            bg: "bg-amber-500/10",
+            valColor: "text-amber-500",
+            iconColor: "text-amber-500",
+            description: "Awaiting fulfillment",
           },
           {
             label: "In Transit",
             value: isLoading ? (
-              <Skeleton className="h-6 w-12" />
+              <Skeleton className="h-7 w-12" />
             ) : (
               orders?.filter((o) => o.status === "shipped").length.toString()
             ),
             icon: Truck,
-            color: "text-blue-500",
-            bg: "bg-blue-500/10",
+            valColor: "text-indigo-500",
+            iconColor: "text-indigo-500",
+            description: "Dispatched & active",
           },
           {
             label: "Revenue",
             value: isLoading ? (
-              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-7 w-20" />
             ) : (
               formatPrice(totalRevenue, currency)
             ),
             icon: DollarSign,
-            color: "text-emerald-500",
-            bg: "bg-emerald-500/10",
+            valColor: "text-emerald-500",
+            iconColor: "text-emerald-500",
+            description: "Gross sales revenue",
           },
         ].map((s) => (
-          <Card key={s.label}>
-            <CardContent className="p-2.5 sm:p-4">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div
-                  className={`flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg ${s.bg}`}
-                >
-                  <s.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${s.color}`} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-base sm:text-2xl font-bold truncate">{s.value}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{s.label}</p>
-                </div>
+          <Card key={s.label} className="border-border/60 bg-card">
+            <CardContent className="p-4 sm:p-5 flex flex-col justify-between h-full min-h-[110px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  {s.label}
+                </span>
+                <s.icon className={`h-4.5 w-4.5 ${s.iconColor}`} />
+              </div>
+              <div className="mt-2.5">
+                <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${s.valColor}`}>
+                  {s.value}
+                </span>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">
+                {s.description}
               </div>
             </CardContent>
           </Card>

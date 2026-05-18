@@ -170,56 +170,67 @@ export default function DashboardPage() {
           {
             title: "Total Products",
             value: statsLoading ? (
-              <Skeleton className="h-5 w-16" />
+              <Skeleton className="h-7 w-16" />
             ) : (
               stats?.totalProducts
             ),
             icon: Layers,
-            color: "text-blue-600 dark:text-blue-400",
+            valColor: "text-blue-500",
+            iconColor: "text-blue-500",
+            description: "Active catalog items",
           },
           {
             title: "Low Stock Alerts",
             value: statsLoading ? (
-              <Skeleton className="h-5 w-16" />
+              <Skeleton className="h-7 w-16" />
             ) : (
               stats?.lowStock
             ),
             icon: AlertCircle,
-            color: "text-orange-600 dark:text-orange-400",
+            valColor: "text-orange-500",
+            iconColor: "text-orange-500",
+            description: "Needs restocking",
           },
           {
             title: "Monthly Revenue",
             value: statsLoading ? (
-              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-7 w-24" />
             ) : (
               formatPrice(stats?.totalRevenue ?? 0, currency)
             ),
             icon: BarChart3,
-            color: "text-emerald-600 dark:text-emerald-400",
+            valColor: "text-emerald-500",
+            iconColor: "text-emerald-500",
+            description: "Current billing cycle",
           },
           {
             title: "Pending Orders",
             value: statsLoading ? (
-              <Skeleton className="h-5 w-16" />
+              <Skeleton className="h-7 w-16" />
             ) : (
               stats?.pendingOrders
             ),
             icon: ShoppingCart,
-            color: "text-indigo-600 dark:text-indigo-400",
+            valColor: "text-indigo-500",
+            iconColor: "text-indigo-500",
+            description: "Awaiting shipment",
           },
         ].map((kpi) => (
-          <Card key={kpi.title}>
-            <CardContent className="p-2.5 sm:p-3">
-              <div className="flex items-start justify-between gap-1">
-                <div>
-                  <p className="text-[9px] sm:text-[10px] font-medium text-muted-foreground uppercase truncate max-w-[120px] sm:max-w-none">
-                    {kpi.title}
-                  </p>
-                  <h3 className={`text-base sm:text-lg font-bold ${kpi.color}`}>
-                    {kpi.value}
-                  </h3>
-                </div>
-                <kpi.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${kpi.color} opacity-70 shrink-0`} />
+          <Card key={kpi.title} className="border-border/60 bg-card">
+            <CardContent className="p-4 sm:p-5 flex flex-col justify-between h-full min-h-[110px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  {kpi.title}
+                </span>
+                <kpi.icon className={`h-4.5 w-4.5 ${kpi.iconColor}`} />
+              </div>
+              <div className="mt-2.5">
+                <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${kpi.valColor}`}>
+                  {kpi.value}
+                </span>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">
+                {kpi.description}
               </div>
             </CardContent>
           </Card>

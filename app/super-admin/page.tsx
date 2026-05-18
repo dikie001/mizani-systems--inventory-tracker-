@@ -176,58 +176,50 @@ export default function SuperAdminPage() {
             title: "Total Registered Users",
             value: stats?.totalUsers || 0,
             icon: Users,
-            color: "from-blue-500 to-indigo-500",
-            badge: `${activeUsers.length} Active`,
+            valColor: "text-blue-500",
+            iconColor: "text-blue-500",
+            description: `${activeUsers.length} active users`,
           },
           {
             title: "Active Workspaces",
             value: stats?.totalWorkspaces || 0,
             icon: Layers,
-            color: "from-purple-500 to-indigo-500",
-            badge: "Multi-Tenant",
+            valColor: "text-indigo-500",
+            iconColor: "text-indigo-500",
+            description: "Multi-tenant workspaces",
           },
           {
             title: "Total Logins Logged",
             value: stats?.totalLogins || 0,
             icon: Key,
-            color: "from-emerald-500 to-teal-500",
-            badge: "Sign-in Events",
+            valColor: "text-emerald-500",
+            iconColor: "text-emerald-500",
+            description: "Google & email authentications",
           },
           {
             title: "Global Activity Logs",
             value: stats?.totalLogs || 0,
             icon: Activity,
-            color: "from-amber-500 to-orange-500",
-            badge: "Audit Trails",
+            valColor: "text-orange-500",
+            iconColor: "text-orange-500",
+            description: "Immutable operations audit logs",
           },
         ].map((kpi) => (
-          <Card
-            key={kpi.title}
-            className="group relative overflow-hidden shadow-lg transition duration-300 hover:border-primary/30"
-          >
-            <div className="absolute top-0 right-0 h-24 w-24 rounded-full bg-gradient-to-bl from-primary/5 to-transparent transition duration-500 group-hover:scale-125" />
-            <CardContent className="flex h-full flex-col justify-between p-5">
+          <Card key={kpi.title} className="border-border/60 bg-card">
+            <CardContent className="p-4 sm:p-5 flex flex-col justify-between h-full min-h-[110px]">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
                   {kpi.title}
-                </p>
-                <div
-                  className={`h-8 w-8 rounded-lg bg-gradient-to-br ${kpi.color} flex items-center justify-center text-white shadow-md shadow-primary/10`}
-                >
-                  <kpi.icon className="h-4 w-4" />
-                </div>
+                </span>
+                <kpi.icon className={`h-4.5 w-4.5 ${kpi.iconColor}`} />
               </div>
-
-              <div className="mt-4 flex items-baseline justify-between">
-                <h3 className="font-mono text-3xl font-extrabold tracking-tight text-foreground">
+              <div className="mt-2.5">
+                <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${kpi.valColor}`}>
                   {kpi.value}
-                </h3>
-                <Badge
-                  variant="outline"
-                  className="border-border bg-background text-[9px] font-bold tracking-wider text-foreground uppercase"
-                >
-                  {kpi.badge}
-                </Badge>
+                </span>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">
+                {kpi.description}
               </div>
             </CardContent>
           </Card>
