@@ -110,14 +110,14 @@ export function WorkspaceSwitcher() {
           )}
         >
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-teal-500 to-emerald-500 text-white shadow-md ring-1 shadow-emerald-950/25 ring-white/10 transition-transform group-hover:scale-105 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-border transition-transform duration-200 group-hover:scale-105 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6">
               <Building2 className="h-4 w-4 group-data-[collapsible=icon]:h-3.5 group-data-[collapsible=icon]:w-3.5" />
             </div>
             <div className="flex flex-col items-start gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
-              <span className="max-w-30 truncate text-[13px] font-bold tracking-tight text-white">
+              <span className="max-w-30 truncate text-sm font-semibold tracking-tight text-foreground">
                 {currentWorkspaceName}
               </span>
-              <span className="text-[10px] font-medium tracking-wide text-sidebar-foreground/45 uppercase">
+              <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Workspace
               </span>
             </div>
