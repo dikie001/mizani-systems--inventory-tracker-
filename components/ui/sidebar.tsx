@@ -521,6 +521,14 @@ function SidebarMenuButton({
   if (typeof tooltip === "string") {
     tooltip = {
       children: tooltip,
+      // When the sidebar is collapsed we want the tooltip to stand out as a card
+      // so force the tooltip to use the card background, card-foreground text,
+      // and a border. Also ensure the arrow matches by targeting the arrow
+      // slot selector.
+      className:
+        state === "collapsed" && !isMobile
+          ? "!bg-card !text-card-foreground border border-border shadow-sm [&_[data-slot=tooltip-arrow]]:!fill-card"
+          : undefined,
     }
   }
 
