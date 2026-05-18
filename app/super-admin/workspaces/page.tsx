@@ -1,49 +1,42 @@
 "use client"
 
 import useSWR from "swr"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Loader2, Shield } from "lucide-react"
+import { ChartContainer } from "@/components/ui/chart"
 import {
-  Briefcase,
-  Package,
-  ShoppingCart,
-  Users,
-  Shield,
-  Loader2,
-} from "lucide-react"
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-
-type WorkspaceSummary = {
-  id: string
-  name: string
-  slug: string
-  currency: string
-  businessType: string
-  inventorySize: string
-  productCount: number
-  orderCount: number
-  memberCount: number
-  createdAt: string
-  owner?: {
-    name: string
-    email: string
-  } | null
-}
-
-type SuperAdminWorkspacesData = {
-  workspaces?: WorkspaceSummary[]
-}
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-export default function SuperAdminWorkspacesPage() {
-  const { data, error, isLoading, mutate } = useSWR<SuperAdminWorkspacesData>(
+function getLastNDays(n: number) {
+  const days: Date[] = []
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(today)
+    d.setDate(today.getDate() - i)
+    days.push(d)
+  }
+  return days
+}
+
+function formatLabel(d: Date) {
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+}
+
+export default function SuperAdminRegistrationsPage() {
+  const { data, error, isLoading, mutate } = useSWR<{ users?: any[] }>(
     "/api/super-admin/data",
     fetcher,
-    {
-      refreshInterval: 10000, // Refresh stats every 10 seconds
-    }
+    { refreshInterval: 10000 }
   )
 
   if (error) {
@@ -53,21 +46,17 @@ export default function SuperAdminWorkspacesPage() {
           <Shield className="h-6 w-6 text-destructive" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground">
-            Failed to Load Workspaces Grid
-          </h2>
+          <h2 className="text-xl font-bold text-foreground">Failed to Load Registration Stats</h2>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            There was an error communicating with the database or server. Ensure
-            your database is running.
+            There was an error communicating with the database or server.
           </p>
         </div>
-        <Button
-          variant="outline"
+        <button
+          className="rounded-md border border-border px-4 py-2 text-sm font-semibold"
           onClick={() => mutate()}
-          className="border-border bg-background text-foreground"
         >
-          Retry Connection
-        </Button>
+          Retry
+        </button>
       </div>
     )
   }
@@ -77,134 +66,68 @@ export default function SuperAdminWorkspacesPage() {
       <div className="flex flex-col items-center justify-center space-y-4 py-40">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-          Opening Administrative Workspaces Directory...
+          Loading Registration Metrics...
         </p>
       </div>
     )
   }
 
-  const { workspaces = [] } = data || {}
+  const users = data?.users || []
+  const days = getLastNDays(30)
+  const counts: Record<string, number> = {}
+  users.forEach((u) => {
+    const created = u.createdAt ? u.createdAt.split("T")[0] : u.createdAt
+    if (!created) return
+    counts[created] = (counts[created] || 0) + 1
+  })
+
+  const chartData = days.map((d) => {
+    const iso = d.toISOString().split("T")[0]
+    return {
+      date: iso,
+      label: formatLabel(d),
+      registrations: counts[iso] || 0,
+    }
+  })
+
+  const chartConfig = {
+    registrations: { label: "Registrations", color: "#7c3aed" },
+  }
 
   return (
     <div className="flex flex-1 flex-col space-y-6 text-left">
-      {/* Workspaces statistics header */}
-      <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-md sm:flex-row sm:items-center">
-        <div className="space-y-1 text-left">
-          <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
-            <Briefcase className="h-5 w-5 text-primary" />
-            Workspaces Portfolio
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Analyze tenant business classifications, inventory levels,
-            currencies, and membership counts.
-          </p>
+      <div className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-5 shadow-md">
+        <div className="space-y-1">
+          <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">User Registrations</h3>
+          <p className="text-xs text-muted-foreground">Registrations over the last 30 days</p>
         </div>
-        <Badge
-          variant="outline"
-          className="border-border bg-background px-3.5 py-1 font-mono font-bold text-foreground shadow-sm"
-        >
-          Total Workspaces: {workspaces.length}
-        </Badge>
       </div>
 
-      {/* Workspaces Cards Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {workspaces.map((ws) => (
-          <Card
-            key={ws.id}
-            className="flex flex-col border-border bg-card text-left shadow-xl transition duration-300 hover:border-primary/30"
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <CardTitle className="text-sm font-bold tracking-tight text-foreground">
-                    {ws.name}
-                  </CardTitle>
-                  <span className="block truncate font-mono text-[10px] text-muted-foreground">
-                    {ws.slug}
-                  </span>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="border-border bg-muted px-1.5 py-0.5 text-[8px] font-bold tracking-wider text-muted-foreground uppercase"
-                >
-                  {ws.currency}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="flex flex-1 flex-col justify-between space-y-4">
-              {/* Meta Tags Row */}
-              <div className="flex flex-wrap gap-1.5">
-                <Badge
-                  variant="outline"
-                  className="border-border bg-muted/50 px-1.5 py-0 text-[8px] font-bold tracking-wider text-muted-foreground uppercase"
-                >
-                  {ws.businessType}
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className="border-border bg-muted/50 px-1.5 py-0 text-[8px] font-bold tracking-wider text-muted-foreground uppercase"
-                >
-                  {ws.inventorySize} Size
-                </Badge>
-              </div>
-
-              {/* Workspaces quantitative stats */}
-              <div className="my-3 grid grid-cols-3 gap-2 rounded-lg border border-border bg-muted/30 p-2.5 text-center">
-                <div className="flex flex-col items-center">
-                  <Package className="mb-1 h-3.5 w-3.5 text-primary" />
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                    Products
-                  </span>
-                  <span className="mt-0.5 font-mono text-xs font-bold text-foreground">
-                    {ws.productCount}
-                  </span>
-                </div>
-                <div className="flex flex-col items-center border-x border-border">
-                  <ShoppingCart className="mb-1 h-3.5 w-3.5 text-primary" />
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                    Orders
-                  </span>
-                  <span className="mt-0.5 font-mono text-xs font-bold text-foreground">
-                    {ws.orderCount}
-                  </span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <Users className="mb-1 h-3.5 w-3.5 text-primary" />
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                    Members
-                  </span>
-                  <span className="mt-0.5 font-mono text-xs font-bold text-foreground">
-                    {ws.memberCount}
-                  </span>
-                </div>
-              </div>
-
-              {/* Owner Details Footer */}
-              <div className="flex flex-col gap-1 border-t border-border pt-3.5 text-[11px]">
-                <span className="text-[9px] font-bold tracking-wider text-muted-foreground uppercase">
-                  Workspace Owner
-                </span>
-                {ws.owner ? (
-                  <div className="flex items-center justify-between text-foreground">
-                    <span className="truncate font-bold">{ws.owner.name}</span>
-                    <span className="max-w-[130px] truncate font-mono text-[10px] text-muted-foreground">
-                      {ws.owner.email}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground italic">
-                    No Owner Linked
-                  </span>
-                )}
-                <span className="mt-1 font-mono text-[9px] text-muted-foreground">
-                  Created: {ws.createdAt}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Registrations (30 days)</CardTitle>
+          <CardDescription>Daily registered accounts</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig} className="h-56 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 12, left: 8, right: 8, bottom: 6 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={8} />
+                <YAxis tickLine={false} axisLine={false} />
+                <Tooltip />
+                <defs>
+                  <linearGradient id="fillReg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--color-registrations, #7c3aed)" stopOpacity={0.22} />
+                    <stop offset="100%" stopColor="var(--color-registrations, #7c3aed)" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <Bar dataKey="registrations" fill="#7c3aed" radius={[4,4,0,0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
     </div>
   )
 }
