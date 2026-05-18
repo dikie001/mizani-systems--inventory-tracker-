@@ -73,6 +73,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { ImgWithSpinner } from "@/components/image-with-spinner"
 import {
   Popover,
   PopoverContent,
@@ -1208,7 +1209,7 @@ function InventoryPageContent() {
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/40 bg-muted shadow-inner transition-transform group-hover:scale-105">
                           {product.image ? (
-                            <img
+                            <ImgWithSpinner
                               src={product.image}
                               alt={product.name}
                               className="h-full w-full object-cover"
@@ -1557,7 +1558,7 @@ function InventoryPageContent() {
               <Label className="text-xs font-semibold">Product Image</Label>
               {formValues.image ? (
                 <div className="group relative flex max-h-[140px] min-h-[120px] items-center justify-center overflow-hidden rounded-xl border bg-muted/20">
-                  <img
+                  <ImgWithSpinner
                     src={formValues.image}
                     alt="Product preview"
                     className="max-h-[120px] w-full object-contain transition-transform duration-300 group-hover:scale-105"
@@ -1688,7 +1689,7 @@ function InventoryPageContent() {
                   </div>
                 ) : selectedProduct?.image ? (
                   <>
-                    <img
+                    <ImgWithSpinner
                       src={selectedProduct.image}
                       alt={selectedProduct.name}
                       className="h-full w-full cursor-pointer object-cover transition-opacity hover:opacity-90"
@@ -1936,7 +1937,7 @@ function InventoryPageContent() {
         <DialogContent className="flex flex-col items-center gap-2 overflow-hidden rounded-2xl border bg-background p-2 shadow-2xl sm:max-w-[420px]">
           {zoomImageUrl && (
             <div className="relative flex max-h-[360px] min-h-[260px] w-full items-center justify-center overflow-hidden rounded-xl bg-muted/10 p-1">
-              <img
+              <ImgWithSpinner
                 src={zoomImageUrl}
                 alt="Product zoomed preview"
                 className="max-h-[340px] w-full rounded-lg object-contain"

@@ -60,6 +60,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { CreateOrderDialog } from "@/components/orders/create-order-dialog"
 import { OrderDetailsDialog } from "@/components/orders/order-details-dialog"
 import { formatPrice } from "@/lib/utils"
+import { ImgWithSpinner } from "@/components/image-with-spinner"
 
 type WorkspaceSummary = {
   currency?: string | null
@@ -418,7 +419,7 @@ export default function OrdersPage() {
                                 key={idx}
                                 className="relative inline-block h-7 w-7 overflow-hidden rounded-full border border-border/40 bg-muted shadow-sm ring-2 ring-background"
                               >
-                                <img
+                                <ImgWithSpinner
                                   src={imgUrl}
                                   alt="Product"
                                   className="h-full w-full object-cover"

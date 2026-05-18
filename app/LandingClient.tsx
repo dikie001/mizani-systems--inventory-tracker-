@@ -139,7 +139,7 @@ function Navbar({ session }: { session: Session | null }) {
           href="/"
           className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight"
         >
-          <Image
+          <ImageWithSpinner
             src="/mizani_logo.png"
             alt="Mizani Systems"
             width={32}
@@ -918,7 +918,7 @@ function Footer() {
         <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           <div>
             <div className="mb-2 flex items-center gap-2.5 text-sm font-semibold">
-              <Image
+              <ImageWithSpinner
                 src="/mizani_logo.png"
                 alt="Mizani Systems"
                 width={28}
