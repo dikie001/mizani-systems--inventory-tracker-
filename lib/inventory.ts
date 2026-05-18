@@ -73,7 +73,7 @@ export async function updateProductAlerts(
 ) {
   const product = await tx.product.findUnique({
     where: { id: productId },
-    select: { stock: true, minStock: true },
+    select: { stock: true, minStock: true, workspaceId: true },
   })
 
   if (!product) return
@@ -82,7 +82,7 @@ export async function updateProductAlerts(
 
   // Find active alerts for this product
   const activeAlert = await tx.alert.findFirst({
-    where: { productId, status: "active" },
+    where: { productId, workspaceId: product.workspaceId, status: "active" },
   })
 
   if (status === "in-stock") {
@@ -112,6 +112,7 @@ export async function updateProductAlerts(
           productId,
           severity,
           status: "active",
+          workspaceId: product.workspaceId,
         },
       })
     }
