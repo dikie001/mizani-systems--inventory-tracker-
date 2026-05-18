@@ -872,8 +872,6 @@ function ManageSection() {
 //   )
 // }
 
-<PricingSection/>
-
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
 function Footer() {
