@@ -170,20 +170,38 @@ export default function SuperAdminPage() {
 
   const registrationsChartData = last30.map((iso) => {
     const d = new Date(iso)
-    const label = d.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+    const label = d.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    })
     return { label, registrations: regCounts[iso] || 0 }
   })
 
   const exportUsersCsv = () => {
     if (!users || users.length === 0) return
     const headers = ["id", "name", "email", "role", "status", "createdAt"]
-    const rows = users.map((u: any) => [u.id, u.name || "", u.email || "", u.role || "", u.status || "", u.createdAt || ""]) 
-    const csv = [headers.join(","), ...rows.map(r => r.map(String).map(s => `"${s.replace(/"/g,'""')}"`).join(","))].join("\n")
+    const rows = users.map((u: any) => [
+      u.id,
+      u.name || "",
+      u.email || "",
+      u.role || "",
+      u.status || "",
+      u.createdAt || "",
+    ])
+    const csv = [
+      headers.join(","),
+      ...rows.map((r) =>
+        r
+          .map(String)
+          .map((s) => `"${s.replace(/"/g, '""')}"`)
+          .join(",")
+      ),
+    ].join("\n")
     const blob = new Blob([csv], { type: "text/csv" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `users-export-${new Date().toISOString().slice(0,10)}.csv`
+    a.download = `users-export-${new Date().toISOString().slice(0, 10)}.csv`
     document.body.appendChild(a)
     a.click()
     a.remove()
@@ -192,7 +210,6 @@ export default function SuperAdminPage() {
 
   return (
     <div className="flex flex-1 flex-col space-y-8">
-
       {/* Premium KPI Cards Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
@@ -243,21 +260,46 @@ export default function SuperAdminPage() {
 
       {/* Overview Details Section: Registrations + Diagnostics + Quick Actions */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           <Card className="shadow-xl">
             <CardHeader>
-              <CardTitle className="text-base font-bold">User Registrations</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Daily registered accounts (last 30 days)</CardDescription>
+              <CardTitle className="text-base font-bold">
+                User Registrations
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
+                Daily registered accounts (last 30 days)
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={{ registrations: { label: "Registrations", color: "#7c3aed" } }} className="h-48 w-full">
+              <ChartContainer
+                config={{
+                  registrations: { label: "Registrations", color: "#7c3aed" },
+                }}
+                className="h-48 w-full"
+              >
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={registrationsChartData} margin={{ top: 8, left: 4, right: 8, bottom: 6 }}>
+                  <BarChart
+                    data={registrationsChartData}
+                    margin={{ top: 8, left: 4, right: 8, bottom: 6 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={8} />
-                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
+                    <XAxis
+                      dataKey="label"
+                      tickLine={false}
+                      axisLine={false}
+                      minTickGap={8}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tickLine={false}
+                      axisLine={false}
+                    />
                     <Tooltip />
-                    <Bar dataKey="registrations" fill="#7c3aed" radius={[4,4,0,0]} />
+                    <Bar
+                      dataKey="registrations"
+                      fill="#7c3aed"
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
@@ -266,14 +308,27 @@ export default function SuperAdminPage() {
 
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-base font-bold">Quick Actions</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Common administrative tasks</CardDescription>
+              <CardTitle className="text-base font-bold">
+                Quick Actions
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
+                Common administrative tasks
+              </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
-              <Button onClick={() => router.push('/super-admin/users')}>View Users</Button>
-              <Button onClick={() => router.push('/super-admin/workspaces')}>View Workspaces</Button>
+              <Button onClick={() => router.push("/super-admin/users")}>
+                View Users
+              </Button>
+              <Button onClick={() => router.push("/super-admin/workspaces")}>
+                View Workspaces
+              </Button>
               <Button onClick={exportUsersCsv}>Export Users CSV</Button>
-              <Button variant="outline" onClick={() => router.push('/super-admin/audit')}>View Audit Log</Button>
+              <Button
+                variant="outline"
+                onClick={() => router.push("/super-admin/audit")}
+              >
+                View Audit Log
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -293,22 +348,44 @@ export default function SuperAdminPage() {
             <CardContent className="flex-1 space-y-4">
               <div className="space-y-3.5 rounded-xl border border-border bg-muted/30 p-4">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-muted-foreground">Node Environment</span>
-                  <Badge variant="outline" className="border-primary/20 bg-primary/10 font-mono text-[10px] font-bold text-primary">production</Badge>
+                  <span className="font-semibold text-muted-foreground">
+                    Node Environment
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className="border-primary/20 bg-primary/10 font-mono text-[10px] font-bold text-primary"
+                  >
+                    production
+                  </Badge>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-muted-foreground">OAuth Providers</span>
+                  <span className="font-semibold text-muted-foreground">
+                    OAuth Providers
+                  </span>
                   <div className="flex gap-1.5">
-                    <Badge variant="outline" className="border-border bg-muted text-[9px] font-bold text-foreground uppercase">Google OAuth</Badge>
+                    <Badge
+                      variant="outline"
+                      className="border-border bg-muted text-[9px] font-bold text-foreground uppercase"
+                    >
+                      Google OAuth
+                    </Badge>
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-muted-foreground">DB Client Schema</span>
-                  <span className="font-mono text-[10px] font-bold text-primary">Prisma (PostgreSQL)</span>
+                  <span className="font-semibold text-muted-foreground">
+                    DB Client Schema
+                  </span>
+                  <span className="font-mono text-[10px] font-bold text-primary">
+                    Prisma (PostgreSQL)
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-muted-foreground">Super Admin Domain</span>
-                  <span className="font-mono text-[10px] font-bold text-foreground">{superAdminEmail || "Not Configured"}</span>
+                  <span className="font-semibold text-muted-foreground">
+                    Super Admin Domain
+                  </span>
+                  <span className="font-mono text-[10px] font-bold text-foreground">
+                    {superAdminEmail || "Not Configured"}
+                  </span>
                 </div>
               </div>
 
@@ -316,17 +393,46 @@ export default function SuperAdminPage() {
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
                     <span>User Densities (Active / Total)</span>
-                    <span className="font-mono text-foreground">{users.length > 0 ? Math.round((activeUsers.length / users.length) * 100) : 0}%</span>
+                    <span className="font-mono text-foreground">
+                      {users.length > 0
+                        ? Math.round((activeUsers.length / users.length) * 100)
+                        : 0}
+                      %
+                    </span>
                   </div>
-                  <Progress value={users.length > 0 ? (activeUsers.length / users.length) * 100 : 0} className="h-1.5" />
+                  <Progress
+                    value={
+                      users.length > 0
+                        ? (activeUsers.length / users.length) * 100
+                        : 0
+                    }
+                    className="h-1.5"
+                  />
                 </div>
 
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
                     <span>Workspace Load Densities</span>
-                    <span className="font-mono text-foreground">{workspaces.length > 0 ? Math.round((workspacesWithProducts.length / workspaces.length) * 100) : 0}%</span>
+                    <span className="font-mono text-foreground">
+                      {workspaces.length > 0
+                        ? Math.round(
+                            (workspacesWithProducts.length /
+                              workspaces.length) *
+                              100
+                          )
+                        : 0}
+                      %
+                    </span>
                   </div>
-                  <Progress value={workspaces.length > 0 ? (workspacesWithProducts.length / workspaces.length) * 100 : 0} className="h-1.5" />
+                  <Progress
+                    value={
+                      workspaces.length > 0
+                        ? (workspacesWithProducts.length / workspaces.length) *
+                          100
+                        : 0
+                    }
+                    className="h-1.5"
+                  />
                 </div>
               </div>
             </CardContent>
@@ -343,27 +449,65 @@ export default function SuperAdminPage() {
                 <Activity className="h-4.5 w-4.5 text-primary" />
                 Live Operations Stream
               </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">The latest user mutations, switchings, and sign-ins across all tenants.</CardDescription>
+              <CardDescription className="text-xs text-muted-foreground">
+                The latest user mutations, switchings, and sign-ins across all
+                tenants.
+              </CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={() => router.push("/super-admin/audit")} className="border-border bg-background/50 text-xs font-semibold hover:bg-muted">View Audit Log</Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/super-admin/audit")}
+              className="border-border bg-background/50 text-xs font-semibold hover:bg-muted"
+            >
+              View Audit Log
+            </Button>
           </CardHeader>
           <CardContent className="max-h-90 flex-1 scrollbar-thin overflow-auto pr-2">
             {activities.length === 0 ? (
-              <div className="py-12 text-center text-xs text-muted-foreground">No activity records found.</div>
+              <div className="py-12 text-center text-xs text-muted-foreground">
+                No activity records found.
+              </div>
             ) : (
               <div className="space-y-4">
                 {activities.slice(0, 20).map((log) => (
-                  <div key={log.id} className="flex items-start gap-3.5 rounded-xl border border-border bg-card p-3 transition duration-200 hover:bg-muted/30">
-                    <Badge variant="outline" className={`px-2 py-0.5 text-[8px] font-bold tracking-wider uppercase ${getLogTypeColor(log.type)}`}>{log.type}</Badge>
+                  <div
+                    key={log.id}
+                    className="flex items-start gap-3.5 rounded-xl border border-border bg-card p-3 transition duration-200 hover:bg-muted/30"
+                  >
+                    <Badge
+                      variant="outline"
+                      className={`px-2 py-0.5 text-[8px] font-bold tracking-wider uppercase ${getLogTypeColor(log.type)}`}
+                    >
+                      {log.type}
+                    </Badge>
                     <div className="min-w-0 flex-1 space-y-1 text-left">
-                      <p className="truncate text-xs font-bold text-foreground">{log.action}</p>
+                      <p className="truncate text-xs font-bold text-foreground">
+                        {log.action}
+                      </p>
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-semibold text-muted-foreground">
-                        <span className="text-primary">{log.user?.name || log.user?.email}</span>
-                        {log.workspaceName && (<><span>•</span><span className="text-foreground">Workspace: {log.workspaceName}</span></>)}
+                        <span className="text-primary">
+                          {log.user?.name || log.user?.email}
+                        </span>
+                        {log.workspaceName && (
+                          <>
+                            <span>•</span>
+                            <span className="text-foreground">
+                              Workspace: {log.workspaceName}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div className="flex h-full flex-col justify-between text-right font-mono text-[10px] text-muted-foreground">
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />{" "}
+                        {new Date(log.timestamp).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        })}
+                      </span>
                       <span className="text-[9px]">{log.ip}</span>
                     </div>
                   </div>
