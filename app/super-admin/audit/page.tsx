@@ -4,15 +4,17 @@ import { useState } from "react"
 import Image from "next/image"
 import useSWR from "swr"
 import { motion, AnimatePresence } from "framer-motion"
-import {
-  Clock,
-  Search,
-  Shield,
-  Loader2,
-} from "lucide-react"
+import { Clock, Search, Shield, Loader2 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -32,13 +34,6 @@ type AuditLog = {
   user?: {
     name?: string | null
     email?: string | null
-  import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select"
     image?: string | null
   }
 }
@@ -54,12 +49,13 @@ export default function SuperAdminAuditPage() {
     "/api/super-admin/data",
     fetcher,
     {
-      refreshInterval: 10000, // Refresh stats every 10 seconds
+      refreshInterval: 10000,
     }
   )
 
   const [auditSearch, setAuditSearch] = useState("")
   const [auditFilterType, setAuditFilterType] = useState<string>("all")
+  const [auditTypeSort, setAuditTypeSort] = useState<"asc" | "desc">("asc")
   const [auditViewMode, setAuditViewMode] = useState<"table" | "cards">("table")
   const [auditPage, setAuditPage] = useState(1)
   const logsPerPage = 12
@@ -71,7 +67,6 @@ export default function SuperAdminAuditPage() {
           <Shield className="h-6 w-6 text-destructive" />
         </div>
         <div>
-    const [auditTypeSort, setAuditTypeSort] = useState<"asc" | "desc">("asc")
           <h2 className="text-xl font-bold text-foreground">
             Failed to Load Activity Logs
           </h2>
@@ -104,7 +99,6 @@ export default function SuperAdminAuditPage() {
 
   const { activities = [] } = data || {}
 
-  // Filter audit logs based on search query and selected log type
   const filteredLogs = activities.filter((log) => {
     const matchesSearch =
       log.action.toLowerCase().includes(auditSearch.toLowerCase()) ||
@@ -120,9 +114,18 @@ export default function SuperAdminAuditPage() {
     return matchesSearch && matchesType
   })
 
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredLogs.length / logsPerPage)
-  const paginatedLogs = filteredLogs.slice(
+  const sortedLogs = [...filteredLogs].sort((a, b) => {
+    const typeComparison = a.type.localeCompare(b.type)
+
+    if (typeComparison !== 0) {
+      return auditTypeSort === "asc" ? typeComparison : -typeComparison
+    }
+
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  })
+
+  const totalPages = Math.ceil(sortedLogs.length / logsPerPage)
+  const paginatedLogs = sortedLogs.slice(
     (auditPage - 1) * logsPerPage,
     auditPage * logsPerPage
   )
@@ -132,130 +135,31 @@ export default function SuperAdminAuditPage() {
       case "create":
         return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
       case "update":
-    const sortedLogs = [...filteredLogs].sort((a, b) => {
-      const typeComparison = a.type.localeCompare(b.type)
-      if (typeComparison !== 0) {
-        return auditTypeSort === "asc" ? typeComparison : -typeComparison
-      }
-
-      return (
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      )
-    })
-
-    const totalPages = Math.ceil(sortedLogs.length / logsPerPage)
-    const paginatedLogs = sortedLogs.slice(
-      (auditPage - 1) * logsPerPage,
-      auditPage * logsPerPage
-    )
+        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+      case "delete":
+        return "bg-destructive/10 text-destructive border-destructive/20"
+      case "auth":
+        return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
       default:
         return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
     }
   }
 
   return (
-    <div className="flex flex-1 flex-col space-y-6 text-left">
-      {/* Header Info Banner */}
-      <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-md sm:flex-row sm:items-center">
-        <div className="space-y-1 text-left">
-          <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
-            <Activity className="h-5 w-5 text-primary" />
-            Global Activity Trail
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Trace global logins, logouts, administrative mutations, and
-            workspace isolations.
-      <div className="flex flex-1 flex-col space-y-4 text-left">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-            Global Activity Trail
-          </h1>
-          <Badge
-            variant="outline"
-            className="border-border bg-background px-3 py-1 font-mono font-bold text-foreground shadow-sm"
-          >
-            {activities.length} logs
-          </Badge>
-        </div>
-
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="relative w-full lg:max-w-md">
-            <Search className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
-            <input
-              id="input-audit-search"
-              type="text"
-              placeholder="Search logs by action, email, or IP address..."
-              value={auditSearch}
-              onChange={(e) => {
-                setAuditSearch(e.target.value)
-                setAuditPage(1)
-              }}
-              className="h-10 w-full rounded-lg border border-border bg-background py-2 pr-4 pl-9 text-xs text-foreground placeholder-muted-foreground transition focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Select
-              value={auditFilterType}
-              onValueChange={(value) => {
-                setAuditFilterType(value)
-                setAuditPage(1)
-              }}
-            >
-              <SelectTrigger className="h-10 w-40 text-xs">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Logs</SelectItem>
-                <SelectItem value="auth">Auth</SelectItem>
-                <SelectItem value="create">Create</SelectItem>
-                <SelectItem value="update">Update</SelectItem>
-                <SelectItem value="delete">Delete</SelectItem>
-                <SelectItem value="settings">Settings</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={auditTypeSort}
-              onValueChange={(value) => {
-                setAuditTypeSort(value as "asc" | "desc")
-                setAuditPage(1)
-              }}
-            >
-              <SelectTrigger className="h-10 w-42.5 text-xs">
-                <SelectValue placeholder="Sort by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="asc">Type A-Z</SelectItem>
-                <SelectItem value="desc">Type Z-A</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={auditViewMode}
-              onValueChange={(value) => setAuditViewMode(value as "table" | "cards")}
-            >
-              <SelectTrigger className="h-10 w-37.5 text-xs">
-                <SelectValue placeholder="View" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="table">Table</SelectItem>
-                <SelectItem value="cards">Cards</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        </div>
+    <div className="flex flex-1 flex-col space-y-4 text-left">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+          Global Activity Trail
+        </h1>
         <Badge
           variant="outline"
-          className="border-border bg-background px-3.5 py-1 font-mono font-bold text-foreground shadow-sm"
+          className="border-border bg-background px-3 py-1 font-mono font-bold text-foreground shadow-sm"
         >
-          Total Logs: {activities.length}
+          {activities.length} logs
         </Badge>
       </div>
 
-      {/* Filter controls row */}
-      <div className="flex flex-col items-start justify-between gap-4 rounded-xl border border-border bg-card p-4 shadow-lg lg:flex-row lg:items-center">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative w-full lg:max-w-md">
           <Search className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
           <input
@@ -265,72 +169,66 @@ export default function SuperAdminAuditPage() {
             value={auditSearch}
             onChange={(e) => {
               setAuditSearch(e.target.value)
-              setAuditPage(1) // Reset page on filter
+              setAuditPage(1)
             }}
-            className="w-full rounded-lg border border-border bg-background py-2 pr-4 pl-9 text-xs text-foreground placeholder-muted-foreground transition focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+            className="h-10 w-full rounded-lg border border-border bg-background py-2 pr-4 pl-9 text-xs text-foreground placeholder-muted-foreground transition focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
           />
         </div>
 
-        {/* Filter buttons */}
-        <div className="flex flex-col items-start gap-3 lg:items-end">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1.5 flex items-center gap-1 text-[10px] font-bold text-muted-foreground uppercase">
-              <SlidersHorizontal className="h-3 w-3" /> Log Category
-            </span>
-            {[
-              { id: "all", label: "All Logs" },
-              { id: "auth", label: "Auth" },
-              { id: "create", label: "Create" },
-              { id: "update", label: "Update" },
-              { id: "delete", label: "Delete" },
-              { id: "settings", label: "Settings" },
-            ].map((type) => (
-              <button
-                key={type.id}
-                id={`btn-log-filter-${type.id}`}
-                onClick={() => {
-                  setAuditFilterType(type.id)
-                  setAuditPage(1) // Reset page on filter
-                }}
-                className={`cursor-pointer rounded-lg border px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase transition ${
-                  auditFilterType === type.id
-                    ? "border-primary bg-primary text-primary-foreground shadow-lg"
-                    : "border-border bg-background text-muted-foreground hover:border-border/80 hover:text-foreground"
-                }`}
-              >
-                {type.label}
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Select
+            value={auditFilterType}
+            onValueChange={(value) => {
+              setAuditFilterType(value)
+              setAuditPage(1)
+            }}
+          >
+            <SelectTrigger className="h-10 w-40 text-xs">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Logs</SelectItem>
+              <SelectItem value="auth">Auth</SelectItem>
+              <SelectItem value="create">Create</SelectItem>
+              <SelectItem value="update">Update</SelectItem>
+              <SelectItem value="delete">Delete</SelectItem>
+              <SelectItem value="settings">Settings</SelectItem>
+            </SelectContent>
+          </Select>
 
-          <div className="flex items-center gap-1 rounded-lg border border-border bg-background p-1">
-            <button
-              id="btn-audit-view-table"
-              onClick={() => setAuditViewMode("table")}
-              className={`rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase transition ${
-                auditViewMode === "table"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Table
-            </button>
-            <button
-              id="btn-audit-view-cards"
-              onClick={() => setAuditViewMode("cards")}
-              className={`rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase transition ${
-                auditViewMode === "cards"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Cards
-            </button>
-          </div>
+          <Select
+            value={auditTypeSort}
+            onValueChange={(value) => {
+              setAuditTypeSort(value as "asc" | "desc")
+              setAuditPage(1)
+            }}
+          >
+            <SelectTrigger className="h-10 w-42.5 text-xs">
+              <SelectValue placeholder="Sort by type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">Type A-Z</SelectItem>
+              <SelectItem value="desc">Type Z-A</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={auditViewMode}
+            onValueChange={(value) =>
+              setAuditViewMode(value as "table" | "cards")
+            }
+          >
+            <SelectTrigger className="h-10 w-37.5 text-xs">
+              <SelectValue placeholder="View" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="table">Table</SelectItem>
+              <SelectItem value="cards">Cards</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Paginated Activities Grid */}
       <div className="flex flex-1 flex-col justify-between">
         <AnimatePresence mode="wait">
           {paginatedLogs.length === 0 ? (
@@ -392,7 +290,9 @@ export default function SuperAdminAuditPage() {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className={`px-1.5 py-0 text-[8px] font-bold tracking-wider uppercase ${getLogTypeColor(log.type)}`}
+                            className={`px-1.5 py-0 text-[8px] font-bold tracking-wider uppercase ${getLogTypeColor(
+                              log.type
+                            )}`}
                           >
                             {log.type}
                           </Badge>
@@ -456,7 +356,9 @@ export default function SuperAdminAuditPage() {
                       </span>
                       <Badge
                         variant="outline"
-                        className={`px-1.5 py-0 text-[8px] font-bold tracking-wider uppercase ${getLogTypeColor(log.type)}`}
+                        className={`px-1.5 py-0 text-[8px] font-bold tracking-wider uppercase ${getLogTypeColor(
+                          log.type
+                        )}`}
                       >
                         {log.type}
                       </Badge>
@@ -467,7 +369,6 @@ export default function SuperAdminAuditPage() {
                     </p>
                     <div className="my-2 h-px bg-border" />
 
-                    {/* Profile block */}
                     <div className="flex items-center gap-2">
                       {log.user?.image ? (
                         <Image
@@ -493,7 +394,6 @@ export default function SuperAdminAuditPage() {
                     </div>
                   </div>
 
-                  {/* Audit Log Footer Details */}
                   <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3.5 font-mono text-[9px] text-muted-foreground">
                     <div className="flex flex-col text-left">
                       {log.workspaceName ? (
@@ -523,13 +423,12 @@ export default function SuperAdminAuditPage() {
           )}
         </AnimatePresence>
 
-        {/* Pagination Controls */}
         {totalPages > 1 && (
           <div className="mt-6 flex items-center justify-between border-t border-border pt-6">
             <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
               Showing logs {(auditPage - 1) * logsPerPage + 1} -{" "}
-              {Math.min(auditPage * logsPerPage, filteredLogs.length)} of{" "}
-              {filteredLogs.length}
+              {Math.min(auditPage * logsPerPage, sortedLogs.length)} of{" "}
+              {sortedLogs.length}
             </span>
 
             <div className="flex gap-1.5">
