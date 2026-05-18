@@ -16,19 +16,19 @@ export async function GET(request: Request) {
     const alerts = await prisma.alert.findMany({
       where: {
         workspaceId,
-        ...(status === "all" ? {} : { status })
+        ...(status === "all" ? {} : { status }),
       },
       include: {
         product: {
           include: {
-            category: true
-          }
-        }
+            category: true,
+          },
+        },
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
     })
 
-    const formatted = alerts.map((a: typeof alerts[number]) => ({
+    const formatted = alerts.map((a: (typeof alerts)[number]) => ({
       id: a.id,
       productId: a.productId,
       name: a.product.name,
@@ -39,12 +39,15 @@ export async function GET(request: Request) {
       maxStock: a.product.maxStock,
       severity: a.severity,
       status: a.status,
-      createdAt: a.createdAt.toISOString()
+      createdAt: a.createdAt.toISOString(),
     }))
 
     return NextResponse.json(formatted)
   } catch (error) {
     console.error("Failed to fetch alerts:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    )
   }
 }
