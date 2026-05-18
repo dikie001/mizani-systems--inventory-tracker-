@@ -41,13 +41,23 @@ function getAuthErrorMessage(error: string | null) {
 export default function AuthPage() {
   const router = useRouter()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(() => {
+    if (typeof window === "undefined") {
+      return null
+    }
+
+    const error = new URLSearchParams(window.location.search).get("error")
+    if (window.opener || !error) {
+      return null
+    }
+
+    return getAuthErrorMessage(error)
+  })
   const popupCheckRef = useRef<number | null>(null)
 
   useEffect(() => {
     const error = new URLSearchParams(window.location.search).get("error")
     if (!window.opener || !error) {
-      setErrorMessage(getAuthErrorMessage(error))
       return
     }
 

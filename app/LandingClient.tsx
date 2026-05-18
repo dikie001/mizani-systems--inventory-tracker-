@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import type { Session } from "next-auth"
 import { motion } from "framer-motion"
 import {
   ArrowRight,
@@ -8,7 +9,6 @@ import {
   BarChart3,
   Layers,
   Smartphone,
-  Zap,
   Shield,
   Database,
   TrendingUp,
@@ -46,14 +46,6 @@ const fadeUp = {
 const stagger = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.1 } },
-}
-
-const fadeIn = {
-  hidden: { opacity: 0 },
-  visible: (delay: number = 0) => ({
-    opacity: 1,
-    transition: { duration: 0.5, delay, ease },
-  }),
 }
 
 // ─── Background ──────────────────────────────────────────────────────────────
@@ -127,7 +119,7 @@ function HeroBackground() {
 
 // ─── Navbar ──────────────────────────────────────────────────────────────────
 
-function Navbar({ session }: { session: any }) {
+function Navbar({ session }: { session: Session | null }) {
   return (
     <motion.header
       initial={{ opacity: 0, y: -12 }}
@@ -229,7 +221,7 @@ const STATUS_COLOR: Record<string, string> = {
   "Out of Stock": "bg-red-500/10    text-red-700    dark:text-red-400",
 }
 
-function HeroSection({ session }: { session: any }) {
+function HeroSection({ session }: { session: Session | null }) {
   return (
     <section className="relative overflow-hidden bg-background pt-20 pb-28 md:pt-28 md:pb-36">
       <HeroBackground />
@@ -957,7 +949,7 @@ function Footer() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function LandingClient({ session }: { session: any }) {
+export default function LandingClient({ session }: { session: Session | null }) {
   return (
     <div className="min-h-screen bg-background text-foreground antialiased selection:bg-primary/15">
       <Navbar session={session} />

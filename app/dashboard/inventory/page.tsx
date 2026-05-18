@@ -569,11 +569,13 @@ function InventoryPageContent() {
   }, [])
 
   useEffect(() => {
-    if (action === "add") {
-      beginCreate()
-    } else if (action === "import") {
-      setImportOpen(true)
-    }
+    queueMicrotask(() => {
+      if (action === "add") {
+        beginCreate()
+      } else if (action === "import") {
+        setImportOpen(true)
+      }
+    })
   }, [action, beginCreate])
 
   const productsUrl = buildProductsUrl({

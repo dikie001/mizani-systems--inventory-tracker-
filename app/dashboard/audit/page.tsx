@@ -43,6 +43,17 @@ const typeLabels: Record<string, string> = {
   auth: "Auth", transfer: "Transfer", settings: "Settings",
 }
 
+type AuditLog = {
+  id: string
+  type: string
+  action: string
+  entity: string
+  initials: string
+  user: string
+  timestamp: string
+  ip: string
+}
+
 export default function AuditPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
@@ -51,7 +62,7 @@ export default function AuditPage() {
   if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`
   if (typeFilter !== "all") url += `type=${encodeURIComponent(typeFilter)}&`
 
-  const { data: auditLogs, error, isLoading } = useSWR<any[]>(url, fetcher)
+  const { data: auditLogs, error, isLoading } = useSWR<AuditLog[]>(url, fetcher)
 
   return (
     <div className="space-y-6">

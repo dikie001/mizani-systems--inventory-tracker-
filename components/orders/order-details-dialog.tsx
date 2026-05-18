@@ -248,7 +248,7 @@ export function OrderDetailsDialog({
                   Cancellation Reason
                 </span>
                 <p className="text-xs leading-relaxed text-muted-foreground italic">
-                  "{order.cancellationReason}"
+                  &quot;{order.cancellationReason}&quot;
                 </p>
               </div>
             )}

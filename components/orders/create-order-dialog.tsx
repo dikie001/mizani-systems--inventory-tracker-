@@ -264,7 +264,7 @@ export function CreateOrderDialog({
                 })}
                 {filteredProducts.length === 0 && (
                   <div className="py-6 text-center text-xs text-muted-foreground italic">
-                    No products found matching "{search}".
+                    No products found matching &quot;{search}&quot;.
                   </div>
                 )}
               </div>

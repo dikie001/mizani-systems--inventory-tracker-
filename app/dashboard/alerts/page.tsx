@@ -1,14 +1,19 @@
 "use client"
 
-import { useState } from "react"
 import useSWR, { mutate } from "swr"
 import {
-  AlertCircle, AlertTriangle, ArrowUpRight, Bell, CheckCircle2, Package,
-  ShoppingCart, TrendingDown, XCircle, Loader2, ShieldAlert, Flame, Layers, Box
+  AlertCircle,
+  AlertTriangle,
+  Bell,
+  CheckCircle2,
+  Flame,
+  Loader2,
+  ShoppingCart,
+  XCircle,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
@@ -16,6 +21,16 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import Link from "next/link"
+
+type AlertItem = {
+  id: string
+  name: string
+  sku: string
+  category: string
+  stock: number
+  maxStock?: number | null
+  severity: "critical" | "warning" | string
+}
 
 const fetcher = async (url: string) => {
   const response = await fetch(url)
@@ -25,7 +40,7 @@ const fetcher = async (url: string) => {
   return response.json()
 }
 
-function AlertCard({ item, onDismiss }: { item: any; onDismiss: (id: string) => void }) {
+function AlertCard({ item, onDismiss }: { item: AlertItem; onDismiss: (id: string) => void }) {
   const max = item.maxStock || 100
   const pct = Math.round((item.stock / max) * 100)
   const severity = item.severity
@@ -70,8 +85,8 @@ function AlertCard({ item, onDismiss }: { item: any; onDismiss: (id: string) => 
 }
 
 export default function AlertsPage() {
-  const { data: activeAlerts, isLoading } = useSWR<any[]>('/api/alerts?status=active', fetcher)
-  const { data: resolvedAlerts, isLoading: rLoading } = useSWR<any[]>('/api/alerts?status=resolved', fetcher)
+  const { data: activeAlerts, isLoading } = useSWR<AlertItem[]>('/api/alerts?status=active', fetcher)
+  const { data: resolvedAlerts, isLoading: rLoading } = useSWR<AlertItem[]>('/api/alerts?status=resolved', fetcher)
 
   const alerts = Array.isArray(activeAlerts) ? activeAlerts : []
   const resolved = Array.isArray(resolvedAlerts) ? resolvedAlerts : []

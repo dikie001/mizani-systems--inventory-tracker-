@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import type { Prisma } from "@prisma/client"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 import { updateProductAlerts } from "@/lib/inventory"
@@ -14,7 +15,7 @@ export async function GET(request: Request) {
   const search = searchParams.get("search")
   const status = searchParams.get("status")
 
-  const where: any = {
+  const where: Prisma.OrderWhereInput = {
     workspaceId,
   }
   
@@ -164,8 +165,9 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json(result)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Order creation failed:", error)
-    return NextResponse.json({ error: error.message || "Failed to create order" }, { status: 500 })
+    const message = error instanceof Error ? error.message : "Failed to create order"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
