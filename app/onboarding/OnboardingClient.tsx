@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { createWorkspace } from "@/lib/actions/workspace"
-import { getPlanById, formatKES } from "@/lib/plans"
+import { getPlanById, formatKES, PLANS } from "@/lib/plans"
 import { toast } from "sonner"
 
 const steps = [
@@ -103,7 +103,16 @@ export default function OnboardingClient({
 }: OnboardingClientProps) {
   const { update } = useSession()
   const searchParams = useSearchParams()
-  const [currentStep, setCurrentStep] = useState(0)
+
+  const [hasPreselectedPlan] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      return !!(params.get("plan") || initialPlanName || sessionStorage.getItem("selectedPlan"))
+    }
+    return !!initialPlanName
+  })
+
+  const [currentStep, setCurrentStep] = useState(initialWorkspaceId ? 4 : 0)
   const [formData, setFormData] = useState({
     name: initialWorkspaceName || "",
     businessType: initialBusinessType || "",
@@ -111,7 +120,6 @@ export default function OnboardingClient({
     goals: [] as string[],
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showPlanConfirmation, setShowPlanConfirmation] = useState(!!initialWorkspaceId)
   const [workspaceData, setWorkspaceData] = useState<{
     workspaceId: string
     workspaceName: string
@@ -138,24 +146,33 @@ export default function OnboardingClient({
 
   const selectedPlan = getPlanById(activePlanId)
   const isPaidPlan = selectedPlan && selectedPlan.monthlyPrice > 0
-  const activeSteps = isPaidPlan
-    ? [
-        ...steps,
-        {
-          id: "confirm",
-          title: "Confirm & Pay",
-          description: "Verify your plan selection and proceed to payment.",
-          icon: <CreditCard className="h-4 w-4 text-primary" />,
-        },
-      ]
-    : steps
 
+  const activeSteps = [...steps]
+  if (!hasPreselectedPlan) {
+    activeSteps.push({
+      id: "choose-plan",
+      title: "Select Your Plan",
+      description: "Choose a subscription plan that fits your business.",
+      icon: <Layers className="h-4 w-4 text-primary" />,
+    })
+  }
+  if (isPaidPlan) {
+    activeSteps.push({
+      id: "confirm",
+      title: "Confirm & Pay",
+      description: "Verify your plan selection and proceed to payment.",
+      icon: <CreditCard className="h-4 w-4 text-primary" />,
+    })
+  }
+
+  const activeStep = activeSteps[currentStep]
   const canAdvance =
-    (currentStep === 0 && !!formData.name.trim()) ||
-    (currentStep === 1 && !!formData.businessType) ||
-    (currentStep === 2 && !!formData.inventorySize) ||
-    currentStep === 3 ||
-    currentStep === 4
+    (activeStep?.id === "name" && !!formData.name.trim()) ||
+    (activeStep?.id === "type" && !!formData.businessType) ||
+    (activeStep?.id === "size" && !!formData.inventorySize) ||
+    activeStep?.id === "goals" ||
+    activeStep?.id === "choose-plan" ||
+    activeStep?.id === "confirm"
 
   const handleCreateWorkspace = useCallback(async () => {
     if (!formData.name || !formData.businessType || !formData.inventorySize) {
@@ -361,7 +378,7 @@ export default function OnboardingClient({
               className="p-5"
             >
               {/* Step 0: Business name */}
-              {currentStep === 0 && (
+              {activeStep?.id === "name" && (
                 <div className="group relative">
                   <Input
                     autoFocus
@@ -381,7 +398,7 @@ export default function OnboardingClient({
               )}
 
               {/* Step 1: Business type */}
-              {currentStep === 1 && (
+              {activeStep?.id === "type" && (
                 <div className="grid grid-cols-2 gap-2">
                   {businessTypes.map((type) => {
                     const active = formData.businessType === type.id
@@ -417,7 +434,7 @@ export default function OnboardingClient({
               )}
 
               {/* Step 2: Inventory size */}
-              {currentStep === 2 && (
+              {activeStep?.id === "size" && (
                 <div className="space-y-2">
                   {inventorySizes.map((size) => {
                     const active = formData.inventorySize === size.id
@@ -461,7 +478,7 @@ export default function OnboardingClient({
               )}
 
               {/* Step 3: Goals */}
-              {currentStep === 3 && (
+              {activeStep?.id === "goals" && (
                 <div className="grid grid-cols-2 gap-2">
                   {goalOptions.map((goal) => {
                     const active = formData.goals.includes(goal.id)
@@ -495,8 +512,72 @@ export default function OnboardingClient({
                 </div>
               )}
 
-              {/* Step 4: Confirm Plan & Pay (Only if Basic or Pro) */}
-              {currentStep === 4 && selectedPlan && (
+              {/* Step: Choose Plan (Only if user signed up without pre-selecting a plan) */}
+              {activeStep?.id === "choose-plan" && (
+                <div className="space-y-3">
+                  {PLANS.map((plan) => {
+                    const active = activePlanId === plan.id
+                    return (
+                      <button
+                        key={plan.id}
+                        type="button"
+                        onClick={() => {
+                          setActivePlanId(plan.id)
+                          sessionStorage.setItem("selectedPlan", plan.id)
+                        }}
+                        className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition-all duration-200 ${
+                          active
+                            ? "border-primary bg-primary/10 ring-1 ring-primary/20"
+                            : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/8"
+                        }`}
+                      >
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-white">
+                                {plan.displayName}
+                              </span>
+                              {plan.badge && (
+                                <Badge className="bg-primary/20 text-primary border border-primary/30 font-bold px-1.5 py-0 text-[10px] select-none">
+                                  {plan.badge}
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="text-sm font-extrabold text-white">
+                              {plan.monthlyPrice === 0 ? "Free" : formatKES(plan.monthlyPrice)}
+                              {plan.monthlyPrice > 0 && <span className="text-[10px] font-medium text-slate-400">/mo</span>}
+                            </span>
+                          </div>
+                          
+                          <p className="text-xs text-slate-400">
+                            {plan.description}
+                          </p>
+
+                          <div className="flex items-center gap-1.5 pt-1.5 text-[11px] text-slate-300">
+                            <Check className="h-3.5 w-3.5 text-primary" />
+                            <span>{plan.features[0]}</span>
+                          </div>
+                        </div>
+
+                        <div
+                          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all mt-1 ${
+                            active
+                              ? "border-primary bg-primary"
+                              : "border-white/20"
+                          }`}
+                        >
+                          {active && (
+                            <Check className="h-2.5 w-2.5 stroke-3 text-slate-950" />
+                          )}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Step: Confirm Plan & Pay */}
+              {activeStep?.id === "confirm" && selectedPlan && (
                 <div className="space-y-4">
                   <div className="border border-white/10 rounded-xl p-4 bg-white/5 space-y-3 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-3">
