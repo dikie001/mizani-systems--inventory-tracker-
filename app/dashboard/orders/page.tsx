@@ -16,6 +16,8 @@ import {
   Trash2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { StatCard } from "@/components/stat-card"
 import {
   Card,
   CardContent,
@@ -55,7 +57,6 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Skeleton } from "@/components/ui/skeleton"
 
 // New Dialogs
 import { CreateOrderDialog } from "@/components/orders/create-order-dialog"
@@ -276,7 +277,7 @@ export default function OrdersPage() {
           {
             label: "Total Orders",
             value: isLoading ? (
-              <Skeleton className="h-7 w-12" />
+              <Skeleton className="h-6 w-12" />
             ) : (
               orders?.length.toString()
             ),
@@ -288,7 +289,7 @@ export default function OrdersPage() {
           {
             label: "Pending",
             value: isLoading ? (
-              <Skeleton className="h-7 w-12" />
+              <Skeleton className="h-6 w-12" />
             ) : (
               orders?.filter((o) => o.status === "pending").length.toString()
             ),
@@ -300,7 +301,7 @@ export default function OrdersPage() {
           {
             label: "In Transit",
             value: isLoading ? (
-              <Skeleton className="h-7 w-12" />
+              <Skeleton className="h-6 w-12" />
             ) : (
               orders?.filter((o) => o.status === "shipped").length.toString()
             ),
@@ -312,7 +313,7 @@ export default function OrdersPage() {
           {
             label: "Revenue",
             value: isLoading ? (
-              <Skeleton className="h-7 w-20" />
+              <Skeleton className="h-6 w-20" />
             ) : (
               formatPrice(totalRevenue, currency)
             ),
@@ -322,24 +323,15 @@ export default function OrdersPage() {
             description: "Gross sales revenue",
           },
         ].map((s) => (
-          <Card key={s.label} className="border-border/60 bg-card">
-            <CardContent className="p-4 sm:p-5 flex flex-col justify-between h-full min-h-[110px]">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-                  {s.label}
-                </span>
-                <s.icon className={`h-4.5 w-4.5 ${s.iconColor}`} />
-              </div>
-              <div className="mt-2.5">
-                <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${s.valColor}`}>
-                  {s.value}
-                </span>
-              </div>
-              <div className="mt-1 text-[11px] text-muted-foreground">
-                {s.description}
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            key={s.label}
+            title={s.label}
+            value={s.value}
+            icon={s.icon}
+            valColor={s.valColor}
+            iconColor={s.iconColor}
+            description={s.description}
+          />
         ))}
       </div>
 

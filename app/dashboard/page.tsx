@@ -31,6 +31,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { StatCard } from "@/components/stat-card"
 import {
   Card,
   CardContent,
@@ -170,7 +171,7 @@ export default function DashboardPage() {
           {
             title: "Total Products",
             value: statsLoading ? (
-              <Skeleton className="h-7 w-16" />
+              <Skeleton className="h-6 w-16" />
             ) : (
               stats?.totalProducts
             ),
@@ -182,7 +183,7 @@ export default function DashboardPage() {
           {
             title: "Low Stock Alerts",
             value: statsLoading ? (
-              <Skeleton className="h-7 w-16" />
+              <Skeleton className="h-6 w-16" />
             ) : (
               stats?.lowStock
             ),
@@ -194,7 +195,7 @@ export default function DashboardPage() {
           {
             title: "Monthly Revenue",
             value: statsLoading ? (
-              <Skeleton className="h-7 w-24" />
+              <Skeleton className="h-6 w-24" />
             ) : (
               formatPrice(stats?.totalRevenue ?? 0, currency)
             ),
@@ -206,7 +207,7 @@ export default function DashboardPage() {
           {
             title: "Pending Orders",
             value: statsLoading ? (
-              <Skeleton className="h-7 w-16" />
+              <Skeleton className="h-6 w-16" />
             ) : (
               stats?.pendingOrders
             ),
@@ -216,24 +217,15 @@ export default function DashboardPage() {
             description: "Awaiting shipment",
           },
         ].map((kpi) => (
-          <Card key={kpi.title} className="border-border/60 bg-card">
-            <CardContent className="p-4 sm:p-5 flex flex-col justify-between h-full min-h-[110px]">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-                  {kpi.title}
-                </span>
-                <kpi.icon className={`h-4.5 w-4.5 ${kpi.iconColor}`} />
-              </div>
-              <div className="mt-2.5">
-                <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${kpi.valColor}`}>
-                  {kpi.value}
-                </span>
-              </div>
-              <div className="mt-1 text-[11px] text-muted-foreground">
-                {kpi.description}
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            key={kpi.title}
+            title={kpi.title}
+            value={kpi.value}
+            icon={kpi.icon}
+            valColor={kpi.valColor}
+            iconColor={kpi.iconColor}
+            description={kpi.description}
+          />
         ))}
       </div>
 

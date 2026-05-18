@@ -14,6 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { StatCard } from "@/components/stat-card"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
@@ -171,7 +172,7 @@ export default function AlertsPage() {
           {
             label: "Critical Alerts",
             value: isLoading ? (
-              <Skeleton className="h-7 w-12" />
+              <Skeleton className="h-6 w-12" />
             ) : (
               criticalAlerts.length
             ),
@@ -183,7 +184,7 @@ export default function AlertsPage() {
           {
             label: "Low Stock Warnings",
             value: isLoading ? (
-              <Skeleton className="h-7 w-12" />
+              <Skeleton className="h-6 w-12" />
             ) : (
               lowStockAlerts.length
             ),
@@ -195,7 +196,7 @@ export default function AlertsPage() {
           {
             label: "Resolved Recently",
             value: rLoading ? (
-              <Skeleton className="h-7 w-12" />
+              <Skeleton className="h-6 w-12" />
             ) : (
               resolved.length
             ),
@@ -205,24 +206,15 @@ export default function AlertsPage() {
             description: "Active corrections",
           },
         ].map((metric) => (
-          <Card key={metric.label} className="border-border/60 bg-card">
-            <CardContent className="p-4 sm:p-5 flex flex-col justify-between h-full min-h-[110px]">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-                  {metric.label}
-                </span>
-                <metric.icon className={`h-4.5 w-4.5 ${metric.iconColor}`} />
-              </div>
-              <div className="mt-2.5">
-                <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${metric.valColor}`}>
-                  {metric.value}
-                </span>
-              </div>
-              <div className="mt-1 text-[11px] text-muted-foreground">
-                {metric.description}
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            key={metric.label}
+            title={metric.label}
+            value={metric.value}
+            icon={metric.icon}
+            valColor={metric.valColor}
+            iconColor={metric.iconColor}
+            description={metric.description}
+          />
         ))}
       </div>
 
