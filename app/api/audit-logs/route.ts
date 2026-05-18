@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
+import type { Prisma } from "@prisma/client"
 
 export async function GET(request: Request) {
   const session = await auth()
@@ -13,7 +14,7 @@ export async function GET(request: Request) {
   const search = searchParams.get("search")
   const type = searchParams.get("type")
 
-  const where: any = {
+  const where: Prisma.AuditLogWhereInput = {
     workspaceId,
   }
   
