@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 import { updateProductAlerts } from "@/lib/inventory"
+import type { Prisma } from "@prisma/client"
 
 export async function GET(request: Request) {
   const session = await auth()
@@ -14,9 +15,7 @@ export async function GET(request: Request) {
   const search = searchParams.get("search")
   const status = searchParams.get("status")
 
-  type OrderWhereInput = NonNullable<
-    Parameters<typeof prisma.order.findMany>[0]["where"]
-  >
+  type OrderWhereInput = Prisma.OrderWhereInput
 
   const where: OrderWhereInput = {
     workspaceId,
@@ -137,7 +136,7 @@ export async function POST(request: Request) {
         await tx.stockMovement.create({
           data: {
             productId: item.productId,
-            userId: session.user.id as string,
+            userId: session.user.id,
             workspaceId,
             type: "Sale",
             quantity: -item.quantity,
@@ -169,7 +168,7 @@ export async function POST(request: Request) {
           action: `Created order ${order.id}`,
           entity: "Order",
           type: "create",
-          userId: session.user.id as string,
+          userId: session.user.id,
           workspaceId,
         },
       })

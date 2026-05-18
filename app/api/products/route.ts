@@ -7,6 +7,7 @@ import {
   productQueryInclude,
 } from "@/lib/inventory"
 import prisma from "@/lib/prisma"
+import type { Prisma } from "@prisma/client"
 
 export async function GET(request: Request) {
   const session = await auth()
@@ -19,9 +20,7 @@ export async function GET(request: Request) {
   const category = searchParams.get("category")
   const status = searchParams.get("status")
 
-  type ProductWhereInput = NonNullable<
-    Parameters<typeof prisma.product.findMany>[0]["where"]
-  >
+  type ProductWhereInput = Prisma.ProductWhereInput
 
   const where: ProductWhereInput = {
     workspaceId: session.user.workspaceId,

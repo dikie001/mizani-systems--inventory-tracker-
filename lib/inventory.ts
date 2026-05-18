@@ -1,14 +1,7 @@
-import type { Product } from "@prisma/client"
-import type prisma from "@/lib/prisma"
+import type { Prisma, Product } from "@prisma/client"
 
-type TransactionCallback = Extract<
-  Parameters<typeof prisma.$transaction>[0],
-  (arg: unknown) => Promise<unknown>
->
-type PrismaTransactionClient = Parameters<TransactionCallback>[0]
-type ProductInclude = NonNullable<
-  Parameters<typeof prisma.product.findMany>[0]["include"]
->
+type PrismaTransactionClient = Prisma.TransactionClient
+type ProductInclude = Prisma.ProductInclude
 
 export const productExportHeaders = [
   "name",
