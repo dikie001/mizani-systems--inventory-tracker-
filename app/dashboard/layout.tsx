@@ -51,7 +51,7 @@ export default async function DashboardLayout({
   if (user?.currentWorkspaceId) {
     const workspace = await prisma.workspace.findUnique({
       where: { id: user.currentWorkspaceId },
-      include: { subscription: true }
+      include: { subscription: true, selectedPlan: true }
     })
     
     // If no subscription or status is not active, prompt payment
@@ -70,6 +70,7 @@ export default async function DashboardLayout({
         <SubscriptionRequiredModal 
           isOpen={true} 
           workspaceId={user.currentWorkspaceId} 
+          selectedPlanName={workspace?.selectedPlan?.name}
         />
       )}
     </>

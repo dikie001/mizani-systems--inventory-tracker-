@@ -24,11 +24,13 @@ import { toast } from "sonner"
 interface SubscriptionRequiredModalProps {
   isOpen: boolean
   workspaceId: string
+  selectedPlanName?: string
 }
 
 export function SubscriptionRequiredModal({
   isOpen,
   workspaceId,
+  selectedPlanName,
 }: SubscriptionRequiredModalProps) {
   const [isLoading, setIsLoading] = useState<string | null>(null)
 
@@ -62,8 +64,13 @@ export function SubscriptionRequiredModal({
     }
   }
 
-  // Filter out the free trial for the upgrade modal
-  const paidPlans = PLANS.filter((plan) => plan.monthlyPrice > 0)
+  // Determine which plans to show
+  let plansToShow = PLANS.filter((plan) => plan.monthlyPrice > 0)
+  const userPlan = selectedPlanName ? PLANS.find(p => p.name === selectedPlanName) : null
+  
+  if (userPlan && userPlan.monthlyPrice > 0) {
+    plansToShow = [userPlan]
+  }
 
   return (
     <AlertDialog open={isOpen}>
@@ -84,8 +91,8 @@ export function SubscriptionRequiredModal({
         </AlertDialogHeader>
 
         <div className="bg-muted/30 p-8 pt-2">
-          <div className="grid gap-6 md:grid-cols-2">
-            {paidPlans.map((plan) => {
+          <div className={`grid gap-6 ${plansToShow.length === 1 ? 'max-w-md mx-auto' : 'md:grid-cols-2'}`}>
+            {plansToShow.map((plan) => {
               const isGold = plan.highlight
 
               return (
@@ -152,7 +159,7 @@ export function SubscriptionRequiredModal({
                       {isLoading === plan.id ? (
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                       ) : null}
-                      {isLoading === plan.id ? "Processing..." : plan.cta}
+                      {isLoading === plan.id ? "Processing..." : `Complete ${plan.displayName} Payment`}
                     </Button>
                   </CardContent>
                 </Card>
