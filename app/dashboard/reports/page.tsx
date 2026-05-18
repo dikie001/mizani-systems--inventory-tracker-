@@ -131,6 +131,15 @@ export default function ReportsPage() {
   const trendData = (
     Array.isArray(revenueData) ? revenueData : []
   ) as RevenueTrend[]
+
+  // Dynamic formatting for Reports page YAxis ticks without repeating currency prefix
+  const maxTrendVal = Math.max(...trendData.map((item: any) => Number(item.revenue) || 0), 0)
+  const formatTrendTick = (v: number) => {
+    if (maxTrendVal >= 1000) {
+      return `${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1)}k`
+    }
+    return String(v)
+  }
   const productData = (
     Array.isArray(topProducts) ? topProducts : []
   ) as TopProduct[]
@@ -248,7 +257,7 @@ export default function ReportsPage() {
       {/* Revenue vs Costs Chart */}
       <Card className="print:shadow-none">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Revenue Trend</CardTitle>
+          <CardTitle className="text-lg">Revenue Trend ({currency})</CardTitle>
           <CardDescription>
             Revenue and order volume for the selected period
           </CardDescription>
@@ -310,11 +319,7 @@ export default function ReportsPage() {
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
-                    tickFormatter={(v) =>
-                      currency === "USD"
-                        ? `$${(v / 1000).toFixed(0)}k`
-                        : `${currency} ${(v / 1000).toFixed(0)}k`
-                    }
+                    tickFormatter={formatTrendTick}
                   />
                   <YAxis
                     yAxisId="right"

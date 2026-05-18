@@ -141,6 +141,18 @@ export default function DashboardPage() {
   const categories = (categoryData ?? []) as CategoryStat[]
   const revenue = Array.isArray(revenueData) ? revenueData : []
 
+  // Dynamic formatting for Revenue YAxis ticks without repeating currency prefix
+  const maxRevVal = Math.max(...revenue.map((item: any) => Number(item[revMetric]) || 0), 0)
+  const formatRevenueTick = (v: number) => {
+    if (revMetric === "revenue") {
+      if (maxRevVal >= 1000) {
+        return `${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1)}k`
+      }
+      return String(v)
+    }
+    return String(v)
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -221,7 +233,9 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center justify-between gap-4">
               <div>
-                <CardTitle>Revenue Overview</CardTitle>
+                <CardTitle>
+                  Revenue Overview {revMetric === "revenue" ? `(${currency})` : ""}
+                </CardTitle>
                 <CardDescription>
                   {viewInterval === "monthly" ? "Monthly" : "Weekly"} revenue
                   and order trends
@@ -368,13 +382,7 @@ export default function DashboardPage() {
                     axisLine={false}
                     tick={{ fontSize: 12 }}
                     tickMargin={6}
-                    tickFormatter={(value) =>
-                      revMetric === "revenue"
-                        ? currency === "USD"
-                          ? `$${(value / 1000).toFixed(0)}k`
-                          : `${currency} ${(value / 1000).toFixed(0)}k`
-                        : value
-                    }
+                    tickFormatter={formatRevenueTick}
                     label={{
                       value: revMetric === "revenue" ? "Revenue" : "Orders",
                       angle: -90,
