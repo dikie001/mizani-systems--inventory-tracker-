@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import { DashboardShell } from "./dashboard-shell"
 import { CreateWorkspaceModal } from "@/components/modals/create-workspace-modal"
+import { SubscriptionRequiredModal } from "@/components/modals/subscription-required-modal"
 
 export const metadata: Metadata = {
   title: "Dashboard | StockVault",
@@ -45,12 +46,32 @@ export default async function DashboardLayout({
     redirect("/onboarding")
   }
 
+  // Check if current workspace has an active subscription
+  let requiresPayment = false
+  if (user?.currentWorkspaceId) {
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: user.currentWorkspaceId },
+      include: { subscription: true }
+    })
+    
+    // If no subscription or status is not active, prompt payment
+    if (workspace && (!workspace.subscription || workspace.subscription.status !== "active")) {
+      requiresPayment = true
+    }
+  }
+
   return (
     <>
       <DashboardShell>{children}</DashboardShell>
       <Suspense fallback={null}>
         <CreateWorkspaceModal />
       </Suspense>
+      {requiresPayment && user?.currentWorkspaceId && (
+        <SubscriptionRequiredModal 
+          isOpen={true} 
+          workspaceId={user.currentWorkspaceId} 
+        />
+      )}
     </>
   )
 }
