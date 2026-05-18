@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react"
 import {
   Database,
   Users,
-  Briefcase,
   Activity,
   Home,
   ShieldAlert
@@ -30,7 +29,6 @@ import {
 const adminNavItems = [
   { title: "Overview", icon: Database, href: "/super-admin" },
   { title: "Users & Accounts", icon: Users, href: "/super-admin/users" },
-  { title: "Workspaces Grid", icon: Briefcase, href: "/super-admin/workspaces" },
   { title: "Global Activity Trail", icon: Activity, href: "/super-admin/audit" },
 ]
 

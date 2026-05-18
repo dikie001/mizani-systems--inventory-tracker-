@@ -55,9 +55,7 @@ export default function SuperAdminAuditPage() {
 
   const [auditSearch, setAuditSearch] = useState("")
   const [auditFilterType, setAuditFilterType] = useState<string>("all")
-  const [auditViewMode, setAuditViewMode] = useState<"table" | "cards">(
-    "table"
-  )
+  const [auditViewMode, setAuditViewMode] = useState<"table" | "cards">("table")
   const [auditPage, setAuditPage] = useState(1)
   const logsPerPage = 12
 
@@ -262,18 +260,24 @@ export default function SuperAdminAuditPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="whitespace-nowrap">Timestamp</TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        Timestamp
+                      </TableHead>
                       <TableHead>Action</TableHead>
                       <TableHead className="whitespace-nowrap">Type</TableHead>
                       <TableHead>User</TableHead>
-                      <TableHead className="whitespace-nowrap">Workspace</TableHead>
-                      <TableHead className="whitespace-nowrap">IP Address</TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        Workspace
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        IP Address
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {paginatedLogs.map((log) => (
                       <TableRow key={log.id}>
-                        <TableCell className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+                        <TableCell className="text-xs font-medium whitespace-nowrap text-muted-foreground">
                           {new Date(log.timestamp).toLocaleString([], {
                             dateStyle: "short",
                             timeStyle: "short",
@@ -317,15 +321,16 @@ export default function SuperAdminAuditPage() {
                                 {log.user?.name || "System"}
                               </p>
                               <p className="truncate text-[10px] text-muted-foreground">
-                                {log.user?.email || "system@stockvault.internal"}
+                                {log.user?.email ||
+                                  "system@stockvault.internal"}
                               </p>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                        <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
                           {log.workspaceName || "Global Space"}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap font-mono text-[11px] text-muted-foreground">
+                        <TableCell className="font-mono text-[11px] whitespace-nowrap text-muted-foreground">
                           {log.ip || "-"}
                         </TableCell>
                       </TableRow>

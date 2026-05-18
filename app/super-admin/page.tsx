@@ -358,9 +358,6 @@ export default function SuperAdminPage() {
               <Button onClick={() => router.push("/super-admin/users")}>
                 View Users
               </Button>
-              <Button onClick={() => router.push("/super-admin/workspaces")}>
-                View Workspaces
-              </Button>
               <Button onClick={exportUsersCsv}>Export Users CSV</Button>
               <Button
                 variant="outline"

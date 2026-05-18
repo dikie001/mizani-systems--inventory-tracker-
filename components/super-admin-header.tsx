@@ -112,8 +112,6 @@ export function SuperAdminHeader() {
     switch (path) {
       case "/super-admin/users":
         return "Users & Accounts"
-      case "/super-admin/workspaces":
-        return "Workspaces Portfolio"
       case "/super-admin/audit":
         return "Global Activity Trail"
       default:
