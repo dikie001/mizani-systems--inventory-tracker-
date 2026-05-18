@@ -3,14 +3,14 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { 
-  Box, 
-  Check, 
-  ChevronsUpDown, 
-  PlusCircle, 
-  Settings, 
+import {
+  Box,
+  Check,
+  ChevronsUpDown,
+  PlusCircle,
+  Settings,
   Building2,
-  Loader2
+  Loader2,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -29,10 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { 
-  getWorkspaces, 
-  switchWorkspace 
-} from "@/lib/actions/workspace"
+import { getWorkspaces, switchWorkspace } from "@/lib/actions/workspace"
 import { toast } from "sonner"
 import { useSidebar } from "@/components/ui/sidebar"
 
@@ -46,14 +43,15 @@ export function WorkspaceSwitcher() {
   const { data: session, update: updateSession } = useSession()
   const router = useRouter()
   const { isMobile, setOpenMobile } = useSidebar()
-  
+
   const [open, setOpen] = React.useState(false)
   const [workspaces, setWorkspaces] = React.useState<Workspace[]>([])
   const [isLoading, setIsLoading] = React.useState(false)
   const [isSwitching, setIsSwitching] = React.useState<string | null>(null)
 
   const currentWorkspaceId = session?.user?.workspaceId
-  const currentWorkspaceName = session?.user?.workspaceName || "Select Workspace"
+  const currentWorkspaceName =
+    session?.user?.workspaceName || "Select Workspace"
 
   React.useEffect(() => {
     async function loadWorkspaces() {
@@ -79,7 +77,7 @@ export function WorkspaceSwitcher() {
         toast.success(`Switched to ${workspace.name}`)
         await updateSession({
           workspaceId: workspace.id,
-          workspaceName: workspace.name
+          workspaceName: workspace.name,
         })
         setOpen(false)
         router.refresh()
@@ -103,7 +101,7 @@ export function WorkspaceSwitcher() {
           aria-expanded={open}
           aria-label="Select a workspace"
           className={cn(
-            "w-full justify-between h-12 bg-sidebar-accent/30 border-sidebar-border/50 hover:bg-sidebar-accent/50 text-sidebar-foreground transition-all duration-200",
+            "h-12 w-full justify-between border-sidebar-border/50 bg-sidebar-accent/30 text-sidebar-foreground transition-all duration-200 hover:bg-sidebar-accent/50",
             "group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:p-0"
           )}
         >
@@ -112,7 +110,7 @@ export function WorkspaceSwitcher() {
               <Box className="h-4 w-4 group-data-[collapsible=icon]:h-3.5 group-data-[collapsible=icon]:w-3.5" />
             </div>
             <div className="flex flex-col items-start gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
-              <span className="text-[13px] font-bold tracking-tight text-white truncate max-w-30">
+              <span className="max-w-30 truncate text-[13px] font-bold tracking-tight text-white">
                 {currentWorkspaceName}
               </span>
               <span className="text-[10px] font-medium tracking-wide text-sidebar-foreground/45 uppercase">
@@ -123,7 +121,7 @@ export function WorkspaceSwitcher() {
           <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50 group-data-[collapsible=icon]:hidden" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-60 p-0 bg-sidebar border-sidebar-border shadow-xl backdrop-blur-xl">
+      <PopoverContent className="w-60 border-sidebar-border bg-sidebar p-0 shadow-xl backdrop-blur-xl">
         <Command className="bg-transparent">
           <CommandList>
             <CommandInput placeholder="Search workspace..." className="h-9" />
@@ -133,7 +131,7 @@ export function WorkspaceSwitcher() {
                 <CommandItem
                   key={workspace.id}
                   onSelect={() => onWorkspaceSelect(workspace)}
-                  className="flex items-center gap-2 px-2 py-2 cursor-pointer"
+                  className="flex cursor-pointer items-center gap-2 px-2 py-2"
                 >
                   <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted">
                     <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
@@ -143,8 +141,10 @@ export function WorkspaceSwitcher() {
                   </span>
                   {isSwitching === workspace.id ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : currentWorkspaceId === workspace.id && (
-                    <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  ) : (
+                    currentWorkspaceId === workspace.id && (
+                      <Check className="h-3.5 w-3.5 text-emerald-500" />
+                    )
                   )}
                 </CommandItem>
               ))}
@@ -160,7 +160,7 @@ export function WorkspaceSwitcher() {
                   url.searchParams.set("createWorkspace", "true")
                   router.push(url.pathname + url.search)
                 }}
-                className="flex items-center gap-2 px-2 py-2 cursor-pointer"
+                className="flex cursor-pointer items-center gap-2 px-2 py-2"
               >
                 <PlusCircle className="h-4 w-4 text-emerald-500" />
                 <span className="text-sm font-medium">Create Workspace</span>
@@ -170,7 +170,7 @@ export function WorkspaceSwitcher() {
                   setOpen(false)
                   router.push("/dashboard/settings")
                 }}
-                className="flex items-center gap-2 px-2 py-2 cursor-pointer"
+                className="flex cursor-pointer items-center gap-2 px-2 py-2"
               >
                 <Settings className="h-4 w-4 text-slate-400" />
                 <span className="text-sm font-medium">Settings</span>
