@@ -68,7 +68,7 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!(session?.user as any)?.currentWorkspaceId) return
+    if (!(session?.user as any)?.workspaceId) return
 
     const fetchBillingData = async () => {
       try {
@@ -101,7 +101,7 @@ export default function BillingPage() {
     }
 
     fetchBillingData()
-  }, [(session?.user as any)?.currentWorkspaceId])
+  }, [(session?.user as any)?.workspaceId])
 
   const formatDate = (date: string | null) => {
     if (!date) return "—"
@@ -221,14 +221,21 @@ export default function BillingPage() {
               )}
             </div>
 
-            {subscription.status === "active" && (
+            {(subscription.status === "active" || subscription.status === "trial") && (
               <div className="flex gap-2 border-t pt-4">
-                <Button variant="outline" size="sm">
-                  Change Plan
+                <Button variant="outline" size="sm" asChild>
+                  <a href="/onboarding">Upgrade / Change Plan</a>
                 </Button>
-                <Button variant="outline" size="sm" className="text-destructive">
-                  Cancel Subscription
-                </Button>
+                {subscription.status === "active" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive"
+                    onClick={() => toast.success("Please contact support at billing@stockvault.com to cancel your paid plan.")}
+                  >
+                    Cancel Subscription
+                  </Button>
+                )}
               </div>
             )}
           </CardContent>

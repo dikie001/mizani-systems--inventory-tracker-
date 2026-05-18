@@ -15,6 +15,7 @@ import {
   ShoppingCart,
   TrendingUp,
   Shield,
+  CreditCard,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -67,6 +68,12 @@ const secondaryNavItems = [
     title: "Audit Log",
     icon: ClipboardList,
     href: "/dashboard/audit",
+    badge: null,
+  },
+  {
+    title: "Billing",
+    icon: CreditCard,
+    href: "/dashboard/settings/billing",
     badge: null,
   },
 ]
