@@ -247,8 +247,8 @@ export default function SuperAdminAuditPage() {
                     <div className="flex items-center gap-2">
                       {log.user?.image ? (
                         <Image
-                          src={log.user.image}
-                          alt={log.user.name}
+                          src={log.user.image ?? ""}
+                          alt={log.user?.name ?? "User"}
                           width={24}
                           height={24}
                           className="h-6 w-6 rounded-full object-cover"
