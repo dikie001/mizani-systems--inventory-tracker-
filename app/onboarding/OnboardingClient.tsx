@@ -15,7 +15,6 @@ import {
   Briefcase,
   Layers,
   ChevronRight,
-  Sparkles,
   CreditCard,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -31,7 +30,7 @@ const steps = [
     id: "name",
     title: "Welcome to StockVault",
     description: "Let's start with your business name.",
-    icon: <Sparkles className="h-4 w-4 text-primary" />,
+    icon: <Briefcase className="h-4 w-4 text-primary" />,
   },
   {
     id: "type",
@@ -581,8 +580,7 @@ export default function OnboardingClient({
                 <div className="space-y-4">
                   <div className="border border-white/10 rounded-xl p-4 bg-white/5 space-y-3 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-3">
-                      <Badge className="bg-primary/20 border border-primary/30 text-primary font-bold px-2 py-0.5 text-[10px] flex gap-1 items-center">
-                        <Sparkles className="w-2.5 h-2.5" />
+                      <Badge className="bg-primary/20 border border-primary/30 text-primary font-bold px-2 py-0.5 text-[10px]">
                         Selected Plan
                       </Badge>
                     </div>

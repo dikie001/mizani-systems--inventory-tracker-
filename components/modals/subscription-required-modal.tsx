@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { PLANS, formatKES } from "@/lib/plans"
-import { CreditCard, Loader2, Sparkles } from "lucide-react"
+import { CreditCard, Loader2 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -108,9 +108,8 @@ export function SubscriptionRequiredModal({
                     <div className="absolute top-0 right-0 p-2">
                       <Badge
                         variant="default"
-                        className="flex items-center gap-1 bg-primary font-bold text-primary-foreground shadow-sm"
+                        className="bg-primary font-bold text-primary-foreground shadow-sm"
                       >
-                        <Sparkles className="h-3 w-3" />
                         {plan.badge || "Popular"}
                       </Badge>
                     </div>

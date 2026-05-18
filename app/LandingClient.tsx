@@ -373,34 +373,6 @@ function HeroSection({ session }: { session: Session | null }) {
             </Table>
           </div>
         </motion.div>
-
-        {/* Stats strip */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={stagger}
-          className="mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-border/50 bg-border/50 sm:grid-cols-4"
-        >
-          {[
-            { label: "Products tracked", value: "12,400+", icon: Package },
-            { label: "Avg accuracy", value: "99.8%", icon: Shield },
-            { label: "Active warehouses", value: "340+", icon: Database },
-            { label: "Daily syncs", value: "2.1M", icon: TrendingUp },
-          ].map(({ label, value, icon: Icon }, i) => (
-            <motion.div
-              key={label}
-              variants={fadeUp}
-              custom={0.5 + i * 0.06}
-              className="flex items-center gap-3 bg-card px-5 py-4"
-            >
-              <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-lg font-bold tabular-nums">{value}</p>
-                <p className="text-[11px] text-muted-foreground">{label}</p>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
       </div>
     </section>
   )
@@ -433,11 +405,13 @@ const FEATURES = [
     icon: TrendingUp,
     title: "Demand Forecasting",
     desc: "Machine-learning models trained on your historical data surface seasonality trends and recommended stock levels.",
+    comingSoon: true,
   },
   {
     icon: Users,
     title: "Multi-Team Collaboration",
     desc: "Fine-grained permissions for finance, ops, and logistics teams so everyone sees exactly what they need — nothing more.",
+    comingSoon: true,
   },
 ]
 

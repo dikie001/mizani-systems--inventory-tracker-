@@ -12,7 +12,6 @@ import {
   AlertCircle,
   ArrowRight,
   Receipt,
-  Sparkles,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -164,14 +163,6 @@ function SuccessContent() {
                     className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10"
                   >
                     <CheckCircle2 className="h-9 w-9 text-emerald-500" />
-                  </motion.div>
-                  <motion.div
-                    initial={{ scale: 0, rotate: -20 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="absolute -right-1 -top-1"
-                  >
-                    <Sparkles className="h-5 w-5 text-amber-400" />
                   </motion.div>
                 </div>
 
