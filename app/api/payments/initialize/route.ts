@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/auth.config"
-import { prisma } from "@/lib/prisma"
+import { auth } from "@/auth"
+import prisma from "@/lib/prisma"
 import { paystack } from "@/lib/paystack"
+import { getPlanById } from "@/lib/plans"
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authConfig)
+    const session = await auth()
 
     if (!session || !session.user?.email) {
       return NextResponse.json(
@@ -24,12 +24,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the plan
-    const plan = await prisma.plan.findUnique({
-      where: { id: planId },
-    })
-
-    if (!plan) {
+    // Look up plan from static config (planId is the plan name: trial/basic/pro)
+    const staticPlan = getPlanById(planId)
+    if (!staticPlan) {
       return NextResponse.json(
         { error: "Plan not found" },
         { status: 404 }
@@ -48,26 +45,62 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // If it's a free plan, skip Paystack
-    if (plan.monthlyPrice === 0) {
-      // Create subscription directly
-      const subscription = await prisma.subscription.create({
-        data: {
-          workspaceId,
-          planId,
-          status: "active",
-          paymentStatus: "paid",
-          currentBillingCycleStart: new Date(),
-          currentBillingCycleEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        },
+    // If it's a free/trial plan, skip Paystack
+    if (staticPlan.monthlyPrice === 0) {
+      // Try to find or create a DB plan record for trial
+      let dbPlan = await prisma.plan.findFirst({
+        where: { name: staticPlan.id },
       })
 
-      // Update workspace
+      if (!dbPlan) {
+        dbPlan = await prisma.plan.create({
+          data: {
+            name: staticPlan.id,
+            displayName: staticPlan.displayName,
+            badge: staticPlan.badge,
+            description: staticPlan.description,
+            monthlyPrice: staticPlan.monthlyPrice,
+            features: staticPlan.features,
+          },
+        })
+      }
+
+      // Create or update subscription directly
+      const existingSub = await prisma.subscription.findUnique({
+        where: { workspaceId },
+      })
+
+      let subscription
+      if (existingSub) {
+        subscription = await prisma.subscription.update({
+          where: { workspaceId },
+          data: {
+            planId: dbPlan.id,
+            status: "active",
+            paymentStatus: "paid",
+            currentBillingCycleStart: new Date(),
+            currentBillingCycleEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14-day trial
+          },
+        })
+      } else {
+        subscription = await prisma.subscription.create({
+          data: {
+            workspaceId,
+            planId: dbPlan.id,
+            status: "active",
+            paymentStatus: "paid",
+            currentBillingCycleStart: new Date(),
+            currentBillingCycleEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+          },
+        })
+      }
+
+      // Update workspace with plan and subscription
       await prisma.workspace.update({
         where: { id: workspaceId },
         data: {
           subscriptionId: subscription.id,
-          selectedPlanId: planId,
+          selectedPlanId: dbPlan.id,
         },
       })
 
@@ -78,24 +111,65 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Paid plan — ensure DB plan record exists
+    let dbPlan = await prisma.plan.findFirst({
+      where: { name: staticPlan.id },
+    })
+
+    if (!dbPlan) {
+      dbPlan = await prisma.plan.create({
+        data: {
+          name: staticPlan.id,
+          displayName: staticPlan.displayName,
+          badge: staticPlan.badge,
+          description: staticPlan.description,
+          monthlyPrice: staticPlan.monthlyPrice,
+          features: staticPlan.features,
+        },
+      })
+    }
+
+    // Tag the workspace with the selected plan so verify can find it
+    await prisma.workspace.update({
+      where: { id: workspaceId },
+      data: { selectedPlanId: dbPlan.id },
+    })
+
     // Initialize payment with Paystack
-    const reference = `${workspace.id}-${Date.now()}`
-    const amountInKobo = Math.round(plan.monthlyPrice * 100)
+    const reference = `${workspaceId.slice(0, 8)}-${Date.now()}`
+    // Paystack amounts are in the smallest currency unit (kobo/cents)
+    // For KES, 1 KES = 100 cents in Paystack
+    const amountInSmallestUnit = Math.round(staticPlan.monthlyPrice * 100)
+
+    const callbackUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/payments/success`
 
     const paystackResponse = await paystack.initializePayment({
       email: session.user.email,
-      amount: amountInKobo,
+      amount: amountInSmallestUnit,
       reference,
+      callback_url: callbackUrl,
       metadata: {
         workspaceId,
-        planId,
-        planName: plan.name,
+        planId: staticPlan.id,
+        planName: staticPlan.displayName,
+        custom_fields: [
+          {
+            display_name: "Workspace",
+            variable_name: "workspace_id",
+            value: workspaceId,
+          },
+          {
+            display_name: "Plan",
+            variable_name: "plan_name",
+            value: staticPlan.displayName,
+          },
+        ],
       },
     })
 
     if (!paystackResponse.status) {
       return NextResponse.json(
-        { error: paystackResponse.message },
+        { error: paystackResponse.message || "Failed to initialize payment" },
         { status: 400 }
       )
     }
@@ -104,7 +178,7 @@ export async function POST(request: NextRequest) {
     const payment = await prisma.payment.create({
       data: {
         workspaceId,
-        amount: plan.monthlyPrice,
+        amount: staticPlan.monthlyPrice,
         status: "pending",
         paystackReference: reference,
         paystackAccessCode: paystackResponse.data?.access_code,

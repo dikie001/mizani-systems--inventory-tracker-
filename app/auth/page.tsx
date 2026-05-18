@@ -150,7 +150,11 @@ export default function AuthPage() {
     setErrorMessage(null)
 
     const popupUrl = new URL("/auth/google", window.location.origin)
-    popupUrl.searchParams.set("callbackUrl", "/onboarding")
+    // After auth, go to onboarding (with plan if present)
+    const onboardingUrl = planId
+      ? `/onboarding?plan=${planId}`
+      : "/onboarding"
+    popupUrl.searchParams.set("callbackUrl", onboardingUrl)
     if (planId) {
       popupUrl.searchParams.set("plan", planId)
     }
@@ -167,8 +171,8 @@ export default function AuthPage() {
     )
 
     if (!popup) {
-      await signIn("google", { 
-        callbackUrl: `/onboarding${planId ? `?plan=${planId}` : ""}` 
+      await signIn("google", {
+        callbackUrl: onboardingUrl,
       })
       return
     }
@@ -216,8 +220,16 @@ export default function AuthPage() {
             </div>
             <div className="space-y-1">
               <CardTitle className="text-2xl tracking-tight">
-                Continue to StockVault
+                Continue to Mizani Systems
               </CardTitle>
+              {selectedPlan && (
+                <p className="text-sm text-muted-foreground">
+                  Signing up for{" "}
+                  <span className="font-semibold text-foreground">
+                    {selectedPlan.displayName}
+                  </span>
+                </p>
+              )}
             </div>
           </CardHeader>
 
@@ -226,75 +238,16 @@ export default function AuthPage() {
               <Alert className="mb-4 border-primary/30 bg-primary/5">
                 <Info className="h-4 w-4" />
                 <AlertDescription className="text-sm">
-                  You're signing up for the{" "}
+                  You&apos;re signing up for the{" "}
                   <span className="font-semibold">{selectedPlan.displayName}</span>{" "}
-                  plan
+                  plan —{" "}
+                  {selectedPlan.monthlyPrice === 0
+                    ? "Free"
+                    : `KES ${selectedPlan.monthlyPrice.toLocaleString()}/mo`}
                 </AlertDescription>
               </Alert>
             )}
 
-            <Button
-              className="h-11 w-full rounded-xl"
-              onClick={handleGoogleSignIn}
-              disabled={isGoogleLoading}
-            >
-              {isGoogleLoading ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : (
-                <GoogleIcon />
-              )}
-              {isGoogleLoading ? "Opening Google..." : "Continue with Google"}
-            </Button>
-
-            {errorMessage ? (
-              <p className="mt-3 text-center text-sm text-destructive">
-                {errorMessage}
-              </p>
-            ) : null}
-
-            <p className="mt-4 text-center text-xs leading-5 text-muted-foreground">
-              By continuing, you agree to our Terms and Privacy Policy.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    </main>
-  )
-}
-
-  return (
-    <main className="flex min-h-svh items-center justify-center bg-background px-6 py-6">
-      <div className="w-full max-w-sm sm:max-w-md">
-        <Button
-          asChild
-          variant="ghost"
-          size="icon"
-          className="mb-4 h-9 w-9 rounded-full"
-        >
-          <Link href="/">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-
-        <Card className="rounded-2xl border bg-card text-card-foreground shadow-sm">
-          <CardHeader className="items-center gap-3 px-6 pt-6 text-center">
-            <div className="mb-1 flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden">
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={48}
-                height={48}
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <div className="space-y-1">
-              <CardTitle className="text-2xl tracking-tight">
-                Continue to StockVault
-              </CardTitle>
-            </div>
-          </CardHeader>
-
-          <CardContent className="px-6 pt-0 pb-6">
             <Button
               className="h-11 w-full rounded-xl"
               onClick={handleGoogleSignIn}

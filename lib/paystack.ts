@@ -42,7 +42,6 @@ export interface PaystackVerifyPaymentResponse {
       first_name: string
       last_name: string
       email: string
-      customer_code: string
       phone: string
       metadata: Record<string, any>
     }

@@ -321,7 +321,7 @@ model Payment {
   status   String @default("pending") // pending, success, failed, cancelled
 
   // Paystack integration
-  paystackReference  String?
+  paystackReference  String? @unique
   paystackAccessCode String?
   paystackAuthCode   String?
 

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const paymentData = verifyResponse.data!
+    const paymentData = verifyResponse.data
 
     // Find the payment record
     const payment = await prisma.payment.findUnique({
@@ -41,14 +41,14 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    if (paymentData.status === "success") {
+    if (paymentData && (paymentData as any).status === "success") {
       // Update payment status
       await prisma.payment.update({
         where: { id: payment.id },
         data: {
           status: "success",
-          paidAt: new Date(paymentData.paid_at),
-          paystackAuthCode: paymentData.authorization?.authorization_code,
+          paidAt: new Date((paymentData as any).paid_at),
+          paystackAuthCode: (paymentData as any).authorization?.authorization_code,
         },
       })
 
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
             status: "active",
             paymentStatus: "paid",
             paystackAuthorizationCode:
-              paymentData.authorization?.authorization_code,
+              (paymentData as any).authorization?.authorization_code,
             currentBillingCycleStart: new Date(),
             currentBillingCycleEnd: new Date(
               Date.now() + 30 * 24 * 60 * 60 * 1000
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
             status: "active",
             paymentStatus: "paid",
             paystackAuthorizationCode:
-              paymentData.authorization?.authorization_code,
+              (paymentData as any).authorization?.authorization_code,
             currentBillingCycleStart: new Date(),
             currentBillingCycleEnd: new Date(
               Date.now() + 30 * 24 * 60 * 60 * 1000
@@ -111,9 +111,9 @@ export async function GET(request: NextRequest) {
         },
       })
 
-      // Create invoice for this payment
+      // Create invoice for this payment and link it to the payment
       const invoiceNumber = `INV-${Date.now()}`
-      await prisma.invoice.create({
+      const invoice = await prisma.invoice.create({
         data: {
           workspaceId: payment.workspaceId,
           subscriptionId: subscription.id,
@@ -131,10 +131,10 @@ export async function GET(request: NextRequest) {
         },
       })
 
-      // Link invoice to payment
+      // Link invoice to payment using the invoice's actual id (CUID), not invoiceNumber
       await prisma.payment.update({
         where: { id: payment.id },
-        data: { invoiceId: invoiceNumber },
+        data: { invoiceId: invoice.id },
       })
 
       return NextResponse.json(

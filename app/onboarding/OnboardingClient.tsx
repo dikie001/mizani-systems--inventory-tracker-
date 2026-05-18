@@ -132,8 +132,8 @@ export default function OnboardingClient() {
       const result = await createWorkspace(formData)
       if (result.success) {
         setWorkspaceData({
-          workspaceId: result.workspaceId,
-          workspaceName: result.workspaceName,
+          workspaceId: result.workspaceId!,
+          workspaceName: result.workspaceName!,
         })
 
         // Show plan confirmation if there's a paid plan
@@ -142,8 +142,8 @@ export default function OnboardingClient() {
         } else {
           // Free plan or trial - complete immediately
           await update({
-            workspaceId: result.workspaceId,
-            workspaceName: result.workspaceName,
+            workspaceId: result.workspaceId!,
+            workspaceName: result.workspaceName!,
           })
           toast.success("Workspace created successfully!")
           window.location.href = "/dashboard"
