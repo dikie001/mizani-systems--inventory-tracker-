@@ -234,8 +234,6 @@ function HeroSection({ session }: { session: Session | null }) {
           variants={stagger}
           className="mx-auto mb-14 max-w-3xl text-center"
         >
-      
-
           <motion.h1
             variants={fadeUp}
             custom={0.08}
@@ -949,7 +947,11 @@ function Footer() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function LandingClient({ session }: { session: Session | null }) {
+export default function LandingClient({
+  session,
+}: {
+  session: Session | null
+}) {
   return (
     <div className="min-h-screen bg-background text-foreground antialiased selection:bg-primary/15">
       <Navbar session={session} />

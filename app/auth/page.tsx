@@ -7,20 +7,34 @@ import { signIn } from "next-auth/react"
 import { ArrowLeft, LoaderCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 function GoogleIcon() {
   return (
-    <svg viewBox="0 0 48 48" aria-hidden="true" className="h-4 w-4 shrink-0 text-foreground">
-      <path fill="currentColor" d="M24 9.5c3.54 0 6.71 1.22 9.23 3.6l6.9-6.9C35.99 2.66 30.52 0 24 0 14.62 0 6.53 5.38 2.62 13.22l8.04 6.26C12.55 13.59 17.77 9.5 24 9.5Z" />
-      <path fill="currentColor" opacity="0.92" d="M46.5 24.5c0-1.55-.15-3.05-.42-4.5H24v9h12.93c-.6 3.16-2.45 5.84-5.11 7.64l7.9 6.13C43.98 38.1 46.5 31.93 46.5 24.5Z" />
-      <path fill="currentColor" opacity="0.7" d="M10.66 28.98A14.5 14.5 0 0 1 9.5 24c0-1.7.3-3.33.84-4.82L2.3 12.92A24 24 0 0 0 0 24c0 3.86.92 7.51 2.54 10.74l8.12-5.76Z" />
-      <path fill="currentColor" opacity="0.84" d="M24 48c6.48 0 11.94-2.12 15.92-5.77l-7.9-6.13c-2.2 1.48-5.01 2.35-8.02 2.35-6.16 0-11.35-4.15-13.2-9.76l-8.1 5.98C6.56 42.73 14.67 48 24 48Z" />
+    <svg
+      viewBox="0 0 48 48"
+      aria-hidden="true"
+      className="h-4 w-4 shrink-0 text-foreground"
+    >
+      <path
+        fill="currentColor"
+        d="M24 9.5c3.54 0 6.71 1.22 9.23 3.6l6.9-6.9C35.99 2.66 30.52 0 24 0 14.62 0 6.53 5.38 2.62 13.22l8.04 6.26C12.55 13.59 17.77 9.5 24 9.5Z"
+      />
+      <path
+        fill="currentColor"
+        opacity="0.92"
+        d="M46.5 24.5c0-1.55-.15-3.05-.42-4.5H24v9h12.93c-.6 3.16-2.45 5.84-5.11 7.64l7.9 6.13C43.98 38.1 46.5 31.93 46.5 24.5Z"
+      />
+      <path
+        fill="currentColor"
+        opacity="0.7"
+        d="M10.66 28.98A14.5 14.5 0 0 1 9.5 24c0-1.7.3-3.33.84-4.82L2.3 12.92A24 24 0 0 0 0 24c0 3.86.92 7.51 2.54 10.74l8.12-5.76Z"
+      />
+      <path
+        fill="currentColor"
+        opacity="0.84"
+        d="M24 48c6.48 0 11.94-2.12 15.92-5.77l-7.9-6.13c-2.2 1.48-5.01 2.35-8.02 2.35-6.16 0-11.35-4.15-13.2-9.76l-8.1 5.98C6.56 42.73 14.67 48 24 48Z"
+      />
     </svg>
   )
 }
@@ -34,7 +48,9 @@ function getAuthErrorMessage(error: string | null) {
     case "Configuration":
       return "Google sign-in is not configured correctly yet."
     default:
-      return error ? "Google sign-in could not be completed. Please try again." : null
+      return error
+        ? "Google sign-in could not be completed. Please try again."
+        : null
   }
 }
 
@@ -66,7 +82,7 @@ export default function AuthPage() {
         type: "google-auth:result",
         error,
       },
-      window.location.origin,
+      window.location.origin
     )
     window.close()
   }, [])
@@ -94,7 +110,8 @@ export default function AuthPage() {
       }
 
       const callbackUrl =
-        typeof payload.callbackUrl === "string" && payload.callbackUrl.length > 0
+        typeof payload.callbackUrl === "string" &&
+        payload.callbackUrl.length > 0
           ? payload.callbackUrl
           : "/dashboard"
 
@@ -127,7 +144,7 @@ export default function AuthPage() {
     const popup = window.open(
       popupUrl.toString(),
       "google-auth-popup",
-      `popup=yes,width=${width},height=${height},left=${left},top=${top}`,
+      `popup=yes,width=${width},height=${height},left=${left},top=${top}`
     )
 
     if (!popup) {
@@ -154,7 +171,12 @@ export default function AuthPage() {
   return (
     <main className="flex min-h-svh items-center justify-center bg-background px-6 py-6">
       <div className="w-full max-w-sm sm:max-w-md">
-        <Button asChild variant="ghost" size="icon" className="mb-4 h-9 w-9 rounded-full">
+        <Button
+          asChild
+          variant="ghost"
+          size="icon"
+          className="mb-4 h-9 w-9 rounded-full"
+        >
           <Link href="/">
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -162,8 +184,12 @@ export default function AuthPage() {
 
         <Card className="rounded-2xl border bg-card text-card-foreground shadow-sm">
           <CardHeader className="items-center gap-3 px-6 pt-6 text-center">
-            <div className="flex h-12 w-12 items-center justify-center shrink-0 overflow-hidden mb-1">
-              <img src="/logo.png" alt="Logo" className="h-full w-full object-contain" />
+            <div className="mb-1 flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="h-full w-full object-contain"
+              />
             </div>
             <div className="space-y-1">
               <CardTitle className="text-2xl tracking-tight">
@@ -178,7 +204,11 @@ export default function AuthPage() {
               onClick={handleGoogleSignIn}
               disabled={isGoogleLoading}
             >
-              {isGoogleLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+              {isGoogleLoading ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
               {isGoogleLoading ? "Opening Google..." : "Continue with Google"}
             </Button>
 
@@ -187,8 +217,6 @@ export default function AuthPage() {
                 {errorMessage}
               </p>
             ) : null}
-
-          
 
             <p className="mt-4 text-center text-xs leading-5 text-muted-foreground">
               By continuing, you agree to our Terms and Privacy Policy.
@@ -199,4 +227,3 @@ export default function AuthPage() {
     </main>
   )
 }
-
