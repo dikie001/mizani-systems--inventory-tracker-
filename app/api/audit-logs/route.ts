@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   const where: Prisma.AuditLogWhereInput = {
     workspaceId,
   }
-  
+
   if (search) {
     where.OR = [
       { action: { contains: search, mode: "insensitive" } },
@@ -37,13 +37,18 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" },
     })
 
-    const formatted = logs.map(l => ({
+    const formatted = logs.map((l) => ({
       id: l.id,
       action: l.action,
       entity: l.entity,
       type: l.type,
       user: l.user.name || l.user.email,
-      initials: l.user.name ? l.user.name.split(" ").map(n => n[0]).join("") : "U",
+      initials: l.user.name
+        ? l.user.name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+        : "U",
       timestamp: l.createdAt.toISOString().replace("T", " ").substring(0, 19),
       ip: l.ip || "Unknown",
     }))
@@ -51,6 +56,9 @@ export async function GET(request: Request) {
     return NextResponse.json(formatted)
   } catch (error) {
     console.error("Failed to fetch audit logs:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    )
   }
 }
