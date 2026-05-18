@@ -3,7 +3,12 @@
 import { useState, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
-import { AlertCircle, ArrowLeft, CheckCircle2, LoaderCircle } from "lucide-react"
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  LoaderCircle,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -19,14 +24,14 @@ function LinkAccountContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const email = searchParams.get("email")
-  
+
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleConfirmLink() {
     if (!email) return
-    
+
     setIsLoading(true)
     setError(null)
 
@@ -42,12 +47,11 @@ function LinkAccountContent() {
       }
 
       setIsSuccess(true)
-      
+
       // Now trigger sign-in again
       setTimeout(() => {
         signIn("google", { callbackUrl: "/dashboard" })
       }, 1500)
-      
     } catch {
       setError("Something went wrong. Please try again.")
       setIsLoading(false)
@@ -83,7 +87,7 @@ function LinkAccountContent() {
   return (
     <main className="flex min-h-svh items-center justify-center bg-background px-6 py-12">
       <div className="w-full max-w-md space-y-4">
-        <Card className="rounded-2xl border bg-card/50 backdrop-blur-sm shadow-xl">
+        <Card className="rounded-2xl border bg-card/50 shadow-xl backdrop-blur-sm">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
               {isSuccess ? (
@@ -96,19 +100,19 @@ function LinkAccountContent() {
               {isSuccess ? "Identity Verified" : "Account Exists"}
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              {isSuccess 
-                ? "Linking your account. One moment..." 
-                : `An account with ${email} already exists.`
-              }
+              {isSuccess
+                ? "Linking your account. One moment..."
+                : `An account with ${email} already exists.`}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-center">
             {!isSuccess && (
               <p className="text-sm leading-relaxed text-muted-foreground">
-                To keep your account secure, we need you to confirm that you want to link your Google account to your existing profile.
+                To keep your account secure, we need you to confirm that you
+                want to link your Google account to your existing profile.
               </p>
             )}
-            
+
             {error && (
               <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
                 <AlertCircle className="h-4 w-4 shrink-0" />
@@ -119,10 +123,10 @@ function LinkAccountContent() {
           <CardFooter className="flex flex-col gap-3">
             {!isSuccess ? (
               <>
-                <Button 
-                   className="h-11 w-full rounded-xl font-semibold" 
-                   onClick={handleConfirmLink}
-                   disabled={isLoading}
+                <Button
+                  className="h-11 w-full rounded-xl font-semibold"
+                  onClick={handleConfirmLink}
+                  disabled={isLoading}
                 >
                   {isLoading ? (
                     <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -130,9 +134,9 @@ function LinkAccountContent() {
                     "Confirm & Link Google Account"
                   )}
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  className="w-full rounded-xl" 
+                <Button
+                  variant="ghost"
+                  className="w-full rounded-xl"
                   onClick={() => router.push("/auth")}
                   disabled={isLoading}
                 >
@@ -153,11 +157,13 @@ function LinkAccountContent() {
 
 export default function LinkAccountPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-svh items-center justify-center bg-background">
-        <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex min-h-svh items-center justify-center bg-background">
+          <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
       <LinkAccountContent />
     </Suspense>
   )
