@@ -2,7 +2,81 @@ import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 
-import { subDays, format, startOfWeek, endOfWeek } from "date-fns"
+import {
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  eachWeekOfInterval,
+  endOfDay,
+  endOfMonth,
+  endOfWeek,
+  format,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+  subDays,
+  subMonths,
+} from "date-fns"
+
+type Bucket = {
+  label: string
+  start: Date
+  end: Date
+}
+
+function getRangeBuckets(range: string) {
+  const now = new Date()
+
+  if (range === "7d") {
+    const startDate = startOfDay(subDays(now, 6))
+    const buckets: Bucket[] = eachDayOfInterval({ start: startDate, end: now }).map(
+      (date) => ({
+        label: format(date, "MMM d"),
+        start: startOfDay(date),
+        end: endOfDay(date),
+      })
+    )
+    return { startDate, endDate: now, buckets }
+  }
+
+  if (range === "30d") {
+    const startDate = startOfDay(subDays(now, 29))
+    const buckets: Bucket[] = eachWeekOfInterval(
+      { start: startDate, end: now },
+      { weekStartsOn: 1 }
+    ).map((weekStart) => ({
+      label: format(weekStart, "MMM d"),
+      start: startOfDay(weekStart),
+      end: endOfWeek(weekStart, { weekStartsOn: 1 }),
+    }))
+
+    return { startDate, endDate: now, buckets }
+  }
+
+  if (range === "3m") {
+    const startDate = startOfDay(subMonths(now, 3))
+    const buckets: Bucket[] = eachWeekOfInterval(
+      { start: startDate, end: now },
+      { weekStartsOn: 1 }
+    ).map((weekStart) => ({
+      label: format(weekStart, "MMM d"),
+      start: startOfDay(weekStart),
+      end: endOfWeek(weekStart, { weekStartsOn: 1 }),
+    }))
+
+    return { startDate, endDate: now, buckets }
+  }
+
+  const startDate = startOfMonth(subMonths(now, 11))
+  const buckets: Bucket[] = eachMonthOfInterval({ start: startDate, end: now }).map(
+    (monthStart) => ({
+      label: format(monthStart, "MMM"),
+      start: startOfMonth(monthStart),
+      end: endOfMonth(monthStart),
+    })
+  )
+
+  return { startDate, endDate: now, buckets }
+}
 
 export async function GET(request: Request) {
   const session = await auth()
@@ -12,9 +86,41 @@ export async function GET(request: Request) {
 
   const workspaceId = session.user.workspaceId
   const { searchParams } = new URL(request.url)
+  const range = searchParams.get("range")
   const interval = searchParams.get("interval") || "monthly"
 
   try {
+    if (range) {
+      const { startDate, endDate, buckets } = getRangeBuckets(range)
+
+      const orders = await prisma.order.findMany({
+        where: {
+          workspaceId,
+          createdAt: { gte: startDate, lte: endDate },
+          status: { not: "cancelled" },
+        },
+        select: {
+          total: true,
+          createdAt: true,
+        },
+      })
+
+      const data = buckets.map((bucket) => {
+        const bucketOrders = orders.filter(
+          (order) => order.createdAt >= bucket.start && order.createdAt <= bucket.end
+        )
+        const revenue = bucketOrders.reduce((sum, order) => sum + order.total, 0)
+
+        return {
+          month: bucket.label,
+          revenue,
+          orders: bucketOrders.length,
+        }
+      })
+
+      return NextResponse.json(data)
+    }
+
     if (interval === "weekly") {
       const endDate = new Date()
       const startDate = subDays(endDate, 12 * 7) // Last 12 weeks
@@ -48,7 +154,6 @@ export async function GET(request: Request) {
         return {
           month: format(wk.start, "MMM dd"), // Label as the week's starting Monday (kept under 'month' field for chart compatibility)
           revenue,
-          costs: revenue * 0.65,
           orders: wkOrders.length
         }
       })
@@ -97,7 +202,6 @@ export async function GET(request: Request) {
       return {
         month: monthStr,
         revenue,
-        costs: revenue * 0.65,
         orders: monthOrders.length
       }
     })

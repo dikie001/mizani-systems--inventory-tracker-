@@ -8,16 +8,17 @@ import {
   Loader2,
   DollarSign,
   Package,
-  ShoppingBag,
-  Percent,
+  ShoppingCart,
+  Boxes,
 } from "lucide-react"
 import {
   Area,
-  AreaChart,
+  ComposedChart,
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
+  Line,
   Pie,
   PieChart,
   XAxis,
@@ -60,11 +61,29 @@ type CategoryDistribution = {
   value: number
 }
 
+type ReportStats = {
+  revenue?: { value?: number; change?: string }
+  orders?: { value?: number; change?: string }
+  itemsSold?: { value?: number; change?: string }
+  aov?: { value?: number; change?: string }
+}
+
+type RevenueTrend = {
+  month: string
+  revenue: number
+  orders: number
+}
+
+type TopProduct = {
+  product: string
+  units: number
+}
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 const revenueConfig: ChartConfig = {
   revenue: { label: "Revenue", color: "var(--chart-1)" },
-  costs: { label: "Costs", color: "var(--chart-4)" },
+  orders: { label: "Orders", color: "var(--chart-2)" },
 }
 
 const productConfig: ChartConfig = {
@@ -108,6 +127,9 @@ export default function ReportsPage() {
     fetcher
   )
   const currency = workspace?.currency || "KES"
+  const reportStats = (stats ?? {}) as ReportStats
+  const trendData = (Array.isArray(revenueData) ? revenueData : []) as RevenueTrend[]
+  const productData = (Array.isArray(topProducts) ? topProducts : []) as TopProduct[]
   const pieData = (categoryData ?? []) as CategoryDistribution[]
 
   const handleExport = () => {
@@ -117,29 +139,33 @@ export default function ReportsPage() {
   const kpis = [
     {
       label: "Total Revenue",
-      value: stats?.revenue.value,
-      change: stats?.revenue.change,
+      value: reportStats.revenue?.value,
+      change: reportStats.revenue?.change,
+      valueType: "currency",
       icon: DollarSign,
       color: "text-emerald-500",
     },
     {
-      label: "Total Costs",
-      value: stats?.costs.value,
-      change: stats?.costs.change,
-      icon: ShoppingBag,
-      color: "text-red-500",
+      label: "Total Orders",
+      value: reportStats.orders?.value,
+      change: reportStats.orders?.change,
+      valueType: "count",
+      icon: ShoppingCart,
+      color: "text-sky-500",
     },
     {
-      label: "Net Profit",
-      value: stats?.profit.value,
-      change: stats?.profit.change,
-      icon: Percent,
-      color: "text-blue-500",
+      label: "Units Sold",
+      value: reportStats.itemsSold?.value,
+      change: reportStats.itemsSold?.change,
+      valueType: "count",
+      icon: Boxes,
+      color: "text-violet-500",
     },
     {
       label: "Avg Order Value",
-      value: stats?.aov.value,
-      change: stats?.aov.change,
+      value: reportStats.aov?.value,
+      change: reportStats.aov?.change,
+      valueType: "currency",
       icon: Package,
       color: "text-amber-500",
     },
@@ -197,14 +223,16 @@ export default function ReportsPage() {
                 <>
                   <p className="mt-1 text-2xl font-bold">
                     {typeof kpi.value === "number"
-                      ? formatPrice(kpi.value, currency)
+                      ? kpi.valueType === "currency"
+                        ? formatPrice(kpi.value, currency)
+                        : new Intl.NumberFormat().format(kpi.value)
                       : "0"}
                   </p>
                   <p
-                    className={`mt-1 flex items-center gap-1 text-[10px] ${kpi.change?.startsWith("+") ? "text-emerald-500" : "text-red-500"}`}
+                    className={`mt-1 flex items-center gap-1 text-[10px] ${kpi.change?.startsWith("+") ? "text-emerald-500" : kpi.change?.startsWith("-") ? "text-red-500" : "text-muted-foreground"}`}
                   >
                     <TrendingUp className="h-2.5 w-2.5" />
-                    {kpi.change} vs last period
+                    {kpi.change || "0.0%"} vs last period
                   </p>
                 </>
               )}
@@ -216,45 +244,33 @@ export default function ReportsPage() {
       {/* Revenue vs Costs Chart */}
       <Card className="print:shadow-none">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Revenue vs Costs</CardTitle>
+          <CardTitle className="text-lg">Revenue Trend</CardTitle>
           <CardDescription>
-            Financial performance for the selected period
+            Revenue and order volume for the selected period
           </CardDescription>
         </CardHeader>
         <CardContent>
           {revLoading ? (
-            <div className="flex h-[300px] items-center justify-center">
+            <div className="flex h-56 items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <ChartContainer config={revenueConfig} className="h-[300px] w-full">
+            <ChartContainer config={revenueConfig} className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={revenueData || []}
-                  margin={{ top: 10, left: 10, right: 10, bottom: 0 }}
+                <ComposedChart
+                  data={trendData}
+                  margin={{ top: 8, left: 4, right: 4, bottom: 0 }}
                 >
                   <defs>
-                    <linearGradient id="fillRev" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop
                         offset="0%"
                         stopColor="var(--color-revenue)"
-                        stopOpacity={0.25}
+                        stopOpacity={0.22}
                       />
                       <stop
                         offset="100%"
                         stopColor="var(--color-revenue)"
-                        stopOpacity={0.02}
-                      />
-                    </linearGradient>
-                    <linearGradient id="fillCost" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="0%"
-                        stopColor="var(--color-costs)"
-                        stopOpacity={0.2}
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="var(--color-costs)"
                         stopOpacity={0.02}
                       />
                     </linearGradient>
@@ -265,9 +281,10 @@ export default function ReportsPage() {
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
-                    minTickGap={30}
+                    minTickGap={24}
                   />
                   <YAxis
+                    yAxisId="left"
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
@@ -277,6 +294,14 @@ export default function ReportsPage() {
                         : `${currency} ${(v / 1000).toFixed(0)}k`
                     }
                   />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    tickFormatter={(v) => new Intl.NumberFormat().format(v)}
+                  />
                   <ChartTooltip
                     content={
                       <ChartTooltipContent
@@ -285,12 +310,14 @@ export default function ReportsPage() {
                             <span className="text-muted-foreground">
                               {name === "revenue"
                                 ? "Revenue"
-                                : name === "costs"
-                                  ? "Costs"
+                                : name === "orders"
+                                  ? "Orders"
                                   : name}
                             </span>
                             <span className="font-mono font-medium">
-                              {formatPrice(Number(value), currency)}
+                              {name === "revenue"
+                                ? formatPrice(Number(value), currency)
+                                : new Intl.NumberFormat().format(Number(value))}
                             </span>
                           </div>
                         )}
@@ -299,20 +326,22 @@ export default function ReportsPage() {
                   />
                   <ChartLegend content={<ChartLegendContent />} />
                   <Area
-                    type="monotone"
+                    yAxisId="left"
+                    type="natural"
                     dataKey="revenue"
                     stroke="var(--color-revenue)"
                     strokeWidth={2}
-                    fill="url(#fillRev)"
+                    fill="url(#fillRevenue)"
                   />
-                  <Area
+                  <Line
+                    yAxisId="right"
                     type="monotone"
-                    dataKey="costs"
-                    stroke="var(--color-costs)"
+                    dataKey="orders"
+                    stroke="var(--color-orders)"
                     strokeWidth={2}
-                    fill="url(#fillCost)"
+                    dot={false}
                   />
-                </AreaChart>
+                </ComposedChart>
               </ResponsiveContainer>
             </ChartContainer>
           )}
@@ -328,17 +357,17 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             {topLoading ? (
-              <div className="flex h-[240px] items-center justify-center">
+              <div className="flex h-52 items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : (
               <ChartContainer
                 config={productConfig}
-                className="h-[240px] w-full"
+                className="h-52 w-full"
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={topProducts || []}
+                    data={productData}
                     layout="vertical"
                     margin={{ top: 0, left: 0, right: 20, bottom: 0 }}
                   >
@@ -374,11 +403,11 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             {catLoading ? (
-              <div className="flex h-[240px] items-center justify-center">
+              <div className="flex h-52 items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <ChartContainer config={pieConfig} className="h-[240px] w-full">
+              <ChartContainer config={pieConfig} className="h-52 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <ChartTooltip
@@ -405,8 +434,8 @@ export default function ReportsPage() {
                       nameKey="category"
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
-                      outerRadius={85}
+                      innerRadius={44}
+                      outerRadius={72}
                       paddingAngle={4}
                       strokeWidth={2}
                       stroke="hsl(var(--background))"
