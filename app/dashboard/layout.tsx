@@ -48,14 +48,15 @@ export default async function DashboardLayout({
 
   // Check if current workspace has an active subscription
   let requiresPayment = false
+  let workspace = null
   if (user?.currentWorkspaceId) {
-    const workspace = await prisma.workspace.findUnique({
+    workspace = await prisma.workspace.findUnique({
       where: { id: user.currentWorkspaceId },
       include: { subscription: true, selectedPlan: true }
     })
     
-    // If no subscription or status is not active, prompt payment
-    if (workspace && (!workspace.subscription || workspace.subscription.status !== "active")) {
+    // If no subscription or status is not active/trial, prompt payment
+    if (workspace && (!workspace.subscription || (workspace.subscription.status !== "active" && workspace.subscription.status !== "trial"))) {
       requiresPayment = true
     }
   }

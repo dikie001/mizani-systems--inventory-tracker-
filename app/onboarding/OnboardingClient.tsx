@@ -129,7 +129,10 @@ export default function OnboardingClient() {
     }
     setIsSubmitting(true)
     try {
-      const result = await createWorkspace(formData)
+      const result = await createWorkspace({
+        ...formData,
+        planId: selectedPlan?.id,
+      })
       if (result.success) {
         setWorkspaceData({
           workspaceId: result.workspaceId!,

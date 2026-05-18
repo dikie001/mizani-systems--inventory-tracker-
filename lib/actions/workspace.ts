@@ -3,6 +3,7 @@
 import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { getPlanById } from "@/lib/plans"
 
 export async function getWorkspaces() {
   const session = await auth()
@@ -90,6 +91,7 @@ export async function createWorkspace(data: {
   businessType: string
   inventorySize: string
   goals: string[]
+  planId?: string
 }) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -108,9 +110,31 @@ export async function createWorkspace(data: {
   }
 
   const userId = user.id
+  const planToUse = data.planId || "trial"
+  const staticPlan = getPlanById(planToUse)
 
   try {
     const workspace = await prisma.$transaction(async (tx) => {
+      let dbPlan = null
+      if (staticPlan) {
+        dbPlan = await tx.plan.findFirst({
+          where: { name: staticPlan.id }
+        })
+
+        if (!dbPlan) {
+          dbPlan = await tx.plan.create({
+            data: {
+              name: staticPlan.id,
+              displayName: staticPlan.displayName,
+              badge: staticPlan.badge,
+              description: staticPlan.description,
+              monthlyPrice: staticPlan.monthlyPrice,
+              features: staticPlan.features,
+            }
+          })
+        }
+      }
+
       // Create the workspace
       const newWorkspace = await tx.workspace.create({
         data: {
@@ -121,6 +145,7 @@ export async function createWorkspace(data: {
           goals: {
             set: data.goals || []
           },
+          selectedPlanId: dbPlan ? dbPlan.id : undefined,
         },
       })
 
@@ -132,6 +157,29 @@ export async function createWorkspace(data: {
           role: "OWNER",
         },
       })
+
+      // Create subscription in registration phase
+      if (dbPlan) {
+        const isTrial = staticPlan?.monthlyPrice === 0
+        const subscription = await tx.subscription.create({
+          data: {
+            workspaceId: newWorkspace.id,
+            planId: dbPlan.id,
+            status: isTrial ? "trial" : "inactive",
+            paymentStatus: isTrial ? "paid" : "unpaid",
+            currentBillingCycleStart: new Date(),
+            currentBillingCycleEnd: isTrial
+              ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) // 14 days for trial
+              : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days default for paid plan
+          }
+        })
+
+        // Also update workspace's subscriptionId
+        await tx.workspace.update({
+          where: { id: newWorkspace.id },
+          data: { subscriptionId: subscription.id }
+        })
+      }
 
       // Update the user's current workspace
       await tx.user.update({
