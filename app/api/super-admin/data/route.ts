@@ -85,6 +85,30 @@ export async function GET() {
     // 3. Fetch Workspaces with owners, products count, orders count
     const workspaces = await prisma.workspace.findMany({
       include: {
+        selectedPlan: {
+          select: {
+            name: true,
+            displayName: true,
+            monthlyPrice: true,
+          },
+        },
+        subscription: {
+          include: {
+            plan: {
+              select: {
+                name: true,
+                displayName: true,
+                monthlyPrice: true,
+              },
+            },
+          },
+        },
+        payments: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
         members: {
           include: {
             user: {
@@ -108,6 +132,7 @@ export async function GET() {
 
     const formattedWorkspaces = workspaces.map(w => {
       const ownerMember = w.members.find(m => m.role === "OWNER") || w.members[0]
+      const billingPlan = w.subscription?.plan || w.selectedPlan || null
       return {
         id: w.id,
         name: w.name,
@@ -120,11 +145,61 @@ export async function GET() {
           name: ownerMember.user.name || "Unknown",
           email: ownerMember.user.email
         } : null,
+        planName: billingPlan?.displayName || billingPlan?.name || null,
+        planKey: billingPlan?.name || null,
+        subscriptionStatus: w.subscription?.status || null,
+        paymentStatus: w.subscription?.paymentStatus || null,
+        monthlyPrice: billingPlan?.monthlyPrice || null,
+        nextBillingDate: w.subscription?.nextBillingDate?.toISOString() || null,
         productCount: w._count.products,
         orderCount: w._count.orders,
         memberCount: w._count.members
       }
     })
+
+    const billingPlanCounts = {
+      trial: 0,
+      basic: 0,
+      pro: 0,
+      unassigned: 0,
+    }
+
+    let activeSubscriptions = 0
+    let pendingPayments = 0
+    let totalMonthlyRevenue = 0
+
+    workspaces.forEach((workspace: any) => {
+      const planKey = workspace.subscription?.plan?.name || workspace.selectedPlan?.name || "unassigned"
+
+      if (planKey === "trial" || planKey === "basic" || planKey === "pro") {
+        billingPlanCounts[planKey as keyof typeof billingPlanCounts] += 1
+      } else {
+        billingPlanCounts.unassigned += 1
+      }
+
+      const monthlyPrice = workspace.subscription?.plan?.monthlyPrice || workspace.selectedPlan?.monthlyPrice || 0
+      const isActive = workspace.subscription?.status === "active"
+
+      if (isActive) {
+        activeSubscriptions += 1
+        totalMonthlyRevenue += monthlyPrice
+      }
+
+      if (
+        workspace.subscription?.paymentStatus === "unpaid" ||
+        workspace.payments?.[0]?.status === "pending"
+      ) {
+        pendingPayments += 1
+      }
+    })
+
+    const billingSummary = {
+      totalWorkspaces: workspaces.length,
+      activeSubscriptions,
+      pendingPayments,
+      totalMonthlyRevenue,
+      planCounts: billingPlanCounts,
+    }
 
     // 4. Fetch Global Activities (Audit Logs)
     const logs = await prisma.auditLog.findMany({
@@ -166,6 +241,7 @@ export async function GET() {
       users: formattedUsers,
       workspaces: formattedWorkspaces,
       activities: formattedLogs,
+      billingSummary,
       superAdminEmail
     })
   } catch (error) {

@@ -7,8 +7,10 @@ import {
   Layers,
   Key,
   Activity,
-  Clock,
-  Monitor,
+  CreditCard,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2,
   Shield,
   Loader2,
 } from "lucide-react"
@@ -34,6 +36,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { StatCard } from "@/components/stat-card"
+import { formatKES } from "@/lib/plans"
 
 type SuperAdminStats = {
   totalUsers?: number
@@ -67,6 +70,18 @@ type SuperAdminData = {
   users?: SuperAdminUser[]
   workspaces?: SuperAdminWorkspace[]
   activities?: SuperAdminActivity[]
+  billingSummary?: {
+    totalWorkspaces: number
+    activeSubscriptions: number
+    pendingPayments: number
+    totalMonthlyRevenue: number
+    planCounts: {
+      trial: number
+      basic: number
+      pro: number
+      unassigned: number
+    }
+  }
   superAdminEmail?: string
 }
 
@@ -125,6 +140,7 @@ export default function SuperAdminPage() {
     users = [],
     workspaces = [],
     activities = [],
+    billingSummary,
     superAdminEmail = "",
   } = data || {}
   const activeUsers = users.filter((user) => user.status === "active")
@@ -276,7 +292,7 @@ export default function SuperAdminPage() {
         ))}
       </div>
 
-      {/* Overview Details Section: Registrations + Diagnostics + Quick Actions */}
+      {/* Overview Details Section: Registrations + Billing + Quick Actions */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <Card className="shadow-xl">
@@ -296,32 +312,12 @@ export default function SuperAdminPage() {
                 className="h-48 w-full"
               >
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={registrationsChartData}
-                    margin={{ top: 4, left: 0, right: 0, bottom: 0 }}
-                  >
+                  <BarChart data={registrationsChartData} margin={{ top: 4, left: 0, right: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis
-                      dataKey="label"
-                      tickLine={false}
-                      axisLine={false}
-                      minTickGap={8}
-                      tickMargin={4}
-                      padding={{ left: 0, right: 0 }}
-                    />
-                    <YAxis
-                      allowDecimals={false}
-                      tickLine={false}
-                      axisLine={false}
-                      width={28}
-                      tickMargin={4}
-                    />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={8} tickMargin={4} padding={{ left: 0, right: 0 }} />
+                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} tickMargin={4} />
                     <Tooltip />
-                    <Bar
-                      dataKey="registrations"
-                      fill="#7c3aed"
-                      radius={[4, 4, 0, 0]}
-                    />
+                    <Bar dataKey="registrations" fill="#7c3aed" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
@@ -338,123 +334,89 @@ export default function SuperAdminPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
-              <Button onClick={() => router.push("/super-admin/users")}>
-                View Users
-              </Button>
-              <Button onClick={() => router.push("/super-admin/workspaces")}>
-                View Workspaces
-              </Button>
+              <Button onClick={() => router.push("/super-admin/users")}>View Users</Button>
+              <Button onClick={() => router.push("/super-admin/workspaces")}>View Workspaces</Button>
               <Button onClick={exportUsersCsv}>Export Users CSV</Button>
-              <Button
-                variant="outline"
-                onClick={() => router.push("/super-admin/audit")}
-              >
-                View Audit Log
-              </Button>
+              <Button variant="outline" onClick={() => router.push("/super-admin/audit")}>View Audit Log</Button>
             </CardContent>
           </Card>
         </div>
 
-        {/* System Diagnostics & Parameters */}
         <div className="flex flex-col">
           <Card className="flex flex-col shadow-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base font-bold text-foreground">
-                <Monitor className="h-4.5 w-4.5 text-primary" />
-                Operations Diagnostics
+                <CreditCard className="h-4.5 w-4.5 text-primary" />
+                Billing Snapshot
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Administrative specifications, variables, and health logs.
+                Workspace plans, subscription state, and monthly revenue.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 space-y-4">
-              <div className="space-y-3.5 rounded-xl border border-border bg-muted/30 p-4">
+              <div className="rounded-xl border border-border bg-muted/30 p-4">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-muted-foreground">
-                    Node Environment
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="border-primary/20 bg-primary/10 font-mono text-[10px] font-bold text-primary"
-                  >
-                    production
-                  </Badge>
+                  <span className="font-semibold text-muted-foreground">Total Workspaces</span>
+                  <span className="font-mono text-foreground">{billingSummary?.totalWorkspaces ?? workspaces.length}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-muted-foreground">
-                    OAuth Providers
-                  </span>
-                  <div className="flex gap-1.5">
-                    <Badge
-                      variant="outline"
-                      className="border-border bg-muted text-[9px] font-bold text-foreground uppercase"
-                    >
-                      Google OAuth
-                    </Badge>
+                <div className="mt-3 grid gap-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-muted-foreground">Active Subscriptions</span>
+                    <span className="font-mono text-foreground">{billingSummary?.activeSubscriptions ?? 0}</span>
                   </div>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-muted-foreground">
-                    DB Client Schema
-                  </span>
-                  <span className="font-mono text-[10px] font-bold text-primary">
-                    Prisma (PostgreSQL)
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-muted-foreground">
-                    Super Admin Domain
-                  </span>
-                  <span className="font-mono text-[10px] font-bold text-foreground">
-                    {superAdminEmail || "Not Configured"}
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-muted-foreground">Pending Payments</span>
+                    <span className="font-mono text-foreground">{billingSummary?.pendingPayments ?? 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-muted-foreground">Monthly Revenue</span>
+                    <span className="font-mono text-foreground">{formatKES(billingSummary?.totalMonthlyRevenue ?? 0)}</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-4 space-y-3 text-left">
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
-                    <span>User Densities (Active / Total)</span>
-                    <span className="font-mono text-foreground">
-                      {users.length > 0
-                        ? Math.round((activeUsers.length / users.length) * 100)
-                        : 0}
-                      %
-                    </span>
-                  </div>
-                  <Progress
-                    value={
-                      users.length > 0
-                        ? (activeUsers.length / users.length) * 100
-                        : 0
-                    }
-                    className="h-1.5"
-                  />
+              <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase text-muted-foreground">
+                  <span>Free Trial</span>
+                  <span className="font-mono text-foreground">{billingSummary?.planCounts.trial ?? 0}</span>
                 </div>
+                <Progress value={billingSummary?.totalWorkspaces ? (billingSummary.planCounts.trial / billingSummary.totalWorkspaces) * 100 : 0} className="h-2" />
 
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
-                    <span>Workspace Load Densities</span>
-                    <span className="font-mono text-foreground">
-                      {workspaces.length > 0
-                        ? Math.round(
-                            (workspacesWithProducts.length /
-                              workspaces.length) *
-                              100
-                          )
-                        : 0}
-                      %
-                    </span>
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase text-muted-foreground">
+                  <span>Basic</span>
+                  <span className="font-mono text-foreground">{billingSummary?.planCounts.basic ?? 0}</span>
+                </div>
+                <Progress value={billingSummary?.totalWorkspaces ? (billingSummary.planCounts.basic / billingSummary.totalWorkspaces) * 100 : 0} className="h-2" />
+
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase text-muted-foreground">
+                  <span>Pro</span>
+                  <span className="font-mono text-foreground">{billingSummary?.planCounts.pro ?? 0}</span>
+                </div>
+                <Progress value={billingSummary?.totalWorkspaces ? (billingSummary.planCounts.pro / billingSummary.totalWorkspaces) * 100 : 0} className="h-2" />
+
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase text-muted-foreground">
+                  <span>Unassigned</span>
+                  <span className="font-mono text-foreground">{billingSummary?.planCounts.unassigned ?? 0}</span>
+                </div>
+                <Progress value={billingSummary?.totalWorkspaces ? (billingSummary.planCounts.unassigned / billingSummary.totalWorkspaces) * 100 : 0} className="h-2" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="rounded-xl border border-border bg-background/60 p-3">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                    <span className="font-semibold">Active rate</span>
                   </div>
-                  <Progress
-                    value={
-                      workspaces.length > 0
-                        ? (workspacesWithProducts.length / workspaces.length) *
-                          100
-                        : 0
-                    }
-                    className="h-1.5"
-                  />
+                  <p className="mt-1 font-mono text-lg font-bold text-foreground">
+                    {billingSummary?.totalWorkspaces ? Math.round((billingSummary.activeSubscriptions / billingSummary.totalWorkspaces) * 100) : 0}%
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border bg-background/60 p-3">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                    <span className="font-semibold">Pending</span>
+                  </div>
+                  <p className="mt-1 font-mono text-lg font-bold text-foreground">{billingSummary?.pendingPayments ?? 0}</p>
                 </div>
               </div>
             </CardContent>
