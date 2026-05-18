@@ -269,7 +269,7 @@ export default function OrdersPage() {
       </div>
 
       {/* KPI Row */}
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
         {[
           {
             label: "Total Orders",
@@ -305,16 +305,16 @@ export default function OrdersPage() {
           },
         ].map((s) => (
           <Card key={s.label}>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-3">
+            <CardContent className="p-2.5 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${s.bg}`}
+                  className={`flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg ${s.bg}`}
                 >
-                  <s.icon className={`h-5 w-5 ${s.color}`} />
+                  <s.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${s.color}`} />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{s.value}</p>
-                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                <div className="min-w-0">
+                  <p className="text-base sm:text-2xl font-bold truncate">{s.value}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{s.label}</p>
                 </div>
               </div>
             </CardContent>

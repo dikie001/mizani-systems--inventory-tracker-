@@ -204,7 +204,7 @@ export function DashboardHeader() {
           <DropdownMenuTrigger asChild disabled={!isProfileReady}>
             <Button
               variant="ghost"
-              className="h-11 rounded-full border border-border/70 bg-background px-2.5 shadow-sm hover:bg-muted/40 disabled:cursor-wait disabled:opacity-100"
+              className="h-8 w-8 p-0 rounded-full bg-transparent border-none shadow-none hover:bg-transparent md:h-11 md:w-auto md:px-2.5 md:border md:border-border/70 md:bg-background md:shadow-sm md:hover:bg-muted/40 disabled:cursor-wait disabled:opacity-100"
             >
               {isProfileReady ? (
                 <>

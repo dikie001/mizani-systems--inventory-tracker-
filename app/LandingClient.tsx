@@ -1,7 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
+import { ImageWithSpinner } from "@/components/image-with-spinner"
 import type { Session } from "next-auth"
 import { motion } from "framer-motion"
 import {
@@ -15,6 +16,8 @@ import {
   TrendingUp,
   Users,
   Package,
+  Menu,
+  X,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -122,6 +125,8 @@ function HeroBackground() {
 // ─── Navbar ──────────────────────────────────────────────────────────────────
 
 function Navbar({ session }: { session: Session | null }) {
+  const [isOpen, setIsOpen] = useState(false)
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -12 }}
@@ -157,29 +162,82 @@ function Navbar({ session }: { session: Session | null }) {
         </nav>
 
         <div className="flex items-center gap-3">
-          {session ? (
-            <Button size="sm" asChild>
-              <Link href="/dashboard">
-                Dashboard <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-              </Link>
-            </Button>
-          ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden sm:flex"
-                asChild
-              >
-                <Link href="/auth">Sign in</Link>
-              </Button>
+          <div className="hidden items-center gap-3 md:flex">
+            {session ? (
               <Button size="sm" asChild>
-                <Link href="/auth">Get started</Link>
+                <Link href="/dashboard">
+                  Dashboard <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Link>
               </Button>
-            </>
-          )}
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                >
+                  <Link href="/auth">Sign in</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link href="/auth">Get started</Link>
+                </Button>
+              </>
+            )}
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 rounded-lg md:hidden"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
+
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="border-t border-border/50 bg-background/95 backdrop-blur-lg md:hidden"
+        >
+          <div className="flex flex-col gap-4 px-6 py-6">
+            {["Features", "Pricing", "About"].map((item) => (
+              <Link
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                onClick={() => setIsOpen(false)}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {item}
+              </Link>
+            ))}
+            <div className="my-1 border-t border-border/40" />
+            {session ? (
+              <Button size="sm" className="w-full justify-center" asChild>
+                <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                  Dashboard <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-center"
+                  asChild
+                >
+                  <Link href="/auth" onClick={() => setIsOpen(false)}>Sign in</Link>
+                </Button>
+                <Button size="sm" className="w-full justify-center" asChild>
+                  <Link href="/auth" onClick={() => setIsOpen(false)}>Get started</Link>
+                </Button>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
     </motion.header>
   )
 }

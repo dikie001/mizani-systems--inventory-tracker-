@@ -146,11 +146,11 @@ export function SuperAdminHeader() {
           <DropdownMenuTrigger asChild disabled={!isProfileReady}>
             <Button
               variant="ghost"
-              className="h-10 rounded-full border border-border/70 bg-background px-2.5 transition-all hover:bg-muted/40"
+              className="h-7 w-7 p-0 rounded-full bg-transparent border-none shadow-none hover:bg-transparent md:h-10 md:w-auto md:px-2.5 md:border md:border-border/70 md:bg-background md:shadow-sm md:hover:bg-muted/40 disabled:cursor-wait disabled:opacity-100"
             >
               {isProfileReady ? (
                 <div className="flex items-center gap-2">
-                  <Avatar className="h-7 w-7 ring-1 ring-border">
+                  <Avatar className="h-7 w-7">
                     {userImage ? (
                       <AvatarImage
                         src={userImage}

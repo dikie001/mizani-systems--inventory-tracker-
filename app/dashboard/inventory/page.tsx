@@ -1073,7 +1073,7 @@ function InventoryPageContent() {
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
         {[
           {
             label: "Critical Alerts",
@@ -1101,17 +1101,17 @@ function InventoryPageContent() {
           },
         ].map((metric) => (
           <Card key={metric.label}>
-            <CardContent className="p-3">
-              <div className="flex items-start justify-between">
+            <CardContent className="p-2.5 sm:p-3">
+              <div className="flex items-start justify-between gap-1">
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase">
+                  <p className="text-[9px] sm:text-[10px] font-medium text-muted-foreground uppercase truncate max-w-[120px] sm:max-w-none">
                     {metric.label}
                   </p>
-                  <h3 className={`text-lg font-bold ${metric.color}`}>
+                  <h3 className={`text-base sm:text-lg font-bold ${metric.color}`}>
                     {metric.value}
                   </h3>
                 </div>
-                <metric.icon className={`h-4 w-4 ${metric.color} opacity-70`} />
+                <metric.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${metric.color} opacity-70 shrink-0`} />
               </div>
             </CardContent>
           </Card>
