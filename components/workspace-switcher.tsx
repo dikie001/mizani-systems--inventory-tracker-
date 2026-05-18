@@ -130,30 +130,36 @@ export function WorkspaceSwitcher() {
         <Command className="bg-transparent">
           <CommandList>
             <CommandInput placeholder="Search workspace..." className="h-9" />
-            <CommandEmpty>No workspace found.</CommandEmpty>
-            <CommandGroup heading="Your Workspaces">
-              {workspaces.map((workspace) => (
-                <CommandItem
-                  key={workspace.id}
-                  onSelect={() => onWorkspaceSelect(workspace)}
-                  className="flex cursor-pointer items-center gap-2 px-2 py-2"
-                >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted">
-                    <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                  </div>
-                  <span className="flex-1 truncate text-sm">
-                    {workspace.name}
-                  </span>
-                  {isSwitching === workspace.id ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    currentWorkspaceId === workspace.id && (
-                      <Check className="h-3.5 w-3.5 text-emerald-500" />
-                    )
-                  )}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {isLoading ? (
+              <div className="flex items-center gap-2 px-3 py-6 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading workspaces...</span>
+              </div>
+            ) : (
+              <CommandGroup heading="Your Workspaces">
+                {workspaces.map((workspace) => (
+                  <CommandItem
+                    key={workspace.id}
+                    onSelect={() => onWorkspaceSelect(workspace)}
+                    className="flex cursor-pointer items-center gap-2 px-2 py-2"
+                  >
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted">
+                      <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                    <span className="flex-1 truncate text-sm">
+                      {workspace.name}
+                    </span>
+                    {isSwitching === workspace.id ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      currentWorkspaceId === workspace.id && (
+                        <Check className="h-3.5 w-3.5 text-emerald-500" />
+                      )
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
           </CommandList>
           <CommandSeparator />
           <CommandList>
