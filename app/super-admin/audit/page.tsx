@@ -15,6 +15,14 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 type AuditLog = {
   id: string
@@ -47,6 +55,9 @@ export default function SuperAdminAuditPage() {
 
   const [auditSearch, setAuditSearch] = useState("")
   const [auditFilterType, setAuditFilterType] = useState<string>("all")
+  const [auditViewMode, setAuditViewMode] = useState<"table" | "cards">(
+    "table"
+  )
   const [auditPage, setAuditPage] = useState(1)
   const logsPerPage = 12
 
@@ -167,34 +178,61 @@ export default function SuperAdminAuditPage() {
         </div>
 
         {/* Filter buttons */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1.5 flex items-center gap-1 text-[10px] font-bold text-muted-foreground uppercase">
-            <SlidersHorizontal className="h-3 w-3" /> Log Category
-          </span>
-          {[
-            { id: "all", label: "All Logs" },
-            { id: "auth", label: "Auth" },
-            { id: "create", label: "Create" },
-            { id: "update", label: "Update" },
-            { id: "delete", label: "Delete" },
-            { id: "settings", label: "Settings" },
-          ].map((type) => (
+        <div className="flex flex-col items-start gap-3 lg:items-end">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-1.5 flex items-center gap-1 text-[10px] font-bold text-muted-foreground uppercase">
+              <SlidersHorizontal className="h-3 w-3" /> Log Category
+            </span>
+            {[
+              { id: "all", label: "All Logs" },
+              { id: "auth", label: "Auth" },
+              { id: "create", label: "Create" },
+              { id: "update", label: "Update" },
+              { id: "delete", label: "Delete" },
+              { id: "settings", label: "Settings" },
+            ].map((type) => (
+              <button
+                key={type.id}
+                id={`btn-log-filter-${type.id}`}
+                onClick={() => {
+                  setAuditFilterType(type.id)
+                  setAuditPage(1) // Reset page on filter
+                }}
+                className={`cursor-pointer rounded-lg border px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase transition ${
+                  auditFilterType === type.id
+                    ? "border-primary bg-primary text-primary-foreground shadow-lg"
+                    : "border-border bg-background text-muted-foreground hover:border-border/80 hover:text-foreground"
+                }`}
+              >
+                {type.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1 rounded-lg border border-border bg-background p-1">
             <button
-              key={type.id}
-              id={`btn-log-filter-${type.id}`}
-              onClick={() => {
-                setAuditFilterType(type.id)
-                setAuditPage(1) // Reset page on filter
-              }}
-              className={`cursor-pointer rounded-lg border px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase transition ${
-                auditFilterType === type.id
-                  ? "border-primary bg-primary text-primary-foreground shadow-lg"
-                  : "border-border bg-background text-muted-foreground hover:border-border/80 hover:text-foreground"
+              id="btn-audit-view-table"
+              onClick={() => setAuditViewMode("table")}
+              className={`rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase transition ${
+                auditViewMode === "table"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {type.label}
+              Table
             </button>
-          ))}
+            <button
+              id="btn-audit-view-cards"
+              onClick={() => setAuditViewMode("cards")}
+              className={`rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase transition ${
+                auditViewMode === "cards"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Cards
+            </button>
+          </div>
         </div>
       </div>
 
@@ -211,9 +249,94 @@ export default function SuperAdminAuditPage() {
             >
               No activity logs match your search.
             </motion.div>
+          ) : auditViewMode === "table" ? (
+            <motion.div
+              key="logs-table"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden rounded-xl border border-border bg-card"
+            >
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap">Timestamp</TableHead>
+                      <TableHead>Action</TableHead>
+                      <TableHead className="whitespace-nowrap">Type</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead className="whitespace-nowrap">Workspace</TableHead>
+                      <TableHead className="whitespace-nowrap">IP Address</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedLogs.map((log) => (
+                      <TableRow key={log.id}>
+                        <TableCell className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+                          {new Date(log.timestamp).toLocaleString([], {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <p className="text-xs leading-snug font-semibold text-foreground">
+                              {log.action}
+                            </p>
+                            <p className="font-mono text-[10px] text-muted-foreground">
+                              ID: {log.id.slice(0, 8)}...
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={`px-1.5 py-0 text-[8px] font-bold tracking-wider uppercase ${getLogTypeColor(log.type)}`}
+                          >
+                            {log.type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {log.user?.image ? (
+                              <Image
+                                src={log.user.image ?? ""}
+                                alt={log.user?.name ?? "User"}
+                                width={22}
+                                height={22}
+                                className="h-6 w-6 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[9px] font-bold text-muted-foreground">
+                                {log.user?.name ? log.user.name[0] : "S"}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <p className="truncate text-xs font-semibold text-foreground">
+                                {log.user?.name || "System"}
+                              </p>
+                              <p className="truncate text-[10px] text-muted-foreground">
+                                {log.user?.email || "system@stockvault.internal"}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                          {log.workspaceName || "Global Space"}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap font-mono text-[11px] text-muted-foreground">
+                          {log.ip || "-"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </motion.div>
           ) : (
             <motion.div
-              key="logs"
+              key="logs-cards"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -241,7 +364,7 @@ export default function SuperAdminAuditPage() {
                     <p className="text-xs leading-snug font-bold text-foreground">
                       {log.action}
                     </p>
-                    <div className="my-2 h-[1px] bg-border" />
+                    <div className="my-2 h-px bg-border" />
 
                     {/* Profile block */}
                     <div className="flex items-center gap-2">
@@ -273,7 +396,7 @@ export default function SuperAdminAuditPage() {
                   <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3.5 font-mono text-[9px] text-muted-foreground">
                     <div className="flex flex-col text-left">
                       {log.workspaceName ? (
-                        <span className="max-w-[120px] truncate font-semibold text-foreground">
+                        <span className="max-w-30 truncate font-semibold text-foreground">
                           WS: {log.workspaceName}
                         </span>
                       ) : (
