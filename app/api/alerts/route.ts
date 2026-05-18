@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" }
     })
 
-    const formatted = alerts.map((a) => ({
+    const formatted = alerts.map((a: typeof alerts[number]) => ({
       id: a.id,
       productId: a.productId,
       name: a.product.name,
