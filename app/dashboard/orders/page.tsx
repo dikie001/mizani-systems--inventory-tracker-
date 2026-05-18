@@ -67,9 +67,13 @@ type WorkspaceSummary = {
 
 type OrderSummary = {
   id: string
+  customer: string
+  productImages?: string[]
+  items: number
   status: string
   payment: string
   total: number
+  date: string
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
