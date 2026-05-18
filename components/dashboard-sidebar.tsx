@@ -79,6 +79,16 @@ function isNavItemActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
+function getUserInitials(name?: string | null, email?: string | null) {
+  const source = name?.trim() || email?.trim() || "User"
+  const parts = source.split(/\s+/).filter(Boolean)
+
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("")
+}
+
 export function DashboardSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
@@ -113,14 +123,24 @@ export function DashboardSidebar() {
     return item
   })
 
+  const userInitials = getUserInitials(
+    session?.user?.name,
+    session?.user?.email
+  )
+
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="bg-transparent">
-      {/* Centered the header content to fix WorkspaceSwitcher misalignment */}
-      <SidebarHeader className="flex h-16 items-center justify-center border-b border-sidebar-border/60 px-3 py-0 group-data-[collapsible=icon]:!px-0">
-        <WorkspaceSwitcher />
+      <SidebarHeader className="flex h-16 items-center justify-center border-b border-sidebar-border/60 px-3 py-0 group-data-[collapsible=icon]:px-0!">
+        {isCollapsed ? (
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-sm font-semibold text-slate-950 shadow-sm ring-1 ring-amber-300/70">
+            {userInitials}
+          </div>
+        ) : (
+          <WorkspaceSwitcher />
+        )}
       </SidebarHeader>
 
-      <SidebarContent className="gap-4 px-3 py-4 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:px-1.5 group-data-[collapsible=icon]:py-2">
+      <SidebarContent className="gap-4 px-3 py-4 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-3 group-data-[collapsible=icon]:px-1.5 group-data-[collapsible=icon]:py-3">
         <SidebarGroup className="px-0 py-0 group-data-[collapsible=icon]:gap-2">
           <SidebarGroupLabel className="px-2.5 pb-1.5 text-xs font-semibold tracking-normal text-muted-foreground uppercase group-data-[collapsible=icon]:hidden">
             Workspace
@@ -134,12 +154,10 @@ export function DashboardSidebar() {
                     isActive={isNavItemActive(pathname, item.href)}
                     tooltip={item.title}
                     size="lg"
-                    // Fixed alignment: Changed h-8/w-8 to h-10/w-10, added !justify-center and !p-0
-                    className="flex h-10 w-full items-center rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:!p-0 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground data-[active=true]:shadow-sm"
+                    className="flex h-10 w-full items-center rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-11 group-data-[collapsible=icon]:w-11 group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-amber-400 data-[active=true]:text-slate-950 data-[active=true]:shadow-sm"
                   >
                     <Link href={item.href} onClick={handleNavClick}>
-                      {/* Added !m-0 to prevent flex gaps from pushing the icon off-center */}
-                      <item.icon className="h-4 w-4 shrink-0 text-muted-foreground group-data-[active=true]/menu-button:text-sidebar-primary-foreground group-data-[collapsible=icon]:!m-0" />
+                      <item.icon className="h-4 w-4 shrink-0 text-muted-foreground group-data-[active=true]/menu-button:text-slate-950 group-data-[collapsible=icon]:m-0!" />
                       <span className="group-data-[collapsible=icon]:hidden">
                         {item.title}
                       </span>
@@ -174,11 +192,10 @@ export function DashboardSidebar() {
                     isActive={isNavItemActive(pathname, item.href)}
                     tooltip={item.title}
                     size="lg"
-                    // Applied the exact same structural fixes here
-                    className="flex h-10 w-full items-center rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:!p-0 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground data-[active=true]:shadow-sm"
+                    className="flex h-10 w-full items-center rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-11 group-data-[collapsible=icon]:w-11 group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-amber-400 data-[active=true]:text-slate-950 data-[active=true]:shadow-sm"
                   >
                     <Link href={item.href} onClick={handleNavClick}>
-                      <item.icon className="h-4 w-4 shrink-0 text-muted-foreground group-data-[active=true]/menu-button:text-sidebar-primary-foreground group-data-[collapsible=icon]:!m-0" />
+                      <item.icon className="h-4 w-4 shrink-0 text-muted-foreground group-data-[active=true]/menu-button:text-slate-950 group-data-[collapsible=icon]:m-0!" />
                       <span className="group-data-[collapsible=icon]:hidden">
                         {item.title}
                       </span>
@@ -207,11 +224,10 @@ export function DashboardSidebar() {
               isActive={isNavItemActive(pathname, "/dashboard/settings")}
               tooltip="Settings"
               size="lg"
-              // Removed borders when collapsed to prevent that squished outline look
-              className="flex h-10 w-full items-center rounded-lg border border-sidebar-border/50 bg-sidebar-accent/25 px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:!p-0 hover:bg-sidebar-accent/50 data-[active=true]:border-sidebar-primary/25 data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground data-[active=true]:shadow-sm"
+              className="flex h-10 w-full items-center rounded-lg border border-sidebar-border/50 bg-sidebar-accent/25 px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-11 group-data-[collapsible=icon]:w-11 group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 data-[active=true]:border-transparent data-[active=true]:bg-amber-400 data-[active=true]:text-slate-950 data-[active=true]:shadow-sm"
             >
               <Link href="/dashboard/settings" onClick={handleNavClick}>
-                <Settings className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 group-hover/menu-button:rotate-90 group-data-[active=true]/menu-button:rotate-90 group-data-[active=true]/menu-button:text-sidebar-primary-foreground group-data-[collapsible=icon]:!m-0" />
+                <Settings className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 group-hover/menu-button:rotate-90 group-data-[active=true]/menu-button:rotate-90 group-data-[active=true]/menu-button:text-slate-950 group-data-[collapsible=icon]:m-0!" />
                 <span className="group-data-[collapsible=icon]:hidden">
                   Settings
                 </span>
