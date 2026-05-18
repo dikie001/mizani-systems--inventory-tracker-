@@ -137,14 +137,14 @@ function Navbar({ session }: { session: Session | null }) {
       <div className="container mx-auto flex h-14 items-center justify-between px-6">
         <Link
           href="/"
-          className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight"
+          className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight whitespace-nowrap shrink-0"
         >
           <ImageWithSpinner
             src="/mizani_logo.png"
             alt="Mizani Systems"
             width={32}
             height={32}
-            className="h-8 w-8 object-contain rounded-lg border border-border shadow-sm"
+            className="h-8 w-8 rounded-lg border border-border shadow-sm"
           />
           <span>Mizani Systems</span>
         </Link>
@@ -366,69 +366,71 @@ function HeroSection({ session }: { session: Session | null }) {
             </div>
 
             {/* Table */}
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border/50 hover:bg-transparent">
-                  <TableHead className="py-3 pl-5 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    Product
-                  </TableHead>
-                  <TableHead className="py-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    Price
-                  </TableHead>
-                  <TableHead className="py-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    Status
-                  </TableHead>
-                  <TableHead className="py-3 text-right text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    Stock
-                  </TableHead>
-                  <TableHead className="py-3 pr-5 text-right text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    30d
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {INVENTORY_ROWS.map((row, i) => (
-                  <motion.tr
-                    key={row.name}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: 0.55 + i * 0.07, ease }}
-                    className="border-border/40 transition-colors hover:bg-muted/30"
-                  >
-                    <TableCell className="py-3.5 pl-5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-bold text-foreground/70">
-                          {row.name.charAt(0)}
+            <div className="w-full overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border/50 hover:bg-transparent">
+                    <TableHead className="py-3 pl-5 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                      Product
+                    </TableHead>
+                    <TableHead className="py-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                      Price
+                    </TableHead>
+                    <TableHead className="py-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                      Status
+                    </TableHead>
+                    <TableHead className="py-3 text-right text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                      Stock
+                    </TableHead>
+                    <TableHead className="py-3 pr-5 text-right text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                      30d
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {INVENTORY_ROWS.map((row, i) => (
+                    <motion.tr
+                      key={row.name}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 0.55 + i * 0.07, ease }}
+                      className="border-border/40 transition-colors hover:bg-muted/30 whitespace-nowrap"
+                    >
+                      <TableCell className="py-3.5 pl-5">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-bold text-foreground/70">
+                            {row.name.charAt(0)}
+                          </div>
+                          <span className="text-sm font-medium">{row.name}</span>
                         </div>
-                        <span className="text-sm font-medium">{row.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-3.5">
-                      <span className="font-mono text-sm">{row.price}</span>
-                    </TableCell>
-                    <TableCell className="py-3.5">
-                      <span
-                        className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-[11px] font-semibold ${STATUS_COLOR[row.status]}`}
-                      >
-                        {row.status}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-3.5 text-right">
-                      <span className="text-sm font-medium tabular-nums">
-                        {row.stock}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-3.5 pr-5 text-right">
-                      <span
-                        className={`text-[11px] font-semibold tabular-nums ${row.trend.startsWith("+") ? "text-emerald-600" : row.trend === "—" ? "text-muted-foreground" : "text-red-600"}`}
-                      >
-                        {row.trend}
-                      </span>
-                    </TableCell>
-                  </motion.tr>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <span className="font-mono text-sm">{row.price}</span>
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <span
+                          className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-[11px] font-semibold ${STATUS_COLOR[row.status]}`}
+                        >
+                          {row.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3.5 text-right">
+                        <span className="text-sm font-medium tabular-nums">
+                          {row.stock}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3.5 pr-5 text-right">
+                        <span
+                          className={`text-[11px] font-semibold tabular-nums ${row.trend.startsWith("+") ? "text-emerald-600" : row.trend === "—" ? "text-muted-foreground" : "text-red-600"}`}
+                        >
+                          {row.trend}
+                        </span>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -644,72 +646,74 @@ function ManageSection() {
               Live
             </Badge>
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border/40 hover:bg-transparent">
-                <TableHead className="pl-5 text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Product
-                </TableHead>
-                <TableHead className="text-right text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Cost
-                </TableHead>
-                <TableHead className="text-right text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Price
-                </TableHead>
-                <TableHead className="pr-5 text-right text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Margin
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[
-                {
-                  name: "Ultraboost 24",
-                  cost: "$89",
-                  price: "$159",
-                  margin: "44%",
-                },
-                {
-                  name: "Predator Elite",
-                  cost: "$71",
-                  price: "$129",
-                  margin: "45%",
-                },
-                {
-                  name: "Air Force 1",
-                  cost: "$55",
-                  price: "$110",
-                  margin: "50%",
-                },
-                {
-                  name: "NB 990 v6",
-                  cost: "$104",
-                  price: "$185",
-                  margin: "44%",
-                },
-              ].map((row) => (
-                <TableRow
-                  key={row.name}
-                  className="border-border/40 transition-colors hover:bg-muted/30"
-                >
-                  <TableCell className="py-3.5 pl-5 text-sm font-medium">
-                    {row.name}
-                  </TableCell>
-                  <TableCell className="py-3.5 text-right font-mono text-sm text-muted-foreground">
-                    {row.cost}
-                  </TableCell>
-                  <TableCell className="py-3.5 text-right font-mono text-sm">
-                    {row.price}
-                  </TableCell>
-                  <TableCell className="py-3.5 pr-5 text-right">
-                    <span className="rounded-md bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600">
-                      {row.margin}
-                    </span>
-                  </TableCell>
+          <div className="w-full overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border/40 hover:bg-transparent">
+                  <TableHead className="pl-5 text-[11px] tracking-wider text-muted-foreground uppercase">
+                    Product
+                  </TableHead>
+                  <TableHead className="text-right text-[11px] tracking-wider text-muted-foreground uppercase">
+                    Cost
+                  </TableHead>
+                  <TableHead className="text-right text-[11px] tracking-wider text-muted-foreground uppercase">
+                    Price
+                  </TableHead>
+                  <TableHead className="pr-5 text-right text-[11px] tracking-wider text-muted-foreground uppercase">
+                    Margin
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {[
+                  {
+                    name: "Ultraboost 24",
+                    cost: "$89",
+                    price: "$159",
+                    margin: "44%",
+                  },
+                  {
+                    name: "Predator Elite",
+                    cost: "$71",
+                    price: "$129",
+                    margin: "45%",
+                  },
+                  {
+                    name: "Air Force 1",
+                    cost: "$55",
+                    price: "$110",
+                    margin: "50%",
+                  },
+                  {
+                    name: "NB 990 v6",
+                    cost: "$104",
+                    price: "$185",
+                    margin: "44%",
+                  },
+                ].map((row) => (
+                  <TableRow
+                    key={row.name}
+                    className="border-border/40 transition-colors hover:bg-muted/30 whitespace-nowrap"
+                  >
+                    <TableCell className="py-3.5 pl-5 text-sm font-medium">
+                      {row.name}
+                    </TableCell>
+                    <TableCell className="py-3.5 text-right font-mono text-sm text-muted-foreground">
+                      {row.cost}
+                    </TableCell>
+                    <TableCell className="py-3.5 text-right font-mono text-sm">
+                      {row.price}
+                    </TableCell>
+                    <TableCell className="py-3.5 pr-5 text-right">
+                      <span className="rounded-md bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600">
+                        {row.margin}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           {/* Mini bar chart */}
           <div className="border-t border-border/50 bg-muted/20 px-5 py-4">
             <p className="mb-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
@@ -917,13 +921,13 @@ function Footer() {
       <div className="container mx-auto px-6 py-10">
         <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           <div>
-            <div className="mb-2 flex items-center gap-2.5 text-sm font-semibold">
+            <div className="mb-2 flex items-center gap-2.5 text-sm font-semibold whitespace-nowrap shrink-0">
               <ImageWithSpinner
                 src="/mizani_logo.png"
                 alt="Mizani Systems"
                 width={28}
                 height={28}
-                className="h-7 w-7 object-contain rounded-lg border border-border shadow-sm"
+                className="h-7 w-7 rounded-lg border border-border shadow-sm"
               />
               Mizani Systems
             </div>

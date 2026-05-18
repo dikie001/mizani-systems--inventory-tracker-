@@ -14,12 +14,17 @@ export function ImageWithSpinner({
   alt,
   className,
   spinnerClassName,
+  width,
+  height,
   ...props
 }: ImageWithSpinnerProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   return (
-    <div className="relative overflow-hidden flex items-center justify-center w-full h-full">
+    <div 
+      className={cn("relative overflow-hidden flex items-center justify-center shrink-0", className)}
+      style={{ width: width ? Number(width) : undefined, height: height ? Number(height) : undefined }}
+    >
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/40 backdrop-blur-[1px] z-10 transition-opacity duration-200">
           <Loader2 className={cn("h-4 w-4 animate-spin text-primary", spinnerClassName)} />
@@ -28,10 +33,11 @@ export function ImageWithSpinner({
       <Image
         src={src}
         alt={alt}
+        width={width}
+        height={height}
         className={cn(
-          "transition-all duration-300",
-          isLoading ? "opacity-0 scale-95 blur-sm" : "opacity-100 scale-100 blur-none",
-          className
+          "h-full w-full object-contain transition-all duration-300",
+          isLoading ? "opacity-0 scale-95 blur-sm" : "opacity-100 scale-100 blur-none"
         )}
         onLoad={() => setIsLoading(false)}
         {...props}
@@ -54,7 +60,7 @@ export function ImgWithSpinner({
   const [isLoading, setIsLoading] = useState(true)
 
   return (
-    <div className="relative overflow-hidden flex items-center justify-center w-full h-full">
+    <div className={cn("relative overflow-hidden flex items-center justify-center shrink-0", className)}>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/40 backdrop-blur-[1px] z-10 transition-opacity duration-200">
           <Loader2 className={cn("h-4 w-4 animate-spin text-primary", spinnerClassName)} />
@@ -64,9 +70,8 @@ export function ImgWithSpinner({
         src={src}
         alt={alt}
         className={cn(
-          "transition-all duration-300",
-          isLoading ? "opacity-0 scale-95 blur-sm" : "opacity-100 scale-100 blur-none",
-          className
+          "h-full w-full object-cover transition-all duration-300",
+          isLoading ? "opacity-0 scale-95 blur-sm" : "opacity-100 scale-100 blur-none"
         )}
         onLoad={() => setIsLoading(false)}
         {...props}
