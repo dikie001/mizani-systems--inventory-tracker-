@@ -50,7 +50,10 @@ function TooltipContent({
         {...props}
       >
         {children}
-        <TooltipPrimitive.Arrow data-slot="tooltip-arrow" className="z-50 size-2.5 fill-foreground" />
+        <TooltipPrimitive.Arrow
+          data-slot="tooltip-arrow"
+          className="z-50 size-2.5 fill-foreground"
+        />
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   )
