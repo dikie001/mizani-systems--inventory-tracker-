@@ -465,10 +465,17 @@ function FeatureSection() {
         >
           {FEATURES.map((f, i) => (
             <motion.div key={f.title} variants={fadeUp} custom={i * 0.05}>
-              <Card className="group h-full border border-border/60 bg-card/80 transition-all duration-200 hover:bg-card hover:shadow-md">
+              <Card className="group h-full border border-border/60 bg-card/80 transition-all duration-200 hover:bg-card hover:shadow-md relative overflow-hidden">
                 <CardHeader className="pb-3">
-                  <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-muted transition-all duration-200 group-hover:border-primary/30 group-hover:bg-primary/5">
-                    <f.icon className="h-4 w-4 text-muted-foreground transition-colors duration-200 group-hover:text-primary" />
+                  <div className="flex items-center justify-between">
+                    <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-muted transition-all duration-200 group-hover:border-primary/30 group-hover:bg-primary/5">
+                      <f.icon className="h-4 w-4 text-muted-foreground transition-colors duration-200 group-hover:text-primary" />
+                    </div>
+                    {"comingSoon" in f && f.comingSoon && (
+                      <span className="mb-4 rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-[9px] font-bold tracking-wider text-primary uppercase">
+                        Coming Soon
+                      </span>
+                    )}
                   </div>
                   <CardTitle className="text-base font-semibold">
                     {f.title}
