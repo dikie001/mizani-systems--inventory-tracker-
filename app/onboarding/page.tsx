@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import prisma from "@/lib/prisma"
 import OnboardingClient from "./OnboardingClient"
+import { Suspense } from "react"
 
 export default async function OnboardingPage() {
   const session = await auth()
@@ -37,15 +38,29 @@ export default async function OnboardingPage() {
     }
     
     return (
-      <OnboardingClient 
-        initialWorkspaceId={activeWorkspace.id}
-        initialWorkspaceName={activeWorkspace.name}
-        initialPlanName={activeWorkspace.selectedPlan?.name}
-        initialBusinessType={activeWorkspace.businessType || undefined}
-        initialInventorySize={activeWorkspace.inventorySize || undefined}
-      />
+      <Suspense fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
+        </div>
+      }>
+        <OnboardingClient 
+          initialWorkspaceId={activeWorkspace.id}
+          initialWorkspaceName={activeWorkspace.name}
+          initialPlanName={activeWorkspace.selectedPlan?.name}
+          initialBusinessType={activeWorkspace.businessType || undefined}
+          initialInventorySize={activeWorkspace.inventorySize || undefined}
+        />
+      </Suspense>
     )
   }
 
-  return <OnboardingClient />
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
+      </div>
+    }>
+      <OnboardingClient />
+    </Suspense>
+  )
 }

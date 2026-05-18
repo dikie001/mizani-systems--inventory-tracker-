@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, Suspense } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -57,7 +57,7 @@ function getAuthErrorMessage(error: string | null) {
   }
 }
 
-export default function AuthPage() {
+function AuthContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
@@ -210,9 +210,9 @@ export default function AuthPage() {
 
         <Card className="rounded-2xl border bg-card text-card-foreground shadow-sm">
           <CardHeader className="items-center gap-3 px-6 pt-6 text-center">
-            <div className="mb-1 flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden">
+            <div className="mb-1 flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted/20 border border-border p-1.5">
               <Image
-                src="/logo.png"
+                src="/mizani_logo.png"
                 alt="Logo"
                 width={48}
                 height={48}
@@ -275,5 +275,17 @@ export default function AuthPage() {
         </Card>
       </div>
     </main>
+  )
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
+      </div>
+    }>
+      <AuthContent />
+    </Suspense>
   )
 }

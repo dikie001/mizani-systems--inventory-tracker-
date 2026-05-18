@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
 
-export default function PaymentSuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { update } = useSession()
@@ -104,16 +104,16 @@ export default function PaymentSuccessPage() {
 
       {/* Logo */}
       <div className="relative z-10 mb-8 flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted/20 border border-border">
           <Image
-            src="/logo.png"
+            src="/mizani_logo.png"
             alt="Mizani Systems"
-            width={18}
-            height={18}
-            className="h-4.5 w-4.5 object-contain invert"
+            width={24}
+            height={24}
+            className="h-6 w-6 object-contain"
           />
         </div>
-        <span className="text-sm font-semibold">Mizani Systems</span>
+        <span className="text-base font-bold tracking-tight text-foreground">Mizani Systems</span>
       </div>
 
       <Card className="relative z-10 w-full max-w-md overflow-hidden border-border/60 shadow-xl">
@@ -279,5 +279,17 @@ export default function PaymentSuccessPage() {
         </Link>
       </p>
     </div>
+  )
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   )
 }
