@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { createWorkspace } from "@/lib/actions/workspace"
 import { getPlanById, formatKES } from "@/lib/plans"
 import { toast } from "sonner"
@@ -85,36 +86,57 @@ const goalOptions = [
   { id: "low-stock", label: "Low Stock Alerts" },
 ]
 
-export default function OnboardingClient() {
+interface OnboardingClientProps {
+  initialWorkspaceId?: string
+  initialWorkspaceName?: string
+  initialPlanName?: string
+  initialBusinessType?: string
+  initialInventorySize?: string
+}
+
+export default function OnboardingClient({
+  initialWorkspaceId,
+  initialWorkspaceName,
+  initialPlanName,
+  initialBusinessType,
+  initialInventorySize,
+}: OnboardingClientProps) {
   const { update } = useSession()
   const searchParams = useSearchParams()
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState({
-    name: "",
-    businessType: "",
-    inventorySize: "",
+    name: initialWorkspaceName || "",
+    businessType: initialBusinessType || "",
+    inventorySize: initialInventorySize || "",
     goals: [] as string[],
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showPlanConfirmation, setShowPlanConfirmation] = useState(false)
+  const [showPlanConfirmation, setShowPlanConfirmation] = useState(!!initialWorkspaceId)
   const [workspaceData, setWorkspaceData] = useState<{
     workspaceId: string
     workspaceName: string
-  } | null>(null)
+  } | null>(
+    initialWorkspaceId && initialWorkspaceName
+      ? { workspaceId: initialWorkspaceId, workspaceName: initialWorkspaceName }
+      : null
+  )
 
-  const planId = searchParams.get("plan")
-  const selectedPlan = planId ? getPlanById(planId) : null
+  const [activePlanId, setActivePlanId] = useState<string>("trial")
 
   useEffect(() => {
-    // Load selected plan from URL param or sessionStorage
-    if (!planId && typeof window !== "undefined") {
+    const urlPlan = searchParams.get("plan") || initialPlanName
+    if (urlPlan) {
+      setActivePlanId(urlPlan)
+      sessionStorage.setItem("selectedPlan", urlPlan)
+    } else {
       const stored = sessionStorage.getItem("selectedPlan")
-      if (!stored && !planId) {
-        // No plan selected, use free trial
-        sessionStorage.setItem("selectedPlan", "trial")
+      if (stored) {
+        setActivePlanId(stored)
       }
     }
-  }, [planId])
+  }, [searchParams, initialPlanName])
+
+  const selectedPlan = getPlanById(activePlanId)
 
   const canAdvance =
     (currentStep === 0 && !!formData.name.trim()) ||
@@ -240,91 +262,133 @@ export default function OnboardingClient() {
       </div>
 
       {showPlanConfirmation && selectedPlan && workspaceData ? (
-        // Plan Confirmation Modal
+        // Beautiful Premium Split Layout Confirmation Screen
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative w-full max-w-md"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative w-full max-w-4xl px-4"
         >
-          <Card className="overflow-hidden border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl">
-            <div className="p-6 space-y-4">
-              <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 mx-auto">
-                <CreditCard className="h-6 w-6 text-primary" />
+          {/* Header */}
+          <div className="text-center mb-8 space-y-2">
+            <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              Complete Your Subscription
+            </h1>
+            <p className="text-base text-slate-400 max-w-xl mx-auto">
+              You're just one step away from launching your new workspace, <span className="text-primary font-semibold">{workspaceData.workspaceName}</span>. Confirm your selected plan below to proceed.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-5 items-stretch">
+            {/* Left side: Workspace & Onboarding summary (2 cols) */}
+            <Card className="md:col-span-2 overflow-hidden border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl flex flex-col justify-between p-6">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-primary">Workspace Setup</span>
+                  <h3 className="text-xl font-bold text-white">{workspaceData.workspaceName}</h3>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-white/5 p-2 shrink-0 border border-white/10">
+                      <Building2 className="h-4 w-4 text-slate-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-medium text-slate-400">Business Type</h4>
+                      <p className="text-sm font-semibold text-white capitalize">{formData.businessType || "Retail"}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-white/5 p-2 shrink-0 border border-white/10">
+                      <Layers className="h-4 w-4 text-slate-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-medium text-slate-400">Inventory Size</h4>
+                      <p className="text-sm font-semibold text-white capitalize">{formData.inventorySize || "1 - 100 SKUs"}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-white/5 p-2 shrink-0 border border-white/10">
+                      <Check className="h-4 w-4 text-slate-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-medium text-slate-400">Setup Status</h4>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="h-2 w-2 rounded-full bg-yellow-500 animate-pulse" />
+                        <p className="text-xs font-semibold text-yellow-500 capitalize">Payment Pending</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="text-center space-y-2">
-                <h2 className="text-xl font-semibold text-white">
-                  Confirm Your Plan
-                </h2>
-                <p className="text-sm text-slate-400">
-                  Review your selected plan before completing setup
+              <div className="pt-6 border-t border-white/10">
+                <p className="text-xs text-slate-500">
+                  By clicking proceed, you will be redirected to Paystack for a secure and encrypted payment transaction.
                 </p>
               </div>
+            </Card>
 
-              <div className="border border-white/10 rounded-xl p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-white font-medium">
-                    {selectedPlan.displayName}
-                  </span>
-                  {selectedPlan.badge && (
-                    <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
-                      {selectedPlan.badge}
-                    </span>
-                  )}
+            {/* Right side: Premium Selected Plan (3 cols) */}
+            <Card className="md:col-span-3 overflow-hidden border-primary/40 bg-card/40 shadow-2xl backdrop-blur-xl ring-2 ring-primary/20 flex flex-col justify-between p-8 relative">
+              <div className="absolute top-0 right-0 p-4">
+                <Badge className="bg-primary text-slate-950 font-bold px-3 py-1 flex gap-1 items-center shadow-sm">
+                  <Sparkles className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
+                  Your Selected Plan
+                </Badge>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-2xl font-black text-white">{selectedPlan.displayName} Plan</h3>
+                  <p className="text-sm text-slate-400 mt-1">{selectedPlan.description}</p>
                 </div>
 
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-white">
-                    {formatKES(selectedPlan.monthlyPrice)}
-                  </span>
-                  <span className="text-sm text-slate-400">/month</span>
+                <div className="flex items-baseline text-4xl font-extrabold text-white">
+                  {formatKES(selectedPlan.monthlyPrice)}
+                  <span className="ml-1 text-base font-medium text-slate-400">/month</span>
                 </div>
 
-                <p className="text-sm text-slate-400">
-                  {selectedPlan.description}
-                </p>
-
-                <div className="pt-2 border-t border-white/10 space-y-2">
-                  {selectedPlan.features.slice(0, 3).map((feature) => (
-                    <div key={feature} className="flex items-center gap-2 text-sm">
-                      <Check className="h-4 w-4 text-primary shrink-0" />
-                      <span className="text-slate-300">{feature}</span>
-                    </div>
-                  ))}
-                  {selectedPlan.features.length > 3 && (
-                    <div className="text-sm text-slate-400 pl-6">
-                      + {selectedPlan.features.length - 3} more features
-                    </div>
-                  )}
+                <div className="space-y-3 pt-4 border-t border-white/10">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Included Features:</h4>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {selectedPlan.features.map((feature) => (
+                      <div key={feature} className="flex items-center gap-2 text-sm">
+                        <Check className="h-4 w-4 text-primary shrink-0 bg-primary/10 p-0.5 rounded-full" />
+                        <span className="text-slate-300">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 pt-8 border-t border-white/10 mt-6">
                 <Button
                   variant="ghost"
                   onClick={() => setShowPlanConfirmation(false)}
-                  className="h-9 flex-1 rounded-lg text-slate-400"
+                  className="h-12 flex-1 rounded-xl text-slate-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all"
                   disabled={isSubmitting}
                 >
-                  Change Plan
+                  Back to Setup
                 </Button>
                 <Button
                   onClick={handleConfirmPlan}
                   disabled={isSubmitting}
-                  className="h-9 flex-1 rounded-lg bg-primary text-slate-950 font-semibold"
+                  className="h-12 flex-1 rounded-xl bg-primary text-slate-950 font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(var(--primary),0.3)]"
                 >
                   {isSubmitting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <>
-                      <CreditCard className="h-4 w-4 mr-2" />
-                      Proceed to Payment
+                      <CreditCard className="h-5 w-5 fill-current" />
+                      Proceed to Checkout
                     </>
                   )}
                 </Button>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </motion.div>
       ) : (
         // Onboarding Steps

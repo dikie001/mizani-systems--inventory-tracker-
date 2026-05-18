@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 
 import { DashboardShell } from "./dashboard-shell"
 import { CreateWorkspaceModal } from "@/components/modals/create-workspace-modal"
-import { SubscriptionRequiredModal } from "@/components/modals/subscription-required-modal"
 
 export const metadata: Metadata = {
   title: "Dashboard | StockVault",
@@ -61,19 +60,16 @@ export default async function DashboardLayout({
     }
   }
 
+  if (requiresPayment) {
+    redirect("/onboarding")
+  }
+
   return (
     <>
       <DashboardShell>{children}</DashboardShell>
       <Suspense fallback={null}>
         <CreateWorkspaceModal />
       </Suspense>
-      {requiresPayment && user?.currentWorkspaceId && (
-        <SubscriptionRequiredModal 
-          isOpen={true} 
-          workspaceId={user.currentWorkspaceId} 
-          selectedPlanName={workspace?.selectedPlan?.name}
-        />
-      )}
     </>
   )
 }
