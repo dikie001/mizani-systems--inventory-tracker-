@@ -49,20 +49,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         console.error("Error in signIn event:", err)
       }
     },
-    async signOut(message: {
-      token?: { email?: string | null } | null
-      session?: { user?: { email?: string | null } | null } | null
-    }) {
-      // In Auth.js v5 events, signOut message contains token and/or session
-      const token = message.token
-      const session = message.session
-      const email = session?.user?.email || token?.email
+    async signOut(message) {
+      // In Auth.js v5 events, signOut message is a union of token/session payloads.
+      const userId = "session" in message ? message.session?.userId : undefined
+      const email = "token" in message ? message.token?.email : undefined
 
-      if (!email) return
+      if (!userId && !email) return
 
       try {
-        const dbUser = await prisma.user.findUnique({
-          where: { email },
+        const dbUser = await prisma.user.findFirst({
+          where: userId ? { id: userId } : { email: email ?? undefined },
           select: { id: true, currentWorkspaceId: true },
         })
 

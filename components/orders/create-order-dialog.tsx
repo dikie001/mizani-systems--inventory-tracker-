@@ -55,7 +55,7 @@ export function CreateOrderDialog({
   const { mutate } = useSWRConfig()
   const { data: workspace } = useSWR<WorkspaceSummary>(
     "/api/workspaces/current",
-    (url) => fetch(url).then((res) => res.json())
+    (url: string) => fetch(url).then((res) => res.json())
   )
   const currency = workspace?.currency || "KES"
   const [loading, setLoading] = useState(false)
