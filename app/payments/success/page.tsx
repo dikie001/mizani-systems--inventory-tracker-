@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -28,6 +28,7 @@ export default function PaymentSuccessPage() {
   const [message, setMessage] = useState("")
   const [planName, setPlanName] = useState("")
   const [countdown, setCountdown] = useState(5)
+  const hasCalledRef = useRef(false)
 
   const reference = searchParams.get("reference") || searchParams.get("trxref")
 
@@ -37,6 +38,11 @@ export default function PaymentSuccessPage() {
       setMessage("No payment reference found. Please contact support.")
       return
     }
+
+    if (hasCalledRef.current) return
+    hasCalledRef.current = true
+
+    let timer: NodeJS.Timeout
 
     const verifyPayment = async () => {
       try {
@@ -56,7 +62,7 @@ export default function PaymentSuccessPage() {
 
           // Countdown to dashboard redirect
           let count = 5
-          const timer = setInterval(() => {
+          timer = setInterval(() => {
             count -= 1
             setCountdown(count)
             if (count <= 0) {
@@ -83,6 +89,10 @@ export default function PaymentSuccessPage() {
     }
 
     verifyPayment()
+
+    return () => {
+      if (timer) clearInterval(timer)
+    }
   }, [reference, router, update])
 
   return (

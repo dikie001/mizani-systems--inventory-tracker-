@@ -21,7 +21,7 @@ export const PLANS = [
     name: "basic",
     displayName: "Basic",
     badge: null,
-    monthlyPrice: 999, // KES 999
+    monthlyPrice: 675, 
     description: "For small operations getting off spreadsheets.",
     features: [
       "Up to 1,000 SKUs",
@@ -39,7 +39,7 @@ export const PLANS = [
     name: "pro",
     displayName: "Professional",
     badge: "Most Popular",
-    monthlyPrice: 3999, // KES 3,999
+    monthlyPrice: 1250, 
     description: "For growing teams that need the full platform.",
     features: [
       "Unlimited SKUs",
