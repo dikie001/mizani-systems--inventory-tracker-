@@ -29,6 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Separator } from "@/components/ui/separator"
+import PricingSection from "./landing/pricing.section"
 
 // ─── Animation Variants ──────────────────────────────────────────────────────
 
@@ -699,177 +700,177 @@ function ManageSection() {
 
 // ─── Pricing ──────────────────────────────────────────────────────────────────
 
-const PLANS = [
-  {
-    name: "Basic",
-    price: "$49",
-    period: "/month",
-    desc: "For small operations getting off spreadsheets.",
-    features: [
-      "Up to 1,000 SKUs",
-      "2 admin users",
-      "Standard dashboard",
-      "Email support",
-      "CSV import/export",
-    ],
-    cta: "Start Basic",
-    highlight: false,
-  },
-  {
-    name: "Professional",
-    price: "$129",
-    period: "/month",
-    desc: "For growing teams that need the full platform.",
-    features: [
-      "Unlimited SKUs",
-      "Unlimited users",
-      "Advanced analytics",
-      "API access",
-      "Priority 24/7 support",
-      "Custom integrations",
-    ],
-    cta: "Start Professional",
-    highlight: true,
-  },
-]
+// const PLANS = [
+//   {
+//     name: "Basic",
+//     price: "$49",
+//     period: "/month",
+//     desc: "For small operations getting off spreadsheets.",
+//     features: [
+//       "Up to 1,000 SKUs",
+//       "2 admin users",
+//       "Standard dashboard",
+//       "Email support",
+//       "CSV import/export",
+//     ],
+//     cta: "Start Basic",
+//     highlight: false,
+//   },
+//   {
+//     name: "Professional",
+//     price: "$129",
+//     period: "/month",
+//     desc: "For growing teams that need the full platform.",
+//     features: [
+//       "Unlimited SKUs",
+//       "Unlimited users",
+//       "Advanced analytics",
+//       "API access",
+//       "Priority 24/7 support",
+//       "Custom integrations",
+//     ],
+//     cta: "Start Professional",
+//     highlight: true,
+//   },
+// ]
 
-function PricingSection() {
-  return (
-    <section
-      id="pricing"
-      className="relative overflow-hidden border-t border-border/50 bg-muted/20 py-24"
-    >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.025]"
-        style={{
-          backgroundImage: `
-            linear-gradient(hsl(var(--foreground)) 1px, transparent 1px),
-            linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)
-          `,
-          backgroundSize: "40px 40px",
-        }}
-      />
+// function PricingSection() {
+//   return (
+//     <section
+//       id="pricing"
+//       className="relative overflow-hidden border-t border-border/50 bg-muted/20 py-24"
+//     >
+//       <div
+//         className="pointer-events-none absolute inset-0 opacity-[0.025]"
+//         style={{
+//           backgroundImage: `
+//             linear-gradient(hsl(var(--foreground)) 1px, transparent 1px),
+//             linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)
+//           `,
+//           backgroundSize: "40px 40px",
+//         }}
+//       />
 
-      <div className="relative z-10 container mx-auto px-6">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={stagger}
-          className="mb-14 text-center"
-        >
-          <motion.p
-            variants={fadeUp}
-            className="mb-3 text-xs font-semibold tracking-widest text-muted-foreground uppercase"
-          >
-            Pricing
-          </motion.p>
-          <motion.h2
-            variants={fadeUp}
-            custom={0.06}
-            className="text-3xl font-bold tracking-tight sm:text-4xl"
-          >
-            Transparent, straightforward pricing
-          </motion.h2>
-          <motion.p
-            variants={fadeUp}
-            custom={0.12}
-            className="mx-auto mt-3 max-w-md text-muted-foreground"
-          >
-            No hidden fees. No seat limits on the plans that matter. Cancel
-            anytime.
-          </motion.p>
-        </motion.div>
+//       <div className="relative z-10 container mx-auto px-6">
+//         <motion.div
+//           initial="hidden"
+//           whileInView="visible"
+//           viewport={{ once: true }}
+//           variants={stagger}
+//           className="mb-14 text-center"
+//         >
+//           <motion.p
+//             variants={fadeUp}
+//             className="mb-3 text-xs font-semibold tracking-widest text-muted-foreground uppercase"
+//           >
+//             Pricing
+//           </motion.p>
+//           <motion.h2
+//             variants={fadeUp}
+//             custom={0.06}
+//             className="text-3xl font-bold tracking-tight sm:text-4xl"
+//           >
+//             Transparent, straightforward pricing
+//           </motion.h2>
+//           <motion.p
+//             variants={fadeUp}
+//             custom={0.12}
+//             className="mx-auto mt-3 max-w-md text-muted-foreground"
+//           >
+//             No hidden fees. No seat limits on the plans that matter. Cancel
+//             anytime.
+//           </motion.p>
+//         </motion.div>
 
-        <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
-          {PLANS.map((plan, i) => (
-            <motion.div
-              key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.55, delay: i * 0.1, ease }}
-            >
-              <Card
-                className={`relative flex h-full flex-col transition-shadow duration-200 ${
-                  plan.highlight
-                    ? "border-foreground/20 shadow-lg ring-1 ring-foreground/10"
-                    : "border-border/60"
-                }`}
-              >
-                {plan.highlight && (
-                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/30 to-transparent" />
-                )}
-                <CardHeader className="pt-7 pb-5">
-                  <div className="mb-4 flex items-center justify-between">
-                    <span className="text-sm font-semibold">{plan.name}</span>
-                    {plan.highlight && (
-                      <Badge className="rounded-full px-2.5 text-[10px]">
-                        Most popular
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="mb-5 text-sm text-muted-foreground">
-                    {plan.desc}
-                  </p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold tracking-tight">
-                      {plan.price}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {plan.period}
-                    </span>
-                  </div>
-                </CardHeader>
+//         <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
+//           {PLANS.map((plan, i) => (
+//             <motion.div
+//               key={plan.name}
+//               initial={{ opacity: 0, y: 20 }}
+//               whileInView={{ opacity: 1, y: 0 }}
+//               viewport={{ once: true }}
+//               transition={{ duration: 0.55, delay: i * 0.1, ease }}
+//             >
+//               <Card
+//                 className={`relative flex h-full flex-col transition-shadow duration-200 ${
+//                   plan.highlight
+//                     ? "border-foreground/20 shadow-lg ring-1 ring-foreground/10"
+//                     : "border-border/60"
+//                 }`}
+//               >
+//                 {plan.highlight && (
+//                   <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/30 to-transparent" />
+//                 )}
+//                 <CardHeader className="pt-7 pb-5">
+//                   <div className="mb-4 flex items-center justify-between">
+//                     <span className="text-sm font-semibold">{plan.name}</span>
+//                     {plan.highlight && (
+//                       <Badge className="rounded-full px-2.5 text-[10px]">
+//                         Most popular
+//                       </Badge>
+//                     )}
+//                   </div>
+//                   <p className="mb-5 text-sm text-muted-foreground">
+//                     {plan.desc}
+//                   </p>
+//                   <div className="flex items-baseline gap-1">
+//                     <span className="text-4xl font-bold tracking-tight">
+//                       {plan.price}
+//                     </span>
+//                     <span className="text-sm text-muted-foreground">
+//                       {plan.period}
+//                     </span>
+//                   </div>
+//                 </CardHeader>
 
-                <Separator className="mx-6" />
+//                 <Separator className="mx-6" />
 
-                <CardContent className="flex flex-1 flex-col pt-5">
-                  <ul className="mb-7 flex-1 space-y-3">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2.5 text-sm">
-                        <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                          <Check className="h-2.5 w-2.5 text-primary" />
-                        </div>
-                        <span className="text-muted-foreground">{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className="h-10 w-full text-sm"
-                    variant={plan.highlight ? "default" : "outline"}
-                  >
-                    {plan.cta}
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+//                 <CardContent className="flex flex-1 flex-col pt-5">
+//                   <ul className="mb-7 flex-1 space-y-3">
+//                     {plan.features.map((f) => (
+//                       <li key={f} className="flex items-center gap-2.5 text-sm">
+//                         <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/10">
+//                           <Check className="h-2.5 w-2.5 text-primary" />
+//                         </div>
+//                         <span className="text-muted-foreground">{f}</span>
+//                       </li>
+//                     ))}
+//                   </ul>
+//                   <Button
+//                     className="h-10 w-full text-sm"
+//                     variant={plan.highlight ? "default" : "outline"}
+//                   >
+//                     {plan.cta}
+//                   </Button>
+//                 </CardContent>
+//               </Card>
+//             </motion.div>
+//           ))}
+//         </div>
 
-        {/* Enterprise callout */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mx-auto mt-8 flex max-w-3xl flex-col items-start justify-between gap-4 rounded-xl border border-border/50 bg-card px-6 py-5 sm:flex-row sm:items-center"
-        >
-          <div>
-            <p className="text-sm font-semibold">Enterprise</p>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Custom contracts, SLA guarantees, SSO, and dedicated
-              infrastructure.
-            </p>
-          </div>
-          <Button variant="outline" size="sm" className="shrink-0">
-            Contact sales
-          </Button>
-        </motion.div>
-      </div>
-    </section>
-  )
-}
+//         {/* Enterprise callout */}
+//         <motion.div
+//           initial={{ opacity: 0 }}
+//           whileInView={{ opacity: 1 }}
+//           viewport={{ once: true }}
+//           transition={{ duration: 0.5, delay: 0.3 }}
+//           className="mx-auto mt-8 flex max-w-3xl flex-col items-start justify-between gap-4 rounded-xl border border-border/50 bg-card px-6 py-5 sm:flex-row sm:items-center"
+//         >
+//           <div>
+//             <p className="text-sm font-semibold">Enterprise</p>
+//             <p className="mt-0.5 text-sm text-muted-foreground">
+//               Custom contracts, SLA guarantees, SSO, and dedicated
+//               infrastructure.
+//             </p>
+//           </div>
+//           <Button variant="outline" size="sm" className="shrink-0">
+//             Contact sales
+//           </Button>
+//         </motion.div>
+//       </div>
+//     </section>
+//   )
+// }
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
