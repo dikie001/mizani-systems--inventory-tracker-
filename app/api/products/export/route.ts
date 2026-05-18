@@ -43,13 +43,10 @@ export async function GET(request: Request) {
       where.status = status
     }
 
-
-
     const products = await prisma.product.findMany({
       where,
       include: {
         category: true,
-
       },
       orderBy: { createdAt: "desc" },
     })
@@ -60,17 +57,19 @@ export async function GET(request: Request) {
       status: 200,
       headers: {
         "content-type": "text/csv; charset=utf-8",
-        "content-disposition":
-          'attachment; filename="inventory-products.csv"',
+        "content-disposition": 'attachment; filename="inventory-products.csv"',
       },
     })
   } catch (error) {
     console.error("Failed to export products:", error)
-    return new Response(JSON.stringify({ error: "Failed to export products." }), {
-      status: 500,
-      headers: {
-        "content-type": "application/json",
-      },
-    })
+    return new Response(
+      JSON.stringify({ error: "Failed to export products." }),
+      {
+        status: 500,
+        headers: {
+          "content-type": "application/json",
+        },
+      }
+    )
   }
 }
