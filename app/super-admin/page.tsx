@@ -158,6 +158,11 @@ export default function SuperAdminPage() {
     const current = new Date(`${startIso}T00:00:00`)
     const end = new Date(`${endIso}T00:00:00`)
 
+    if (startIso === endIso) {
+      current.setDate(current.getDate() - 1)
+      end.setDate(end.getDate() + 1)
+    }
+
     while (current <= end) {
       days.push(current.toISOString().split("T")[0])
       current.setDate(current.getDate() + 1)
@@ -175,7 +180,10 @@ export default function SuperAdminPage() {
 
   const registrationSeries =
     registrationDates.length > 0
-      ? buildDateRange(registrationDates[0], registrationDates[registrationDates.length - 1])
+      ? buildDateRange(
+          registrationDates[0],
+          registrationDates[registrationDates.length - 1]
+        )
       : []
 
   const registrationsChartData = registrationSeries.map((iso) => {
