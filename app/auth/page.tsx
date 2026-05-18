@@ -156,9 +156,7 @@ function AuthContent() {
 
     const popupUrl = new URL("/auth/google", window.location.origin)
     // After auth, go to onboarding (with plan if present)
-    const onboardingUrl = planId
-      ? `/onboarding?plan=${planId}`
-      : "/onboarding"
+    const onboardingUrl = planId ? `/onboarding?plan=${planId}` : "/onboarding"
     popupUrl.searchParams.set("callbackUrl", onboardingUrl)
     if (planId) {
       popupUrl.searchParams.set("plan", planId)
@@ -219,7 +217,7 @@ function AuthContent() {
               alt="Logo"
               width={48}
               height={48}
-              className="h-12 w-12 object-contain rounded-xl border border-border shadow-sm mb-1"
+              className="mb-1 h-12 w-12 rounded-xl border border-border object-contain shadow-sm"
             />
             <div className="space-y-1">
               <CardTitle className="text-2xl tracking-tight">
@@ -242,7 +240,9 @@ function AuthContent() {
                 <Info className="h-4 w-4" />
                 <AlertDescription className="text-sm">
                   You&apos;re signing up for the{" "}
-                  <span className="font-semibold">{selectedPlan.displayName}</span>{" "}
+                  <span className="font-semibold">
+                    {selectedPlan.displayName}
+                  </span>{" "}
                   plan —{" "}
                   {selectedPlan.monthlyPrice === 0
                     ? "Free"
@@ -276,13 +276,20 @@ function AuthContent() {
 
             <p className="mt-4 text-center text-xs leading-5 text-muted-foreground">
               By continuing, you agree to our{" "}
-              <Link href="/terms" className="font-medium text-foreground underline-offset-4 hover:underline">
+              <Link
+                href="/terms"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
                 Terms
               </Link>{" "}
               and{" "}
-              <Link href="/privacy" className="font-medium text-foreground underline-offset-4 hover:underline">
+              <Link
+                href="/privacy"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
                 Privacy Policy
-              </Link>.
+              </Link>
+              .
             </p>
           </CardContent>
         </Card>
@@ -293,11 +300,13 @@ function AuthContent() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+          <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-primary"></div>
+        </div>
+      }
+    >
       <AuthContent />
     </Suspense>
   )
