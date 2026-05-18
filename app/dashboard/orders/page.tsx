@@ -1,28 +1,57 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { startTransition, useEffect, useState } from "react"
 import useSWR, { useSWRConfig } from "swr"
 import { toast } from "sonner"
 import {
-  ChevronDown, Clock, DollarSign, Eye, Filter, MoreHorizontal,
-  Package, Search, ShoppingCart, Truck, Loader2, Trash2
+  Clock,
+  DollarSign,
+  Filter,
+  MoreHorizontal,
+  Package,
+  Search,
+  ShoppingCart,
+  Truck,
+  Loader2,
+  Trash2,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select"
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table"
 import {
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -32,29 +61,72 @@ import { CreateOrderDialog } from "@/components/orders/create-order-dialog"
 import { OrderDetailsDialog } from "@/components/orders/order-details-dialog"
 import { formatPrice } from "@/lib/utils"
 
+type WorkspaceSummary = {
+  currency?: string | null
+}
+
+type OrderSummary = {
+  id: string
+  status: string
+  payment: string
+  total: number
+}
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 const statusConfig: Record<string, { style: string; label: string }> = {
-  delivered: { style: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400", label: "Delivered" },
-  shipped: { style: "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400", label: "Shipped" },
-  processing: { style: "bg-violet-500/10 text-violet-600 border-violet-500/20 dark:text-violet-400", label: "Processing" },
-  pending: { style: "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400", label: "Pending" },
-  cancelled: { style: "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400", label: "Cancelled" },
+  delivered: {
+    style:
+      "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400",
+    label: "Delivered",
+  },
+  shipped: {
+    style: "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
+    label: "Shipped",
+  },
+  processing: {
+    style:
+      "bg-violet-500/10 text-violet-600 border-violet-500/20 dark:text-violet-400",
+    label: "Processing",
+  },
+  pending: {
+    style:
+      "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400",
+    label: "Pending",
+  },
+  cancelled: {
+    style: "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400",
+    label: "Cancelled",
+  },
 }
 
 const paymentConfig: Record<string, { style: string; label: string }> = {
-  paid: { style: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400", label: "Paid" },
-  unpaid: { style: "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400", label: "Unpaid" },
-  refunded: { style: "bg-muted text-muted-foreground border-muted", label: "Refunded" },
+  paid: {
+    style:
+      "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400",
+    label: "Paid",
+  },
+  unpaid: {
+    style:
+      "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400",
+    label: "Unpaid",
+  },
+  refunded: {
+    style: "bg-muted text-muted-foreground border-muted",
+    label: "Refunded",
+  },
 }
 
 export default function OrdersPage() {
   const { mutate } = useSWRConfig()
-  const { data: workspace } = useSWR("/api/workspaces/current", fetcher)
-  const currency = (workspace as any)?.currency || "KES"
+  const { data: workspace } = useSWR<WorkspaceSummary>(
+    "/api/workspaces/current",
+    fetcher
+  )
+  const currency = workspace?.currency || "KES"
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  
+
   // Dialog States
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
@@ -62,7 +134,9 @@ export default function OrdersPage() {
 
   // Cancel Order States
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
-  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null)
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(
+    null
+  )
   const [cancelReason, setCancelReason] = useState("")
   const [isSubmittingCancel, setIsSubmittingCancel] = useState(false)
 
@@ -70,7 +144,9 @@ export default function OrdersPage() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search)
       if (params.get("action") === "create") {
-        setIsCreateOpen(true)
+        startTransition(() => {
+          setIsCreateOpen(true)
+        })
         const newUrl = window.location.pathname
         window.history.replaceState({}, "", newUrl)
       }
@@ -79,11 +155,19 @@ export default function OrdersPage() {
 
   let url = `/api/orders?`
   if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`
-  if (statusFilter !== "all") url += `status=${encodeURIComponent(statusFilter)}&`
+  if (statusFilter !== "all")
+    url += `status=${encodeURIComponent(statusFilter)}&`
 
-  const { data: orders, error, isLoading } = useSWR<any[]>(url, fetcher)
+  const {
+    data: orders,
+    error,
+    isLoading,
+  } = useSWR<OrderSummary[]>(url, fetcher)
 
-  const totalRevenue = orders?.filter((o) => o.payment === "paid").reduce((s, o) => s + o.total, 0) || 0
+  const totalRevenue =
+    orders
+      ?.filter((o) => o.payment === "paid")
+      .reduce((s, o) => s + o.total, 0) || 0
 
   const handleCancelSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -94,9 +178,9 @@ export default function OrdersPage() {
       const res = await fetch(`/api/orders/${cancellingOrderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           status: "cancelled",
-          reason: cancelReason 
+          reason: cancelReason,
         }),
       })
 
@@ -106,9 +190,14 @@ export default function OrdersPage() {
       setCancelConfirmOpen(false)
       setCancellingOrderId(null)
       setCancelReason("")
-      mutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
-    } catch (error: any) {
-      toast.error(error.message)
+      mutate(
+        (key: string | readonly unknown[] | null) =>
+          typeof key === "string" && key.startsWith("/api/orders")
+      )
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to cancel order"
+      )
     } finally {
       setIsSubmittingCancel(false)
     }
@@ -125,9 +214,14 @@ export default function OrdersPage() {
       if (!res.ok) throw new Error("Failed to update status")
 
       toast.success(`Order marked as ${status}`)
-      mutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
-    } catch (error: any) {
-      toast.error(error.message)
+      mutate(
+        (key: string | readonly unknown[] | null) =>
+          typeof key === "string" && key.startsWith("/api/orders")
+      )
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update status"
+      )
     }
   }
 
@@ -142,9 +236,16 @@ export default function OrdersPage() {
       if (!res.ok) throw new Error("Failed to update payment status")
 
       toast.success(`Payment marked as ${payment}`)
-      mutate((key: any) => typeof key === "string" && key.startsWith("/api/orders"))
-    } catch (error: any) {
-      toast.error(error.message)
+      mutate(
+        (key: string | readonly unknown[] | null) =>
+          typeof key === "string" && key.startsWith("/api/orders")
+      )
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update payment status"
+      )
     }
   }
 
@@ -153,25 +254,58 @@ export default function OrdersPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
-          <p className="text-sm text-muted-foreground">Track and manage customer orders</p>
+          <p className="text-sm text-muted-foreground">
+            Track and manage customer orders
+          </p>
         </div>
         <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-          <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />Create Order
+          <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
+          Create Order
         </Button>
       </div>
 
       {/* KPI Row */}
       <div className="grid gap-4 sm:grid-cols-4">
         {[
-          { label: "Total Orders", value: isLoading ? "-" : orders?.length.toString(), icon: Package, color: "text-primary", bg: "bg-primary/10" },
-          { label: "Pending", value: isLoading ? "-" : orders?.filter((o) => o.status === "pending").length.toString(), icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
-          { label: "In Transit", value: isLoading ? "-" : orders?.filter((o) => o.status === "shipped").length.toString(), icon: Truck, color: "text-blue-500", bg: "bg-blue-500/10" },
-          { label: "Revenue", value: isLoading ? "-" : formatPrice(totalRevenue, currency), icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+          {
+            label: "Total Orders",
+            value: isLoading ? "-" : orders?.length.toString(),
+            icon: Package,
+            color: "text-primary",
+            bg: "bg-primary/10",
+          },
+          {
+            label: "Pending",
+            value: isLoading
+              ? "-"
+              : orders?.filter((o) => o.status === "pending").length.toString(),
+            icon: Clock,
+            color: "text-amber-500",
+            bg: "bg-amber-500/10",
+          },
+          {
+            label: "In Transit",
+            value: isLoading
+              ? "-"
+              : orders?.filter((o) => o.status === "shipped").length.toString(),
+            icon: Truck,
+            color: "text-blue-500",
+            bg: "bg-blue-500/10",
+          },
+          {
+            label: "Revenue",
+            value: isLoading ? "-" : formatPrice(totalRevenue, currency),
+            icon: DollarSign,
+            color: "text-emerald-500",
+            bg: "bg-emerald-500/10",
+          },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="pt-4">
               <div className="flex items-center gap-3">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${s.bg}`}>
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${s.bg}`}
+                >
                   <s.icon className={`h-5 w-5 ${s.color}`} />
                 </div>
                 <div>
@@ -190,15 +324,25 @@ export default function OrdersPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>Order History</CardTitle>
-              <CardDescription>{isLoading ? "Loading..." : `${orders?.length || 0} orders`}</CardDescription>
+              <CardDescription>
+                {isLoading ? "Loading..." : `${orders?.length || 0} orders`}
+              </CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder="Search orders..." className="h-8 w-48 pl-8 text-sm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search orders..."
+                  className="h-8 w-48 pl-8 text-sm"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-8 w-36 text-sm"><Filter className="mr-1.5 h-3 w-3" /><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectTrigger className="h-8 w-36 text-sm">
+                  <Filter className="mr-1.5 h-3 w-3" />
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
@@ -213,13 +357,17 @@ export default function OrdersPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+            <div className="flex justify-center p-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
           ) : error ? (
-            <div className="text-center text-red-500 p-8">Failed to load orders</div>
+            <div className="p-8 text-center text-red-500">
+              Failed to load orders
+            </div>
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent border-b">
+                <TableRow className="border-b hover:bg-transparent">
                   <TableHead className="w-[50px] text-center">#</TableHead>
                   <TableHead className="w-[120px]">Order ID</TableHead>
                   <TableHead>Customer</TableHead>
@@ -234,91 +382,129 @@ export default function OrdersPage() {
               </TableHeader>
               <TableBody>
                 {orders?.map((order, index) => (
-                  <TableRow 
+                  <TableRow
                     key={order.id}
-                    className="group transition-colors hover:bg-muted/30 cursor-pointer"
-                    onClick={() => { setSelectedOrderId(order.id); setIsDetailsOpen(true); }}
+                    className="group cursor-pointer transition-colors hover:bg-muted/30"
+                    onClick={() => {
+                      setSelectedOrderId(order.id)
+                      setIsDetailsOpen(true)
+                    }}
                   >
-                    <TableCell className="text-center font-mono text-xs text-muted-foreground/80 py-2.5">
+                    <TableCell className="py-2.5 text-center font-mono text-xs text-muted-foreground/80">
                       {index + 1}
                     </TableCell>
                     <TableCell className="py-2.5 font-mono">
-                      <code className="rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                      <code className="rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
                         {order.id.slice(0, 8)}
                       </code>
                     </TableCell>
                     <TableCell className="py-2.5">
-                      <div className="truncate font-semibold tracking-tight text-foreground text-sm">
+                      <div className="truncate text-sm font-semibold tracking-tight text-foreground">
                         {order.customer}
                       </div>
                     </TableCell>
                     <TableCell className="py-2.5">
                       <div className="flex items-center -space-x-2.5 overflow-hidden">
-                        {order.productImages && order.productImages.length > 0 ? (
-                          order.productImages.slice(0, 3).map((imgUrl: string, idx: number) => (
-                            <div
-                              key={idx}
-                              className="relative inline-block h-7 w-7 rounded-full ring-2 ring-background overflow-hidden bg-muted border border-border/40 shadow-sm"
-                            >
-                              <img
-                                src={imgUrl}
-                                alt="Product"
-                                className="h-full w-full object-cover"
-                              />
-                            </div>
-                          ))
+                        {order.productImages &&
+                        order.productImages.length > 0 ? (
+                          order.productImages
+                            .slice(0, 3)
+                            .map((imgUrl: string, idx: number) => (
+                              <div
+                                key={idx}
+                                className="relative inline-block h-7 w-7 overflow-hidden rounded-full border border-border/40 bg-muted shadow-sm ring-2 ring-background"
+                              >
+                                <img
+                                  src={imgUrl}
+                                  alt="Product"
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                            ))
                         ) : (
-                          <div className="inline-block h-7 w-7 rounded-full ring-2 ring-background overflow-hidden bg-muted border border-border/40 shadow-sm flex items-center justify-center">
+                          <div className="flex inline-block h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-border/40 bg-muted shadow-sm ring-2 ring-background">
                             <Package className="h-3.5 w-3.5 text-muted-foreground/60" />
                           </div>
                         )}
-                        {order.productImages && order.productImages.length > 3 && (
-                          <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-muted text-[9px] font-bold text-muted-foreground ring-2 ring-background border border-border/40 shadow-sm">
-                            +{order.productImages.length - 3}
-                          </span>
-                        )}
+                        {order.productImages &&
+                          order.productImages.length > 3 && (
+                            <span className="relative flex h-7 w-7 items-center justify-center rounded-full border border-border/40 bg-muted text-[9px] font-bold text-muted-foreground shadow-sm ring-2 ring-background">
+                              +{order.productImages.length - 3}
+                            </span>
+                          )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right py-2.5 font-mono text-sm">{order.items}</TableCell>
-                    <TableCell className="text-right py-2.5 font-mono font-medium text-sm">{formatPrice(order.total, currency)}</TableCell>
+                    <TableCell className="py-2.5 text-right font-mono text-sm">
+                      {order.items}
+                    </TableCell>
+                    <TableCell className="py-2.5 text-right font-mono text-sm font-medium">
+                      {formatPrice(order.total, currency)}
+                    </TableCell>
                     <TableCell className="py-2.5 pl-6">
-                      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border
-                        ${statusConfig[order.status]?.style || "bg-muted text-muted-foreground border-muted"}
-                      `}>
+                      <span
+                        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase ${statusConfig[order.status]?.style || "border-muted bg-muted text-muted-foreground"} `}
+                      >
                         {statusConfig[order.status]?.label}
                       </span>
                     </TableCell>
                     <TableCell className="py-2.5 pl-6">
-                      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border
-                        ${paymentConfig[order.payment]?.style || "bg-muted text-muted-foreground border-muted"}
-                      `}>
+                      <span
+                        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase ${paymentConfig[order.payment]?.style || "border-muted bg-muted text-muted-foreground"} `}
+                      >
                         {paymentConfig[order.payment]?.label}
                       </span>
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground py-2.5">{order.date}</TableCell>
-                    <TableCell className="py-2.5 w-[50px]" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="py-2.5 text-xs text-muted-foreground">
+                      {order.date}
+                    </TableCell>
+                    <TableCell
+                      className="w-[50px] py-2.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 p-1.5 space-y-0.5">
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-48 space-y-0.5 p-1.5"
+                        >
                           {/* Order Status Transitions */}
                           {order.status === "pending" && (
-                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "processing")} className="cursor-pointer">
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleUpdateStatus(order.id, "processing")
+                              }
+                              className="cursor-pointer"
+                            >
                               <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
                               <span>Mark Processing</span>
                             </DropdownMenuItem>
                           )}
                           {order.status === "processing" && (
-                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "shipped")} className="cursor-pointer">
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleUpdateStatus(order.id, "shipped")
+                              }
+                              className="cursor-pointer"
+                            >
                               <Truck className="mr-2 h-4 w-4 text-muted-foreground" />
                               <span>Mark Shipped</span>
                             </DropdownMenuItem>
                           )}
                           {order.status === "shipped" && (
-                            <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, "delivered")} className="cursor-pointer">
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleUpdateStatus(order.id, "delivered")
+                              }
+                              className="cursor-pointer"
+                            >
                               <Package className="mr-2 h-4 w-4 text-muted-foreground" />
                               <span>Mark Delivered</span>
                             </DropdownMenuItem>
@@ -326,20 +512,30 @@ export default function OrdersPage() {
 
                           {/* Payment status transitions */}
                           {order.payment === "unpaid" ? (
-                            <DropdownMenuItem onClick={() => handleUpdatePayment(order.id, "paid")} className="text-emerald-600 dark:text-emerald-400 font-medium cursor-pointer">
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleUpdatePayment(order.id, "paid")
+                              }
+                              className="cursor-pointer font-medium text-emerald-600 dark:text-emerald-400"
+                            >
                               <DollarSign className="mr-2 h-4 w-4" />
                               <span>Mark Paid</span>
                             </DropdownMenuItem>
                           ) : (
-                            <DropdownMenuItem onClick={() => handleUpdatePayment(order.id, "unpaid")} className="text-muted-foreground cursor-pointer">
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleUpdatePayment(order.id, "unpaid")
+                              }
+                              className="cursor-pointer text-muted-foreground"
+                            >
                               <DollarSign className="mr-2 h-4 w-4" />
                               <span>Mark Unpaid</span>
                             </DropdownMenuItem>
                           )}
-                          
+
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-destructive focus:text-destructive cursor-pointer"
+                          <DropdownMenuItem
+                            className="cursor-pointer text-destructive focus:text-destructive"
                             disabled={order.status === "cancelled"}
                             onClick={() => {
                               setCancellingOrderId(order.id)
@@ -357,7 +553,12 @@ export default function OrdersPage() {
                 ))}
                 {orders?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={10} className="h-24 text-center text-muted-foreground italic">No orders found.</TableCell>
+                    <TableCell
+                      colSpan={10}
+                      className="h-24 text-center text-muted-foreground italic"
+                    >
+                      No orders found.
+                    </TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -368,33 +569,43 @@ export default function OrdersPage() {
 
       {/* Dialogs */}
       <CreateOrderDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
-      <OrderDetailsDialog orderId={selectedOrderId} open={isDetailsOpen} onOpenChange={setIsDetailsOpen} />
+      <OrderDetailsDialog
+        orderId={selectedOrderId}
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+      />
 
       <Dialog open={cancelConfirmOpen} onOpenChange={setCancelConfirmOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2 text-destructive">
-              Cancel Order <span className="font-mono text-xs font-normal text-muted-foreground">#{cancellingOrderId?.slice(0, 8)}</span>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold text-destructive">
+              Cancel Order{" "}
+              <span className="font-mono text-xs font-normal text-muted-foreground">
+                #{cancellingOrderId?.slice(0, 8)}
+              </span>
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to cancel this order? This action will automatically restore all product stock and cannot be undone.
+              Are you sure you want to cancel this order? This action will
+              automatically restore all product stock and cannot be undone.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleCancelSubmit} className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label htmlFor="cancel-reason" className="text-sm font-semibold">Reason for Cancellation *</Label>
+              <Label htmlFor="cancel-reason" className="text-sm font-semibold">
+                Reason for Cancellation *
+              </Label>
               <Textarea
                 id="cancel-reason"
                 placeholder="Please provide a clear reason for cancelling this order..."
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
                 required
-                className="min-h-[90px] text-sm resize-none bg-background border-border"
+                className="min-h-[90px] resize-none border-border bg-background text-sm"
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 border-t pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -424,4 +635,3 @@ export default function OrdersPage() {
     </div>
   )
 }
-

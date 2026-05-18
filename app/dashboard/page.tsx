@@ -7,20 +7,13 @@ import { useSession } from "next-auth/react"
 import {
   AlertCircle,
   AlertTriangle,
-  ArrowDownRight,
-  ArrowUpRight,
   BarChart3,
-  Box,
-  DollarSign,
   FileText,
   Layers,
   Loader2,
-  Package,
   Plus,
-  ShieldAlert,
   ShoppingCart,
   SlidersHorizontal,
-  TrendingUp,
   Upload,
   Users,
 } from "lucide-react"
@@ -73,6 +66,32 @@ import {
 
 import { formatPrice } from "@/lib/utils"
 
+type WorkspaceSummary = {
+  currency?: string | null
+}
+
+type ActivityItem = {
+  id: string
+  product: string
+  type: string
+  qty: string
+  status: string
+  date: string
+}
+
+type LowStockItem = {
+  name: string
+  category: string
+  stock: number
+  maxStock?: number | null
+}
+
+type CategoryStat = {
+  category: string
+  items: number
+  value: number
+}
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 const revenueChartConfig: ChartConfig = {
@@ -87,10 +106,15 @@ const categoryChartConfig: ChartConfig = {
 
 export default function DashboardPage() {
   const { data: session } = useSession()
-  const { data: workspace } = useSWR("/api/workspaces/current", fetcher)
-  const currency = (workspace as any)?.currency || "KES"
+  const { data: workspace } = useSWR<WorkspaceSummary>(
+    "/api/workspaces/current",
+    fetcher
+  )
+  const currency = workspace?.currency || "KES"
   const [revMetric, setRevMetric] = useState<"revenue" | "orders">("revenue")
-  const [viewInterval, setViewInterval] = useState<"monthly" | "weekly">("monthly")
+  const [viewInterval, setViewInterval] = useState<"monthly" | "weekly">(
+    "monthly"
+  )
   const { data: stats, isLoading: statsLoading } = useSWR(
     "/api/dashboard/stats",
     fetcher
@@ -112,9 +136,9 @@ export default function DashboardPage() {
     fetcher
   )
 
-  const lowStockItems = Array.isArray(lowStockData) ? lowStockData : []
-  const recentActivity = Array.isArray(activityData) ? activityData : []
-  const categories = Array.isArray(categoryData) ? categoryData : []
+  const lowStockItems = (lowStockData ?? []) as LowStockItem[]
+  const recentActivity = (activityData ?? []) as ActivityItem[]
+  const categories = (categoryData ?? []) as CategoryStat[]
   const revenue = Array.isArray(revenueData) ? revenueData : []
 
   return (
@@ -162,8 +186,12 @@ export default function DashboardPage() {
             <CardContent className="p-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase">{kpi.title}</p>
-                  <h3 className={`text-lg font-bold ${kpi.color}`}>{kpi.value}</h3>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase">
+                    {kpi.title}
+                  </p>
+                  <h3 className={`text-lg font-bold ${kpi.color}`}>
+                    {kpi.value}
+                  </h3>
                 </div>
                 <kpi.icon className={`h-4 w-4 ${kpi.color} opacity-70`} />
               </div>
@@ -181,39 +209,67 @@ export default function DashboardPage() {
               <div>
                 <CardTitle>Revenue Overview</CardTitle>
                 <CardDescription>
-                  {viewInterval === "monthly" ? "Monthly" : "Weekly"} revenue and order trends
+                  {viewInterval === "monthly" ? "Monthly" : "Weekly"} revenue
+                  and order trends
                 </CardDescription>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-lg border-border/50 text-xs font-semibold">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1.5 rounded-lg border-border/50 text-xs font-semibold"
+                  >
                     <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Options</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 p-1.5 space-y-1">
-                  <DropdownMenuLabel className="px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Time Interval</DropdownMenuLabel>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-48 space-y-1 p-1.5"
+                >
+                  <DropdownMenuLabel className="px-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Time Interval
+                  </DropdownMenuLabel>
                   <DropdownMenuRadioGroup
                     value={viewInterval}
-                    onValueChange={(v) => setViewInterval(v as "monthly" | "weekly")}
+                    onValueChange={(v) =>
+                      setViewInterval(v as "monthly" | "weekly")
+                    }
                   >
-                    <DropdownMenuRadioItem value="monthly" className="cursor-pointer text-xs rounded-md">
+                    <DropdownMenuRadioItem
+                      value="monthly"
+                      className="cursor-pointer rounded-md text-xs"
+                    >
                       Monthly View
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="weekly" className="cursor-pointer text-xs rounded-md">
+                    <DropdownMenuRadioItem
+                      value="weekly"
+                      className="cursor-pointer rounded-md text-xs"
+                    >
                       Weekly View
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                   <DropdownMenuSeparator className="my-1.5" />
-                  <DropdownMenuLabel className="px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Chart Metric</DropdownMenuLabel>
+                  <DropdownMenuLabel className="px-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Chart Metric
+                  </DropdownMenuLabel>
                   <DropdownMenuRadioGroup
                     value={revMetric}
-                    onValueChange={(v) => setRevMetric(v as "revenue" | "orders")}
+                    onValueChange={(v) =>
+                      setRevMetric(v as "revenue" | "orders")
+                    }
                   >
-                    <DropdownMenuRadioItem value="revenue" className="cursor-pointer text-xs rounded-md">
+                    <DropdownMenuRadioItem
+                      value="revenue"
+                      className="cursor-pointer rounded-md text-xs"
+                    >
                       Revenue ($)
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="orders" className="cursor-pointer text-xs rounded-md">
+                    <DropdownMenuRadioItem
+                      value="orders"
+                      className="cursor-pointer rounded-md text-xs"
+                    >
                       Order Count
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
@@ -236,21 +292,23 @@ export default function DashboardPage() {
                   margin={{ top: 12, left: 10, right: 0, bottom: 30 }}
                 >
                   <defs>
-                    <linearGradient
-                      id="fillMetric"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient id="fillMetric" x1="0" y1="0" x2="0" y2="1">
                       <stop
                         offset="0%"
-                        stopColor={revMetric === "revenue" ? "var(--color-revenue)" : "var(--color-orders)"}
+                        stopColor={
+                          revMetric === "revenue"
+                            ? "var(--color-revenue)"
+                            : "var(--color-orders)"
+                        }
                         stopOpacity={0.3}
                       />
                       <stop
                         offset="100%"
-                        stopColor={revMetric === "revenue" ? "var(--color-revenue)" : "var(--color-orders)"}
+                        stopColor={
+                          revMetric === "revenue"
+                            ? "var(--color-revenue)"
+                            : "var(--color-orders)"
+                        }
                         stopOpacity={0.02}
                       />
                     </linearGradient>
@@ -264,11 +322,18 @@ export default function DashboardPage() {
                     tickMargin={8}
                     padding={{ left: 0, right: 0 }}
                     label={{
-                      value: viewInterval === "monthly" ? "Month" : "Week (Starting Mon)",
+                      value:
+                        viewInterval === "monthly"
+                          ? "Month"
+                          : "Week (Starting Mon)",
                       position: "insideBottom",
                       offset: -10,
                       fill: "var(--muted-foreground)",
-                      style: { fontSize: 12, fontWeight: 600, textAnchor: 'middle' },
+                      style: {
+                        fontSize: 12,
+                        fontWeight: 600,
+                        textAnchor: "middle",
+                      },
                     }}
                   />
                   <YAxis
@@ -277,9 +342,11 @@ export default function DashboardPage() {
                     axisLine={false}
                     tick={{ fontSize: 12 }}
                     tickMargin={6}
-                    tickFormatter={(value) => 
-                      revMetric === "revenue" 
-                        ? (currency === "USD" ? `$${(value / 1000).toFixed(0)}k` : `${currency} ${(value / 1000).toFixed(0)}k`)
+                    tickFormatter={(value) =>
+                      revMetric === "revenue"
+                        ? currency === "USD"
+                          ? `$${(value / 1000).toFixed(0)}k`
+                          : `${currency} ${(value / 1000).toFixed(0)}k`
                         : value
                     }
                     label={{
@@ -288,7 +355,11 @@ export default function DashboardPage() {
                       position: "insideLeft",
                       offset: 10,
                       fill: "var(--muted-foreground)",
-                      style: { fontSize: 12, fontWeight: 600, textAnchor: 'middle' },
+                      style: {
+                        fontSize: 12,
+                        fontWeight: 600,
+                        textAnchor: "middle",
+                      },
                     }}
                   />
                   <ChartTooltip
@@ -313,7 +384,11 @@ export default function DashboardPage() {
                   <Area
                     type="monotone"
                     dataKey={revMetric}
-                    stroke={revMetric === "revenue" ? "var(--color-revenue)" : "var(--color-orders)"}
+                    stroke={
+                      revMetric === "revenue"
+                        ? "var(--color-revenue)"
+                        : "var(--color-orders)"
+                    }
                     strokeWidth={1.75}
                     fill="url(#fillMetric)"
                   />
@@ -449,7 +524,7 @@ export default function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentActivity.map((item: any) => (
+                {recentActivity.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-mono text-xs font-medium">
                       {item.id.slice(0, 8)}
@@ -521,7 +596,7 @@ export default function DashboardPage() {
                 No low stock items.
               </div>
             ) : (
-              lowStockItems.slice(0, 5).map((item: any) => {
+              lowStockItems.slice(0, 5).map((item) => {
                 const percentage = Math.round(
                   (item.stock / (item.maxStock || 100)) * 100
                 )
@@ -546,7 +621,7 @@ export default function DashboardPage() {
           </CardContent>
           <CardFooter className="justify-end border-none bg-transparent pt-0 pb-6">
             <Button variant="outline" size="sm" asChild>
-              <Link href="/dashboard/orders"> 
+              <Link href="/dashboard/orders">
                 <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
                 Create restock order
               </Link>

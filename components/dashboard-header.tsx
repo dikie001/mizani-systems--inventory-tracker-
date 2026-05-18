@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { startTransition, useEffect, useState } from "react"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -99,12 +99,13 @@ export function DashboardHeader() {
 
   useEffect(() => {
     if (status !== "authenticated" || !userName) {
-      setIsAvatarReady(false)
       return
     }
 
     if (!userImage) {
-      setIsAvatarReady(true)
+      startTransition(() => {
+        setIsAvatarReady(true)
+      })
       return
     }
 
@@ -116,14 +117,18 @@ export function DashboardHeader() {
 
     const finalize = () => {
       if (isMounted) {
-        setIsAvatarReady(true)
+        startTransition(() => {
+          setIsAvatarReady(true)
+        })
       }
     }
 
     if (image.complete) {
       finalize()
     } else {
-      setIsAvatarReady(false)
+      startTransition(() => {
+        setIsAvatarReady(false)
+      })
       image.onload = finalize
       image.onerror = finalize
     }

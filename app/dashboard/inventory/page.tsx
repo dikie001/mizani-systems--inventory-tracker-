@@ -1,6 +1,15 @@
 "use client"
 
-import { ChangeEvent, FormEvent, useId, useRef, useState, useEffect, Suspense } from "react"
+import {
+  ChangeEvent,
+  FormEvent,
+  Suspense,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import useSWR, { useSWRConfig } from "swr"
 import { toast } from "sonner"
@@ -93,6 +102,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
+type WorkspaceSummary = {
+  currency?: string | null
+}
+
 type InventoryProduct = {
   id: string
   name: string
@@ -126,7 +139,6 @@ type InventoryMovement = {
 
 type InventoryMeta = {
   categories: Array<{ id: string; name: string }>
-
 }
 
 type NoticeState = {
@@ -162,7 +174,7 @@ const fetcher = async <T,>(url: string): Promise<T> => {
     throw new Error(
       payload && typeof payload.error === "string"
         ? payload.error
-        : "Request failed.",
+        : "Request failed."
     )
   }
 
@@ -225,8 +237,6 @@ function buildProductsUrl(filters: {
     params.set("status", filters.statusFilter)
   }
 
-
-
   const query = params.toString()
   return query ? `/api/products?${query}` : "/api/products"
 }
@@ -278,7 +288,7 @@ export default function InventoryPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex min-h-[400px] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/40" />
         </div>
       }
@@ -292,18 +302,21 @@ function InventoryPageContent() {
   const categoryListId = useId()
   const { mutate } = useSWRConfig()
 
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const action = searchParams.get("action")
 
-
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get("search") ?? ""
+  )
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
 
   const [notice, setNotice] = useState<NoticeState>(null)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
   const [formOpen, setFormOpen] = useState(false)
-  const [formValues, setFormValues] = useState<ProductFormValues>(
-    emptyProductForm(),
-  )
+  const [formValues, setFormValues] =
+    useState<ProductFormValues>(emptyProductForm())
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
   const [submittingForm, setSubmittingForm] = useState(false)
   const [detailsProductId, setDetailsProductId] = useState<string | null>(null)
@@ -311,9 +324,8 @@ function InventoryPageContent() {
   const [categorySearch, setCategorySearch] = useState("")
   const [categoryAdding, setCategoryAdding] = useState(false)
   const [adjustmentOpen, setAdjustmentOpen] = useState(false)
-  const [adjustmentValues, setAdjustmentValues] = useState<StockAdjustmentValues>(
-    emptyStockAdjustment(),
-  )
+  const [adjustmentValues, setAdjustmentValues] =
+    useState<StockAdjustmentValues>(emptyStockAdjustment())
   const [submittingAdjustment, setSubmittingAdjustment] = useState(false)
   const [saleOpen, setSaleOpen] = useState(false)
   const [saleValues, setSaleValues] = useState({
@@ -325,15 +337,24 @@ function InventoryPageContent() {
     notes: "",
   })
   const [submittingSale, setSubmittingSale] = useState(false)
-  const [returnToDetailsProductId, setReturnToDetailsProductId] = useState<string | null>(null)
+  const [returnToDetailsProductId, setReturnToDetailsProductId] = useState<
+    string | null
+  >(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyPage, setHistoryPage] = useState(1)
-  const [historyProduct, setHistoryProduct] = useState<InventoryProduct | null>(null)
-  const [uploadStage, setUploadStage] = useState<"idle" | "compressing" | "uploading">("idle")
+  const [historyProduct, setHistoryProduct] = useState<InventoryProduct | null>(
+    null
+  )
+  const [uploadStage, setUploadStage] = useState<
+    "idle" | "compressing" | "uploading"
+  >("idle")
   const [uploadProgress, setUploadProgress] = useState(0)
   const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
 
-  const compressImage = (file: File, targetSizeKb: number = 100): Promise<File> => {
+  const compressImage = (
+    file: File,
+    targetSizeKb: number = 100
+  ): Promise<File> => {
     return new Promise((resolve) => {
       const reader = new FileReader()
       reader.readAsDataURL(file)
@@ -369,22 +390,30 @@ function InventoryPageContent() {
           ctx.drawImage(img, 0, 0, width, height)
 
           const tryCompress = (q: number) => {
-            canvas.toBlob((blob) => {
-              if (!blob) {
-                resolve(file)
-                return
-              }
-              
-              if (blob.size > targetSizeKb * 1024 && q > 0.15) {
-                tryCompress(q - 0.15)
-              } else {
-                const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
-                  type: "image/jpeg",
-                  lastModified: Date.now()
-                })
-                resolve(compressedFile)
-              }
-            }, "image/jpeg", q)
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  resolve(file)
+                  return
+                }
+
+                if (blob.size > targetSizeKb * 1024 && q > 0.15) {
+                  tryCompress(q - 0.15)
+                } else {
+                  const compressedFile = new File(
+                    [blob],
+                    file.name.replace(/\.[^/.]+$/, ".jpg"),
+                    {
+                      type: "image/jpeg",
+                      lastModified: Date.now(),
+                    }
+                  )
+                  resolve(compressedFile)
+                }
+              },
+              "image/jpeg",
+              q
+            )
           }
 
           tryCompress(0.75)
@@ -453,7 +482,10 @@ function InventoryPageContent() {
     }
   }
 
-  const handleDetailsImageChange = async (e: ChangeEvent<HTMLInputElement>, productId: string) => {
+  const handleDetailsImageChange = async (
+    e: ChangeEvent<HTMLInputElement>,
+    productId: string
+  ) => {
     const originalFile = e.target.files?.[0]
     if (!originalFile) return
 
@@ -482,7 +514,7 @@ function InventoryPageContent() {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             const data = JSON.parse(xhr.responseText)
-            
+
             const putRes = await fetch(`/api/products/${productId}`, {
               method: "PUT",
               headers: {
@@ -527,34 +559,44 @@ function InventoryPageContent() {
   const [importing, setImporting] = useState(false)
   const [importFile, setImportFile] = useState<File | null>(null)
 
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const action = searchParams.get("action")
+  const beginCreate = useCallback(() => {
+    setNotice(null)
+    setFormMode("create")
+    setEditingProductId(null)
+    setFormValues(emptyProductForm())
+    setCategorySearch("")
+    setFormOpen(true)
+  }, [])
 
   useEffect(() => {
-    const search = searchParams.get("search")
-    if (search) {
-      setSearchQuery(search)
-    }
     if (action === "add") {
       beginCreate()
     } else if (action === "import") {
       setImportOpen(true)
     }
-  }, [action, searchParams])
-
+  }, [action, beginCreate])
 
   const productsUrl = buildProductsUrl({
     searchQuery,
     categoryFilter,
     statusFilter,
-
   })
 
-  const { data: products, error, isLoading, mutate: mutateProducts } = useSWR<InventoryProduct[]>(productsUrl, fetcher)
-  const { data: meta, mutate: mutateMeta } = useSWR<InventoryMeta>("/api/inventory/meta", fetcher)
-  const { data: workspace } = useSWR("/api/workspaces/current", fetcher)
-  const currency = (workspace as any)?.currency || "KES"
+  const {
+    data: products,
+    error,
+    isLoading,
+    mutate: mutateProducts,
+  } = useSWR<InventoryProduct[]>(productsUrl, fetcher)
+  const { data: meta, mutate: mutateMeta } = useSWR<InventoryMeta>(
+    "/api/inventory/meta",
+    fetcher
+  )
+  const { data: workspace } = useSWR<WorkspaceSummary>(
+    "/api/workspaces/current",
+    fetcher
+  )
+  const currency = workspace?.currency || "KES"
   const {
     data: selectedProduct,
     error: selectedProductError,
@@ -562,7 +604,7 @@ function InventoryPageContent() {
     mutate: mutateSelectedProduct,
   } = useSWR<InventoryProduct>(
     detailsProductId ? `/api/products/${detailsProductId}` : null,
-    fetcher,
+    fetcher
   )
 
   const categories = meta?.categories ?? []
@@ -573,15 +615,6 @@ function InventoryPageContent() {
     products?.filter((product) => product.status === "low-stock").length ?? 0
   const criticalCount =
     products?.filter((product) => product.status === "critical").length ?? 0
-
-  const beginCreate = () => {
-    setNotice(null)
-    setFormMode("create")
-    setEditingProductId(null)
-    setFormValues(emptyProductForm())
-    setCategorySearch("")
-    setFormOpen(true)
-  }
 
   const beginEdit = (product: InventoryProduct) => {
     setNotice(null)
@@ -654,7 +687,7 @@ function InventoryPageContent() {
   }
 
   const handleFormValueChange = (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = event.target
     setFormValues((current) => ({
@@ -663,9 +696,7 @@ function InventoryPageContent() {
     }))
   }
 
-  const handleAdjustmentChange = (
-    event: ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleAdjustmentChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
     setAdjustmentValues((current) => ({
       ...current,
@@ -678,7 +709,10 @@ function InventoryPageContent() {
     if (detailsProductId) {
       await mutateSelectedProduct()
     }
-    mutate((key: any) => typeof key === "string" && key.startsWith("/api/products"))
+    mutate(
+      (key: string | readonly unknown[] | null) =>
+        typeof key === "string" && key.startsWith("/api/products")
+    )
   }
 
   const handleProductSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -688,7 +722,9 @@ function InventoryPageContent() {
 
     try {
       const endpoint =
-        formMode === "create" ? "/api/products" : `/api/products/${editingProductId}`
+        formMode === "create"
+          ? "/api/products"
+          : `/api/products/${editingProductId}`
       const method = formMode === "create" ? "POST" : "PUT"
 
       const response = await fetch(endpoint, {
@@ -707,7 +743,7 @@ function InventoryPageContent() {
         throw new Error(
           payload && typeof payload.error === "string"
             ? payload.error
-            : "Unable to save product.",
+            : "Unable to save product."
         )
       }
 
@@ -741,7 +777,7 @@ function InventoryPageContent() {
 
   const handleDelete = async (product: InventoryProduct) => {
     const confirmed = window.confirm(
-      `Delete ${product.name}? This action cannot be undone.`,
+      `Delete ${product.name}? This action cannot be undone.`
     )
     if (!confirmed) {
       return
@@ -759,7 +795,7 @@ function InventoryPageContent() {
         throw new Error(
           payload && typeof payload.error === "string"
             ? payload.error
-            : "Unable to delete product.",
+            : "Unable to delete product."
         )
       }
 
@@ -783,15 +819,13 @@ function InventoryPageContent() {
     }
   }
 
-
-
   const handleExport = async () => {
     setExporting(true)
     setNotice(null)
 
     try {
       const response = await fetch(
-        `/api/products/export${productsUrl.replace("/api/products", "")}`,
+        `/api/products/export${productsUrl.replace("/api/products", "")}`
       )
 
       if (!response.ok) {
@@ -799,7 +833,7 @@ function InventoryPageContent() {
         throw new Error(
           payload && typeof payload.error === "string"
             ? payload.error
-            : "Unable to export products.",
+            : "Unable to export products."
         )
       }
 
@@ -853,7 +887,7 @@ function InventoryPageContent() {
         throw new Error(
           payload && typeof payload.error === "string"
             ? payload.error
-            : "Unable to adjust stock.",
+            : "Unable to adjust stock."
         )
       }
 
@@ -915,7 +949,7 @@ function InventoryPageContent() {
         throw new Error(
           payload && typeof payload.error === "string"
             ? payload.error
-            : "Unable to record sale.",
+            : "Unable to record sale."
         )
       }
 
@@ -986,8 +1020,6 @@ function InventoryPageContent() {
 
   return (
     <div className="space-y-6">
-
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Inventory</h1>
@@ -996,7 +1028,12 @@ function InventoryPageContent() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting || isLoading}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={exporting || isLoading}
+          >
             {exporting ? (
               <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
             ) : (
@@ -1004,10 +1041,10 @@ function InventoryPageContent() {
             )}
             Export
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
-            onClick={() => setImportOpen(true)} 
+            onClick={() => setImportOpen(true)}
           >
             <Upload className="mr-1.5 h-3.5 w-3.5" />
             Import
@@ -1021,13 +1058,15 @@ function InventoryPageContent() {
 
       {notice ? (
         <div
-          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm animate-in fade-in slide-in-from-top-2 duration-300 ${
+          className={`flex animate-in items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm duration-300 fade-in slide-in-from-top-2 ${
             notice.type === "success"
               ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/30 dark:bg-emerald-500/5 dark:text-emerald-400"
               : "border-red-200 bg-red-50 text-red-700 dark:border-red-900/30 dark:bg-red-500/5 dark:text-red-400"
           }`}
         >
-          <div className={`h-2 w-2 rounded-full animate-pulse ${notice.type === "success" ? "bg-emerald-500" : "bg-red-500"}`} />
+          <div
+            className={`h-2 w-2 animate-pulse rounded-full ${notice.type === "success" ? "bg-emerald-500" : "bg-red-500"}`}
+          />
           {notice.message}
         </div>
       ) : null}
@@ -1063,8 +1102,12 @@ function InventoryPageContent() {
             <CardContent className="p-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase">{metric.label}</p>
-                  <h3 className={`text-lg font-bold ${metric.color}`}>{metric.value}</h3>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase">
+                    {metric.label}
+                  </p>
+                  <h3 className={`text-lg font-bold ${metric.color}`}>
+                    {metric.value}
+                  </h3>
                 </div>
                 <metric.icon className={`h-4 w-4 ${metric.color} opacity-70`} />
               </div>
@@ -1079,19 +1122,17 @@ function InventoryPageContent() {
             <div>
               <CardTitle>Product Catalog</CardTitle>
               <CardDescription>
-                {isLoading
-                  ? "Loading..."
-                  : `${products?.length || 0} items`}
+                {isLoading ? "Loading..." : `${products?.length || 0} items`}
               </CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                <Input 
-                  placeholder="Search products..." 
-                  className="h-8 w-48 pl-8 text-sm" 
-                  value={searchQuery} 
-                  onChange={(e) => setSearchQuery(e.target.value)} 
+                <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search products..."
+                  className="h-8 w-48 pl-8 text-sm"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -1134,13 +1175,19 @@ function InventoryPageContent() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent border-b">
+                <TableRow className="border-b hover:bg-transparent">
                   <TableHead className="w-[50px] text-center">#</TableHead>
                   <TableHead>Product</TableHead>
-                  <TableHead className="hidden md:table-cell w-[140px]">SKU</TableHead>
-                  <TableHead className="hidden lg:table-cell w-[140px]">Category</TableHead>
+                  <TableHead className="hidden w-[140px] md:table-cell">
+                    SKU
+                  </TableHead>
+                  <TableHead className="hidden w-[140px] lg:table-cell">
+                    Category
+                  </TableHead>
                   <TableHead className="w-[110px] text-right">Price</TableHead>
-                  <TableHead className="w-[140px] text-right">Stock Level</TableHead>
+                  <TableHead className="w-[140px] text-right">
+                    Stock Level
+                  </TableHead>
                   <TableHead className="w-[110px] pl-6">Status</TableHead>
                   <TableHead className="w-[50px]" />
                 </TableRow>
@@ -1149,15 +1196,15 @@ function InventoryPageContent() {
                 {products?.map((product, index) => (
                   <TableRow
                     key={product.id}
-                    className="group transition-colors hover:bg-muted/30 cursor-pointer"
+                    className="group cursor-pointer transition-colors hover:bg-muted/30"
                     onClick={() => setDetailsProductId(product.id)}
                   >
-                    <TableCell className="text-center font-mono text-xs text-muted-foreground/80 py-2.5">
+                    <TableCell className="py-2.5 text-center font-mono text-xs text-muted-foreground/80">
                       {index + 1}
                     </TableCell>
                     <TableCell className="py-2.5">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted overflow-hidden border border-border/40 shadow-inner transition-transform group-hover:scale-105">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/40 bg-muted shadow-inner transition-transform group-hover:scale-105">
                           {product.image ? (
                             <img
                               src={product.image}
@@ -1165,49 +1212,69 @@ function InventoryPageContent() {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-primary/5 text-primary font-bold text-xs">
+                            <div className="flex h-full w-full items-center justify-center bg-primary/5 text-xs font-bold text-primary">
                               {product.name.charAt(0).toUpperCase()}
                             </div>
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate font-semibold tracking-tight text-foreground text-sm">{product.name}</div>
+                          <div className="truncate text-sm font-semibold tracking-tight text-foreground">
+                            {product.name}
+                          </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span className="md:hidden font-mono">{product.sku}</span>
-                            <span className="md:hidden opacity-30">•</span>
+                            <span className="font-mono md:hidden">
+                              {product.sku}
+                            </span>
+                            <span className="opacity-30 md:hidden">•</span>
                             <span>{product.category}</span>
                           </div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell py-2.5 w-[140px]">
-                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                    <TableCell className="hidden w-[140px] py-2.5 md:table-cell">
+                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
                         {product.sku}
                       </code>
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell py-2.5 w-[140px]">
-                      <Badge variant="outline" className="font-normal text-muted-foreground border-muted-foreground/20 text-xs">
+                    <TableCell className="hidden w-[140px] py-2.5 lg:table-cell">
+                      <Badge
+                        variant="outline"
+                        className="border-muted-foreground/20 text-xs font-normal text-muted-foreground"
+                      >
                         {product.category}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-medium py-2.5 w-[110px]">
+                    <TableCell className="w-[110px] py-2.5 text-right font-medium">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-help hover:text-primary transition-colors underline decoration-dotted decoration-muted-foreground/30 underline-offset-4">
-                              {formatCumulativePrice(product.price * product.stock, currency)}
+                            <span className="cursor-help underline decoration-muted-foreground/30 decoration-dotted underline-offset-4 transition-colors hover:text-primary">
+                              {formatCumulativePrice(
+                                product.price * product.stock,
+                                currency
+                              )}
                             </span>
                           </TooltipTrigger>
-                          <TooltipContent side="top" className="!bg-popover !text-popover-foreground border !border-border shadow-lg px-3 py-2 z-50 [&_[data-slot=tooltip-arrow]]:!bg-popover [&_[data-slot=tooltip-arrow]]:!fill-popover">
-                            <div className="flex flex-col gap-1.5 text-xs min-w-[170px]">
-                              <div className="flex justify-between items-center gap-4">
-                                <span className="!text-muted-foreground font-medium">Total Value:</span>
+                          <TooltipContent
+                            side="top"
+                            className="z-50 border !border-border !bg-popover px-3 py-2 !text-popover-foreground shadow-lg [&_[data-slot=tooltip-arrow]]:!bg-popover [&_[data-slot=tooltip-arrow]]:!fill-popover"
+                          >
+                            <div className="flex min-w-[170px] flex-col gap-1.5 text-xs">
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="font-medium !text-muted-foreground">
+                                  Total Value:
+                                </span>
                                 <span className="font-bold !text-popover-foreground">
-                                  {formatCurrency(product.price * product.stock, currency)}
+                                  {formatCurrency(
+                                    product.price * product.stock,
+                                    currency
+                                  )}
                                 </span>
                               </div>
-                              <div className="flex justify-between items-center gap-4 border-t border-border/60 pt-1.5">
-                                <span className="!text-muted-foreground font-medium">Unit Price:</span>
+                              <div className="flex items-center justify-between gap-4 border-t border-border/60 pt-1.5">
+                                <span className="font-medium !text-muted-foreground">
+                                  Unit Price:
+                                </span>
                                 <span className="font-semibold !text-popover-foreground">
                                   {formatCurrency(product.price, currency)}
                                 </span>
@@ -1217,48 +1284,66 @@ function InventoryPageContent() {
                         </Tooltip>
                       </TooltipProvider>
                     </TableCell>
-                    <TableCell className="text-right py-2.5 w-[140px] font-mono">
-                      <span className={`text-sm font-semibold ${product.stock <= product.minStock ? "text-red-500 font-bold" : "text-foreground"}`}>
+                    <TableCell className="w-[140px] py-2.5 text-right font-mono">
+                      <span
+                        className={`text-sm font-semibold ${product.stock <= product.minStock ? "font-bold text-red-500" : "text-foreground"}`}
+                      >
                         {product.stock}
                       </span>
                     </TableCell>
-                    <TableCell className="py-2.5 w-[110px] pl-6">
-                      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border
-                        ${
+                    <TableCell className="w-[110px] py-2.5 pl-6">
+                      <span
+                        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase ${
                           product.status === "in-stock"
-                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400"
+                            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                             : product.status === "low-stock"
-                              ? "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400"
-                              : "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400"
-                        }
-                      `}>
+                              ? "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                              : "border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400"
+                        } `}
+                      >
                         {statusConfig[product.status].label}
                       </span>
                     </TableCell>
-                    <TableCell className="py-2.5 w-[50px]" onClick={(e) => e.stopPropagation()}>
+                    <TableCell
+                      className="w-[50px] py-2.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => beginRecordSale(product)} className="cursor-pointer font-medium text-primary focus:text-primary">
+                          <DropdownMenuItem
+                            onClick={() => beginRecordSale(product)}
+                            className="cursor-pointer font-medium text-primary focus:text-primary"
+                          >
                             <ShoppingCart className="mr-2 h-4 w-4" />
                             Record Sale
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => beginEdit(product)} className="cursor-pointer">
+                          <DropdownMenuItem
+                            onClick={() => beginEdit(product)}
+                            className="cursor-pointer"
+                          >
                             <Edit className="mr-2 h-4 w-4 text-muted-foreground" />
                             Edit Catalog
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => beginAdjustment(product)} className="cursor-pointer">
+                          <DropdownMenuItem
+                            onClick={() => beginAdjustment(product)}
+                            className="cursor-pointer"
+                          >
                             <ArrowUpDown className="mr-2 h-4 w-4 text-muted-foreground" />
                             Adjust Stock
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            className="text-destructive focus:text-destructive cursor-pointer"
+                            className="cursor-pointer text-destructive focus:text-destructive"
                             onClick={() => handleDelete(product)}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -1275,11 +1360,16 @@ function InventoryPageContent() {
                       <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                         <Package className="h-8 w-8 opacity-20" />
                         <p>No products found matching your filters.</p>
-                        <Button variant="link" onClick={() => {
-                          setSearchQuery("")
-                          setCategoryFilter("all")
-                          setStatusFilter("all")
-                        }}>Clear all filters</Button>
+                        <Button
+                          variant="link"
+                          onClick={() => {
+                            setSearchQuery("")
+                            setCategoryFilter("all")
+                            setStatusFilter("all")
+                          }}
+                        >
+                          Clear all filters
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -1304,7 +1394,6 @@ function InventoryPageContent() {
             <DialogTitle className="text-2xl font-bold">
               {formMode === "create" ? "Add New Product" : "Edit Product"}
             </DialogTitle>
-      
           </DialogHeader>
 
           <form className="space-y-4 pt-2" onSubmit={handleProductSubmit}>
@@ -1341,7 +1430,7 @@ function InventoryPageContent() {
                       variant="outline"
                       role="combobox"
                       aria-expanded={categoryOpen}
-                      className="justify-between h-9 font-normal w-full"
+                      className="h-9 w-full justify-between font-normal"
                     >
                       {formValues.category || "Select category..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -1360,13 +1449,19 @@ function InventoryPageContent() {
                             type="button"
                             className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
                             onClick={() => {
-                              setFormValues(current => ({ ...current, category: category.name }))
+                              setFormValues((current) => ({
+                                ...current,
+                                category: category.name,
+                              }))
                               setCategoryOpen(false)
                             }}
                           >
                             <Check
                               className={`mr-2 h-4 w-4 ${
-                                formValues.category.toLowerCase() === category.name.toLowerCase() ? "opacity-100" : "opacity-0"
+                                formValues.category.toLowerCase() ===
+                                category.name.toLowerCase()
+                                  ? "opacity-100"
+                                  : "opacity-0"
                               }`}
                             />
                             {category.name}
@@ -1374,10 +1469,10 @@ function InventoryPageContent() {
                         ))
                       )}
                     </div>
-                    <div className="border-t p-2 bg-muted/20 flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 border-t bg-muted/20 p-2">
                       <Input
                         placeholder="New category name..."
-                        className="h-8 text-xs bg-background w-full"
+                        className="h-8 w-full bg-background text-xs"
                         value={categorySearch}
                         onChange={(e) => setCategorySearch(e.target.value)}
                         onKeyDown={async (e) => {
@@ -1390,7 +1485,7 @@ function InventoryPageContent() {
                       <Button
                         type="button"
                         size="sm"
-                        className="h-8 text-xs font-semibold w-full"
+                        className="h-8 w-full text-xs font-semibold"
                         disabled={!categorySearch.trim() || categoryAdding}
                         onClick={handleCreateCategory}
                       >
@@ -1411,7 +1506,9 @@ function InventoryPageContent() {
               <div className="space-y-1.5">
                 <Label htmlFor="product-price">Unit Price ({currency}) *</Label>
                 <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-bold">{currency === "USD" ? "$" : currency}</span>
+                  <span className="absolute top-1/2 left-2.5 -translate-y-1/2 text-[10px] font-bold text-muted-foreground">
+                    {currency === "USD" ? "$" : currency}
+                  </span>
                   <Input
                     id="product-price"
                     name="price"
@@ -1457,54 +1554,64 @@ function InventoryPageContent() {
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">Product Image</Label>
               {formValues.image ? (
-                <div className="relative group rounded-xl border bg-muted/20 overflow-hidden flex items-center justify-center min-h-[120px] max-h-[140px]">
+                <div className="group relative flex max-h-[140px] min-h-[120px] items-center justify-center overflow-hidden rounded-xl border bg-muted/20">
                   <img
                     src={formValues.image}
                     alt="Product preview"
-                    className="object-contain max-h-[120px] w-full transition-transform duration-300 group-hover:scale-105"
+                    className="max-h-[120px] w-full object-contain transition-transform duration-300 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                     <Button
                       type="button"
                       variant="destructive"
                       size="sm"
                       className="h-8 text-xs"
-                      onClick={() => setFormValues(current => ({ ...current, image: "" }))}
+                      onClick={() =>
+                        setFormValues((current) => ({ ...current, image: "" }))
+                      }
                     >
-                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      <Trash2 className="mr-1 h-3.5 w-3.5" />
                       Remove
                     </Button>
                   </div>
                 </div>
               ) : (
-                <label className="relative group border-2 border-dashed border-border hover:border-primary/40 rounded-xl bg-muted/5 hover:bg-muted/15 p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-200 min-h-[120px] max-h-[140px]">
+                <label className="group relative flex max-h-[140px] min-h-[120px] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border bg-muted/5 p-4 transition-all duration-200 hover:border-primary/40 hover:bg-muted/15">
                   {uploadStage === "compressing" ? (
-                    <div className="flex flex-col items-center gap-2.5 text-muted-foreground w-full px-4">
+                    <div className="flex w-full flex-col items-center gap-2.5 px-4 text-muted-foreground">
                       <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
-                      <span className="text-[10px] font-semibold text-indigo-500 animate-pulse">Optimizing & Compressing...</span>
-                      <div className="w-full h-1 bg-muted rounded-full overflow-hidden border border-border/10">
-                        <div className="h-full bg-indigo-500 w-1/2 animate-[pulse_1.5s_infinite] rounded-full" />
+                      <span className="animate-pulse text-[10px] font-semibold text-indigo-500">
+                        Optimizing & Compressing...
+                      </span>
+                      <div className="h-1 w-full overflow-hidden rounded-full border border-border/10 bg-muted">
+                        <div className="h-full w-1/2 animate-[pulse_1.5s_infinite] rounded-full bg-indigo-500" />
                       </div>
                     </div>
                   ) : uploadStage === "uploading" ? (
-                    <div className="flex flex-col items-center gap-2.5 text-muted-foreground w-full px-4">
+                    <div className="flex w-full flex-col items-center gap-2.5 px-4 text-muted-foreground">
                       <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                      <span className="text-[10px] font-medium text-foreground/80">Uploading to CDN... {uploadProgress}%</span>
-                      <div className="w-full h-1 bg-muted rounded-full overflow-hidden border border-border/10">
+                      <span className="text-[10px] font-medium text-foreground/80">
+                        Uploading to CDN... {uploadProgress}%
+                      </span>
+                      <div className="h-1 w-full overflow-hidden rounded-full border border-border/10 bg-muted">
                         <div
-                          className="h-full bg-gradient-to-r from-primary to-indigo-500 transition-all duration-300 ease-out rounded-full"
+                          className="h-full rounded-full bg-gradient-to-r from-primary to-indigo-500 transition-all duration-300 ease-out"
                           style={{ width: `${uploadProgress}%` }}
                         />
                       </div>
                     </div>
                   ) : (
                     <>
-                      <div className="h-8 w-8 rounded-full bg-primary/5 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-inner">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/5 text-primary shadow-inner transition-transform duration-200 group-hover:scale-110">
                         <Upload className="h-4.5 w-4.5" />
                       </div>
                       <div className="text-center">
-                        <span className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors">Upload product image</span>
-                        <p className="text-[9px] text-muted-foreground mt-0.5">PNG, JPG, WEBP up to 5MB</p>
+                        <span className="text-[11px] font-semibold text-foreground transition-colors group-hover:text-primary">
+                          Upload product image
+                        </span>
+                        <p className="mt-0.5 text-[9px] text-muted-foreground">
+                          PNG, JPG, WEBP up to 5MB
+                        </p>
                       </div>
                     </>
                   )}
@@ -1531,7 +1638,7 @@ function InventoryPageContent() {
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t">
+            <div className="flex justify-end gap-3 border-t pt-3">
               <Button
                 type="button"
                 variant="outline"
@@ -1546,25 +1653,33 @@ function InventoryPageContent() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={submittingForm || uploadStage !== "idle"}>
+              <Button
+                type="submit"
+                disabled={submittingForm || uploadStage !== "idle"}
+              >
                 {submittingForm ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     {formMode === "create" ? "Creating..." : "Updating..."}
                   </>
+                ) : formMode === "create" ? (
+                  "Create Product"
                 ) : (
-                  formMode === "create" ? "Create Product" : "Update Product"
+                  "Update Product"
                 )}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
-      <Dialog open={!!detailsProductId} onOpenChange={(open) => !open && setDetailsProductId(null)}>
+      <Dialog
+        open={!!detailsProductId}
+        onOpenChange={(open) => !open && setDetailsProductId(null)}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader className="space-y-1">
             <div className="flex items-center gap-3">
-              <div className="relative group flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted overflow-hidden border border-border/40 shadow-inner">
+              <div className="group relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/40 bg-muted shadow-inner">
                 {uploadStage !== "idle" ? (
                   <div className="flex h-full w-full items-center justify-center bg-muted">
                     <Loader2 className="h-4.5 w-4.5 animate-spin text-primary" />
@@ -1574,32 +1689,37 @@ function InventoryPageContent() {
                     <img
                       src={selectedProduct.image}
                       alt={selectedProduct.name}
-                      className="h-full w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                      className="h-full w-full cursor-pointer object-cover transition-opacity hover:opacity-90"
                       onClick={() => setZoomImageUrl(selectedProduct.image)}
                     />
-                    <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex flex-col items-center justify-center cursor-pointer text-[8px] text-white font-bold leading-none gap-0.5 select-none">
+                    <label className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center gap-0.5 bg-black/50 text-[8px] leading-none font-bold text-white opacity-0 transition-opacity duration-150 select-none group-hover:opacity-100">
                       <Camera className="h-3 w-3" />
                       <span>Change</span>
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => handleDetailsImageChange(e, selectedProduct.id)}
+                        onChange={(e) =>
+                          handleDetailsImageChange(e, selectedProduct.id)
+                        }
                         disabled={uploadStage !== "idle"}
                         className="hidden"
                       />
                     </label>
                   </>
                 ) : (
-                  <label className="relative group flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-base cursor-pointer hover:bg-primary/20 transition-colors">
+                  <label className="group relative flex h-full w-full cursor-pointer items-center justify-center bg-primary/10 text-base font-bold text-primary transition-colors hover:bg-primary/20">
                     <span>{selectedProduct?.name.charAt(0).toUpperCase()}</span>
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex flex-col items-center justify-center text-[8px] text-white font-bold leading-none gap-0.5 select-none">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-black/50 text-[8px] leading-none font-bold text-white opacity-0 transition-opacity duration-150 select-none group-hover:opacity-100">
                       <Camera className="h-3 w-3" />
                       <span>Add</span>
                     </div>
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => selectedProduct && handleDetailsImageChange(e, selectedProduct.id)}
+                      onChange={(e) =>
+                        selectedProduct &&
+                        handleDetailsImageChange(e, selectedProduct.id)
+                      }
                       disabled={uploadStage !== "idle"}
                       className="hidden"
                     />
@@ -1607,23 +1727,25 @@ function InventoryPageContent() {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <DialogTitle className="text-2xl font-bold truncate leading-none mb-1">
+                <DialogTitle className="mb-1 truncate text-2xl leading-none font-bold">
                   {selectedProduct?.name}
                 </DialogTitle>
                 <div className="flex items-center gap-2">
-                  <code className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                  <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] tracking-wider text-muted-foreground uppercase">
                     {selectedProduct?.sku}
                   </code>
-                  <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider border
-                    ${
+                  <span
+                    className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[9px] font-semibold tracking-wider uppercase ${
                       selectedProduct?.status === "in-stock"
-                        ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400"
+                        ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                         : selectedProduct?.status === "low-stock"
-                          ? "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400"
-                          : "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400"
-                    }
-                  `}>
-                    {selectedProduct ? statusConfig[selectedProduct.status].label : ""}
+                          ? "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                          : "border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400"
+                    } `}
+                  >
+                    {selectedProduct
+                      ? statusConfig[selectedProduct.status].label
+                      : ""}
                   </span>
                 </div>
               </div>
@@ -1631,34 +1753,46 @@ function InventoryPageContent() {
           </DialogHeader>
 
           {loadingSelectedProduct ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-2">
+            <div className="flex flex-col items-center justify-center gap-2 py-12">
               <Loader2 className="h-6 w-6 animate-spin text-primary/40" />
-              <p className="text-xs text-muted-foreground font-medium animate-pulse">Loading details...</p>
+              <p className="animate-pulse text-xs font-medium text-muted-foreground">
+                Loading details...
+              </p>
             </div>
           ) : selectedProductError ? (
             <div className="rounded-xl border border-red-200 bg-red-500/5 p-4 text-center">
-              <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-              <p className="text-xs font-semibold text-red-700">Failed to load product details</p>
+              <AlertTriangle className="mx-auto mb-2 h-8 w-8 text-red-500" />
+              <p className="text-xs font-semibold text-red-700">
+                Failed to load product details
+              </p>
             </div>
           ) : selectedProduct ? (
             <div className="space-y-4 pt-2">
               {/* Stats Row */}
-              <div className="grid grid-cols-3 gap-2 bg-muted/30 p-3 rounded-xl border border-muted/50 text-center">
+              <div className="grid grid-cols-3 gap-2 rounded-xl border border-muted/50 bg-muted/30 p-3 text-center">
                 <div className="flex flex-col justify-center">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Category</span>
-                  <span className="mt-1 text-xs font-semibold text-foreground truncate px-1">
+                  <span className="text-[9px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Category
+                  </span>
+                  <span className="mt-1 truncate px-1 text-xs font-semibold text-foreground">
                     {selectedProduct.category}
                   </span>
                 </div>
                 <div className="flex flex-col justify-center border-x border-border/50">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Unit Price</span>
+                  <span className="text-[9px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Unit Price
+                  </span>
                   <span className="mt-1 text-xs font-bold text-primary">
                     {formatCurrency(selectedProduct.price, currency)}
                   </span>
                 </div>
                 <div className="flex flex-col justify-center">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Stock Level</span>
-                  <span className={`mt-1 text-xs font-bold ${selectedProduct.stock <= selectedProduct.minStock ? "text-red-500 font-bold" : "text-foreground"}`}>
+                  <span className="text-[9px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Stock Level
+                  </span>
+                  <span
+                    className={`mt-1 text-xs font-bold ${selectedProduct.stock <= selectedProduct.minStock ? "font-bold text-red-500" : "text-foreground"}`}
+                  >
                     {selectedProduct.stock}
                   </span>
                 </div>
@@ -1666,8 +1800,10 @@ function InventoryPageContent() {
 
               {/* Description */}
               {selectedProduct.description && (
-                <div className="rounded-xl border p-3 bg-card/30">
-                  <h4 className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Description</h4>
+                <div className="rounded-xl border bg-card/30 p-3">
+                  <h4 className="mb-1 text-[9px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Description
+                  </h4>
                   <p className="text-[11px] leading-relaxed text-muted-foreground">
                     {selectedProduct.description}
                   </p>
@@ -1675,67 +1811,81 @@ function InventoryPageContent() {
               )}
 
               {/* Activity Log */}
-              <div className="rounded-xl border bg-card overflow-hidden">
+              <div className="overflow-hidden rounded-xl border bg-card">
                 <div className="flex items-center justify-between border-b bg-muted/20 px-3.5 py-2">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Activity Log</span>
+                  <span className="text-[9px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Activity Log
+                  </span>
                   <span className="font-mono text-[9px] text-muted-foreground/60">
                     {selectedProduct.movementCount} total movements
                   </span>
                 </div>
-                <div className="max-h-[130px] overflow-auto divide-y">
+                <div className="max-h-[130px] divide-y overflow-auto">
                   {selectedProduct.recentMovements?.length ? (
-                    selectedProduct.recentMovements.slice(0, 3).map((movement) => (
-                      <div
-                        key={movement.id}
-                        className="flex items-center justify-between px-3.5 py-2 hover:bg-muted/10 transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className={`h-6 w-6 rounded-md flex items-center justify-center shrink-0
-                            ${movement.quantity > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}
-                          `}>
-                            {movement.quantity > 0 ? <Plus className="h-3 w-3" /> : <ArrowUpDown className="h-3 w-3 rotate-180" />}
+                    selectedProduct.recentMovements
+                      .slice(0, 3)
+                      .map((movement) => (
+                        <div
+                          key={movement.id}
+                          className="flex items-center justify-between px-3.5 py-2 transition-colors hover:bg-muted/10"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${movement.quantity > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"} `}
+                            >
+                              {movement.quantity > 0 ? (
+                                <Plus className="h-3 w-3" />
+                              ) : (
+                                <ArrowUpDown className="h-3 w-3 rotate-180" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-semibold">
+                                {movement.type}
+                              </p>
+                              <p className="text-[9px] text-muted-foreground/75">
+                                {formatDate(movement.createdAt)}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-[11px] font-semibold">{movement.type}</p>
-                            <p className="text-[9px] text-muted-foreground/75">
-                              {formatDate(movement.createdAt)}
+                          <div className="text-right">
+                            <p
+                              className={`font-mono text-xs font-bold ${movement.quantity > 0 ? "text-emerald-600" : "text-red-600"}`}
+                            >
+                              {movement.quantity > 0 ? "+" : ""}
+                              {movement.quantity}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className={`font-mono text-xs font-bold ${movement.quantity > 0 ? "text-emerald-600" : "text-red-600"}`}>
-                            {movement.quantity > 0 ? "+" : ""}{movement.quantity}
-                          </p>
-                        </div>
-                      </div>
-                    ))
+                      ))
                   ) : (
                     <div className="py-6 text-center text-[11px] text-muted-foreground">
                       No recent stock movements recorded.
                     </div>
                   )}
                 </div>
-                {selectedProduct.recentMovements && selectedProduct.recentMovements.length > 0 && (
-                  <div className="border-t bg-muted/5 px-3.5 py-1.5 text-center">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setHistoryProduct(selectedProduct)
-                        setReturnToDetailsProductId(selectedProduct.id)
-                        setDetailsProductId(null)
-                        setHistoryPage(1)
-                        setHistoryOpen(true)
-                      }}
-                      className="inline-flex items-center justify-center text-[10px] font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider gap-1"
-                    >
-                      View Full History ({selectedProduct.movementCount})
-                    </button>
-                  </div>
-                )}
+                {selectedProduct.recentMovements &&
+                  selectedProduct.recentMovements.length > 0 && (
+                    <div className="border-t bg-muted/5 px-3.5 py-1.5 text-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHistoryProduct(selectedProduct)
+                          setReturnToDetailsProductId(selectedProduct.id)
+                          setDetailsProductId(null)
+                          setHistoryPage(1)
+                          setHistoryOpen(true)
+                        }}
+                        className="inline-flex items-center justify-center gap-1 text-[10px] font-bold tracking-wider text-primary uppercase transition-colors hover:text-primary/80"
+                      >
+                        View Full History ({selectedProduct.movementCount})
+                      </button>
+                    </div>
+                  )}
               </div>
 
               {/* Footer Buttons */}
-              <div className="flex justify-end gap-3 pt-3 border-t">
+              <div className="flex justify-end gap-3 border-t pt-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -1777,18 +1927,21 @@ function InventoryPageContent() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!zoomImageUrl} onOpenChange={(open) => !open && setZoomImageUrl(null)}>
-        <DialogContent className="sm:max-w-[420px] p-2 bg-background border rounded-2xl shadow-2xl flex flex-col items-center gap-2 overflow-hidden">
+      <Dialog
+        open={!!zoomImageUrl}
+        onOpenChange={(open) => !open && setZoomImageUrl(null)}
+      >
+        <DialogContent className="flex flex-col items-center gap-2 overflow-hidden rounded-2xl border bg-background p-2 shadow-2xl sm:max-w-[420px]">
           {zoomImageUrl && (
-            <div className="relative w-full flex items-center justify-center p-1 bg-muted/10 rounded-xl overflow-hidden min-h-[260px] max-h-[360px]">
+            <div className="relative flex max-h-[360px] min-h-[260px] w-full items-center justify-center overflow-hidden rounded-xl bg-muted/10 p-1">
               <img
                 src={zoomImageUrl}
                 alt="Product zoomed preview"
-                className="object-contain max-h-[340px] w-full rounded-lg"
+                className="max-h-[340px] w-full rounded-lg object-contain"
               />
               <button
                 type="button"
-                className="absolute top-3 right-3 h-6 w-6 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+                className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
                 onClick={() => setZoomImageUrl(null)}
               >
                 <X className="h-3.5 w-3.5" />
@@ -1816,7 +1969,9 @@ function InventoryPageContent() {
       >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-2xl font-bold">Record Product Sale</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">
+              Record Product Sale
+            </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
               Deduct inventory levels immediately by logging a customer sale.
             </DialogDescription>
@@ -1826,11 +1981,21 @@ function InventoryPageContent() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="sale-product-name">Reference Product</Label>
-                <Input id="sale-product-name" value={saleValues.productName} disabled className="bg-muted/50" />
+                <Input
+                  id="sale-product-name"
+                  value={saleValues.productName}
+                  disabled
+                  className="bg-muted/50"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="sale-current-stock">Available Stock</Label>
-                <Input id="sale-current-stock" value={saleValues.currentStock} disabled className="bg-muted/50 font-mono font-bold" />
+                <Input
+                  id="sale-current-stock"
+                  value={saleValues.currentStock}
+                  disabled
+                  className="bg-muted/50 font-mono font-bold"
+                />
               </div>
             </div>
 
@@ -1844,7 +2009,12 @@ function InventoryPageContent() {
                   max={saleValues.currentStock}
                   step="1"
                   value={saleValues.quantity}
-                  onChange={(e) => setSaleValues(current => ({ ...current, quantity: e.target.value }))}
+                  onChange={(e) =>
+                    setSaleValues((current) => ({
+                      ...current,
+                      quantity: e.target.value,
+                    }))
+                  }
                   placeholder="e.g. 5"
                   required
                 />
@@ -1864,10 +2034,16 @@ function InventoryPageContent() {
                     <SelectValue placeholder="Select sale channel" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Direct Sale">Direct Sale (POS)</SelectItem>
+                    <SelectItem value="Direct Sale">
+                      Direct Sale (POS)
+                    </SelectItem>
                     <SelectItem value="Online Order">Online Order</SelectItem>
-                    <SelectItem value="Retail Sale">Retail / Counter Sale</SelectItem>
-                    <SelectItem value="Wholesale">Wholesale Distribution</SelectItem>
+                    <SelectItem value="Retail Sale">
+                      Retail / Counter Sale
+                    </SelectItem>
+                    <SelectItem value="Wholesale">
+                      Wholesale Distribution
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1878,19 +2054,26 @@ function InventoryPageContent() {
               <Textarea
                 id="sale-notes"
                 value={saleValues.notes}
-                onChange={(e) => setSaleValues(current => ({ ...current, notes: e.target.value }))}
+                onChange={(e) =>
+                  setSaleValues((current) => ({
+                    ...current,
+                    notes: e.target.value,
+                  }))
+                }
                 placeholder="e.g. Invoice #1024, customer cash purchase, special delivery..."
                 className="min-h-[60px] resize-none"
               />
             </div>
 
-            {saleValues.quantity && Number(saleValues.quantity) > saleValues.currentStock && (
-              <p className="text-xs text-red-500 font-semibold mt-1">
-                Warning: Cannot sell more than available stock ({saleValues.currentStock} units).
-              </p>
-            )}
+            {saleValues.quantity &&
+              Number(saleValues.quantity) > saleValues.currentStock && (
+                <p className="mt-1 text-xs font-semibold text-red-500">
+                  Warning: Cannot sell more than available stock (
+                  {saleValues.currentStock} units).
+                </p>
+              )}
 
-            <div className="flex justify-end gap-3 pt-3 border-t">
+            <div className="flex justify-end gap-3 border-t pt-3">
               <Button
                 type="button"
                 variant="outline"
@@ -1905,18 +2088,23 @@ function InventoryPageContent() {
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={submittingSale || !saleValues.quantity || Number(saleValues.quantity) <= 0 || Number(saleValues.quantity) > saleValues.currentStock} 
+              <Button
+                type="submit"
+                disabled={
+                  submittingSale ||
+                  !saleValues.quantity ||
+                  Number(saleValues.quantity) <= 0 ||
+                  Number(saleValues.quantity) > saleValues.currentStock
+                }
               >
                 {submittingSale ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Recording...
                   </>
                 ) : (
                   <>
-                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    <ShoppingCart className="mr-2 h-4 w-4" />
                     Confirm Sale
                   </>
                 )}
@@ -1937,9 +2125,12 @@ function InventoryPageContent() {
       >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-2xl font-bold">Stock Adjustment</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">
+              Stock Adjustment
+            </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              Modify inventory levels manually. Use positive for additions, negative for reductions.
+              Modify inventory levels manually. Use positive for additions,
+              negative for reductions.
             </DialogDescription>
           </DialogHeader>
 
@@ -1947,7 +2138,12 @@ function InventoryPageContent() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="adjustment-product-name">Selected Item</Label>
-                <Input id="adjustment-product-name" value={adjustmentValues.productName} disabled className="bg-muted/50" />
+                <Input
+                  id="adjustment-product-name"
+                  value={adjustmentValues.productName}
+                  disabled
+                  className="bg-muted/50"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="adjustment-type">Reason for Adjustment</Label>
@@ -1956,7 +2152,9 @@ function InventoryPageContent() {
                   onValueChange={(value) => {
                     if (value === "Sale") {
                       setAdjustmentOpen(false)
-                      const product = products?.find((p) => p.id === adjustmentValues.productId)
+                      const product = products?.find(
+                        (p) => p.id === adjustmentValues.productId
+                      )
                       if (product) {
                         beginRecordSale(product)
                       }
@@ -1975,8 +2173,12 @@ function InventoryPageContent() {
                     <SelectValue placeholder="Select movement type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Manual Adjustment">Manual Adjustment</SelectItem>
-                    <SelectItem value="Restock">Restock / Procurement</SelectItem>
+                    <SelectItem value="Manual Adjustment">
+                      Manual Adjustment
+                    </SelectItem>
+                    <SelectItem value="Restock">
+                      Restock / Procurement
+                    </SelectItem>
                     <SelectItem value="Sale">Direct Sale (POS)</SelectItem>
                     <SelectItem value="Order">Customer Order</SelectItem>
                   </SelectContent>
@@ -1996,12 +2198,13 @@ function InventoryPageContent() {
                 placeholder="e.g. 25 or -4"
                 required
               />
-              <p className="text-[10px] text-muted-foreground leading-normal mt-1">
-                The final stock will be recalculated immediately after application.
+              <p className="mt-1 text-[10px] leading-normal text-muted-foreground">
+                The final stock will be recalculated immediately after
+                application.
               </p>
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t">
+            <div className="flex justify-end gap-3 border-t pt-3">
               <Button
                 type="button"
                 variant="outline"
@@ -2019,12 +2222,12 @@ function InventoryPageContent() {
               <Button type="submit" disabled={submittingAdjustment}>
                 {submittingAdjustment ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Adjusting...
                   </>
                 ) : (
                   <>
-                    <ArrowUpDown className="w-4 h-4 mr-2" />
+                    <ArrowUpDown className="mr-2 h-4 w-4" />
                     Commit Adjustment
                   </>
                 )}
@@ -2044,23 +2247,30 @@ function InventoryPageContent() {
       >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-2xl font-bold">Transaction History</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">
+              Transaction History
+            </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              Complete stock history and operator logs for <span className="font-semibold text-foreground">{historyProduct?.name}</span>.
+              Complete stock history and operator logs for{" "}
+              <span className="font-semibold text-foreground">
+                {historyProduct?.name}
+              </span>
+              .
             </DialogDescription>
           </DialogHeader>
 
           {historyProduct && (
             <div className="space-y-4 pt-2">
               {/* Table / List */}
-              <div className="rounded-xl border bg-card overflow-hidden">
+              <div className="overflow-hidden rounded-xl border bg-card">
                 <div className="grid grid-cols-1 divide-y divide-border/60">
                   {(() => {
                     const movements = historyProduct.recentMovements ?? []
                     const totalMovements = movements.length
                     const ITEMS_PER_PAGE = 5
-                    const totalPages = Math.ceil(totalMovements / ITEMS_PER_PAGE) || 1
-                    
+                    const totalPages =
+                      Math.ceil(totalMovements / ITEMS_PER_PAGE) || 1
+
                     // Clamp page
                     const currentPage = Math.min(historyPage, totalPages)
                     const paginated = movements.slice(
@@ -2070,7 +2280,7 @@ function InventoryPageContent() {
 
                     if (paginated.length === 0) {
                       return (
-                        <div className="py-12 text-center text-sm text-muted-foreground font-medium">
+                        <div className="py-12 text-center text-sm font-medium text-muted-foreground">
                           No transaction history available.
                         </div>
                       )
@@ -2078,14 +2288,17 @@ function InventoryPageContent() {
 
                     return (
                       <>
-                        <div className="max-h-[350px] overflow-auto divide-y divide-border/50">
+                        <div className="max-h-[350px] divide-y divide-border/50 overflow-auto">
                           {paginated.map((movement) => (
-                            <div key={movement.id} className="p-3.5 hover:bg-muted/10 transition-colors space-y-1.5">
+                            <div
+                              key={movement.id}
+                              className="space-y-1.5 p-3.5 transition-colors hover:bg-muted/10"
+                            >
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2.5">
-                                  <div className={`h-7 w-7 rounded-md flex items-center justify-center shrink-0
-                                    ${movement.quantity > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}
-                                  `}>
+                                  <div
+                                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${movement.quantity > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"} `}
+                                  >
                                     {movement.quantity > 0 ? (
                                       <Plus className="h-4.5 w-4.5" />
                                     ) : (
@@ -2094,30 +2307,37 @@ function InventoryPageContent() {
                                   </div>
                                   <div>
                                     <div className="flex items-center gap-1.5">
-                                      <p className="text-xs font-bold text-foreground">{movement.type}</p>
-                                      <span className="text-[10px] text-muted-foreground font-medium px-1.5 py-0.5 rounded-full bg-muted border border-muted-foreground/15">
+                                      <p className="text-xs font-bold text-foreground">
+                                        {movement.type}
+                                      </p>
+                                      <span className="rounded-full border border-muted-foreground/15 bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                                         {movement.userName}
                                       </span>
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground/80 font-medium">
+                                    <p className="text-[10px] font-medium text-muted-foreground/80">
                                       {formatDate(movement.createdAt)}
                                     </p>
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <p className={`font-mono text-sm font-bold ${movement.quantity > 0 ? "text-emerald-600" : "text-red-600"}`}>
-                                    {movement.quantity > 0 ? "+" : ""}{movement.quantity} units
+                                  <p
+                                    className={`font-mono text-sm font-bold ${movement.quantity > 0 ? "text-emerald-600" : "text-red-600"}`}
+                                  >
+                                    {movement.quantity > 0 ? "+" : ""}
+                                    {movement.quantity} units
                                   </p>
-                                  <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">
+                                  <p className="text-[9px] font-semibold tracking-wider text-muted-foreground uppercase">
                                     {movement.status}
                                   </p>
                                 </div>
                               </div>
 
                               {movement.notes && (
-                                <div className="bg-muted/30 border border-muted/50 rounded-lg p-2 mt-1">
-                                  <p className="text-[10px] text-muted-foreground leading-normal">
-                                    <span className="font-semibold text-foreground/75">Notes: </span>
+                                <div className="mt-1 rounded-lg border border-muted/50 bg-muted/30 p-2">
+                                  <p className="text-[10px] leading-normal text-muted-foreground">
+                                    <span className="font-semibold text-foreground/75">
+                                      Notes:{" "}
+                                    </span>
                                     {movement.notes}
                                   </p>
                                 </div>
@@ -2128,27 +2348,38 @@ function InventoryPageContent() {
 
                         {/* Pagination Bar */}
                         <div className="flex items-center justify-between border-t bg-muted/20 px-3.5 py-2.5">
-                          <span className="text-[11px] text-muted-foreground font-medium">
-                            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalMovements)} of {totalMovements} entries
+                          <span className="text-[11px] font-medium text-muted-foreground">
+                            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} -{" "}
+                            {Math.min(
+                              currentPage * ITEMS_PER_PAGE,
+                              totalMovements
+                            )}{" "}
+                            of {totalMovements} entries
                           </span>
                           <div className="flex items-center gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-7 text-[10px] font-bold px-2.5"
-                              onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
+                              className="h-7 px-2.5 text-[10px] font-bold"
+                              onClick={() =>
+                                setHistoryPage((p) => Math.max(1, p - 1))
+                              }
                               disabled={currentPage === 1}
                             >
                               Previous
                             </Button>
-                            <span className="text-[10px] font-bold text-muted-foreground px-1">
+                            <span className="px-1 text-[10px] font-bold text-muted-foreground">
                               {currentPage} / {totalPages}
                             </span>
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-7 text-[10px] font-bold px-2.5"
-                              onClick={() => setHistoryPage((p) => Math.min(totalPages, p + 1))}
+                              className="h-7 px-2.5 text-[10px] font-bold"
+                              onClick={() =>
+                                setHistoryPage((p) =>
+                                  Math.min(totalPages, p + 1)
+                                )
+                              }
                               disabled={currentPage === totalPages}
                             >
                               Next
@@ -2162,7 +2393,7 @@ function InventoryPageContent() {
               </div>
 
               {/* Footer */}
-              <div className="flex justify-end gap-3 pt-3 border-t">
+              <div className="flex justify-end gap-3 border-t pt-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -2179,14 +2410,20 @@ function InventoryPageContent() {
       <Dialog open={importOpen} onOpenChange={setImportOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Bulk Import Products</DialogTitle>
+            <DialogTitle className="text-xl font-bold">
+              Bulk Import Products
+            </DialogTitle>
             <DialogDescription>
-              Upload a CSV or JSON file to bulk create or update your inventory catalog.
+              Upload a CSV or JSON file to bulk create or update your inventory
+              catalog.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleImportSubmit} className="space-y-6 pt-4">
             <div className="grid gap-2">
-              <Label htmlFor="import-file" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <Label
+                htmlFor="import-file"
+                className="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+              >
                 Inventory File (CSV or JSON)
               </Label>
               <Input
@@ -2194,7 +2431,7 @@ function InventoryPageContent() {
                 type="file"
                 accept=".csv,.json"
                 onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                className="h-12 pt-2.5 bg-muted/20 border-dashed border-2 hover:bg-muted/30 transition-all cursor-pointer"
+                className="h-12 cursor-pointer border-2 border-dashed bg-muted/20 pt-2.5 transition-all hover:bg-muted/30"
                 required
               />
               <p className="text-[10px] text-muted-foreground italic">

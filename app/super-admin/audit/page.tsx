@@ -9,18 +9,40 @@ import {
   Search,
   SlidersHorizontal,
   Shield,
-  Loader2
+  Loader2,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
+type AuditLog = {
+  id: string
+  type: string
+  action: string
+  ip?: string | null
+  timestamp: string
+  workspaceName?: string | null
+  user?: {
+    name?: string | null
+    email?: string | null
+    image?: string | null
+  }
+}
+
+type AuditData = {
+  activities?: AuditLog[]
+}
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export default function SuperAdminAuditPage() {
-  const { data, error, isLoading, mutate } = useSWR("/api/super-admin/data", fetcher, {
-    refreshInterval: 10000 // Refresh stats every 10 seconds
-  })
+  const { data, error, isLoading, mutate } = useSWR<AuditData>(
+    "/api/super-admin/data",
+    fetcher,
+    {
+      refreshInterval: 10000, // Refresh stats every 10 seconds
+    }
+  )
 
   const [auditSearch, setAuditSearch] = useState("")
   const [auditFilterType, setAuditFilterType] = useState<string>("all")
@@ -29,17 +51,24 @@ export default function SuperAdminAuditPage() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-        <div className="h-14 w-14 rounded-2xl bg-destructive/10 flex items-center justify-center border border-destructive/20 shadow-lg shadow-destructive/5">
+      <div className="flex flex-col items-center justify-center space-y-4 py-20 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/10 shadow-lg shadow-destructive/5">
           <Shield className="h-6 w-6 text-destructive" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground">Failed to Load Activity Logs</h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            There was an error communicating with the database or server. Ensure your database is running.
+          <h2 className="text-xl font-bold text-foreground">
+            Failed to Load Activity Logs
+          </h2>
+          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+            There was an error communicating with the database or server. Ensure
+            your database is running.
           </p>
         </div>
-        <Button variant="outline" onClick={() => mutate()} className="border-border bg-background text-foreground">
+        <Button
+          variant="outline"
+          onClick={() => mutate()}
+          className="border-border bg-background text-foreground"
+        >
           Retry Connection
         </Button>
       </div>
@@ -48,9 +77,9 @@ export default function SuperAdminAuditPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-40 space-y-4">
+      <div className="flex flex-col items-center justify-center space-y-4 py-40">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-sm font-semibold text-muted-foreground tracking-wide uppercase">
+        <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
           Accessing Global Audit Logs Stream...
         </p>
       </div>
@@ -60,15 +89,18 @@ export default function SuperAdminAuditPage() {
   const { activities = [] } = data || {}
 
   // Filter audit logs based on search query and selected log type
-  const filteredLogs = activities.filter((log: any) => {
+  const filteredLogs = activities.filter((log) => {
     const matchesSearch =
       log.action.toLowerCase().includes(auditSearch.toLowerCase()) ||
-      (log.user?.email && log.user.email.toLowerCase().includes(auditSearch.toLowerCase())) ||
-      (log.user?.name && log.user.name.toLowerCase().includes(auditSearch.toLowerCase())) ||
+      (log.user?.email &&
+        log.user.email.toLowerCase().includes(auditSearch.toLowerCase())) ||
+      (log.user?.name &&
+        log.user.name.toLowerCase().includes(auditSearch.toLowerCase())) ||
       (log.ip && log.ip.includes(auditSearch))
-    
-    const matchesType = auditFilterType === "all" || log.type === auditFilterType
-    
+
+    const matchesType =
+      auditFilterType === "all" || log.type === auditFilterType
+
     return matchesSearch && matchesType
   })
 
@@ -81,34 +113,45 @@ export default function SuperAdminAuditPage() {
 
   const getLogTypeColor = (type: string) => {
     switch (type) {
-      case "create": return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-      case "update": return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-      case "delete": return "bg-destructive/10 text-destructive border-destructive/20"
-      case "auth": return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
-      default: return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+      case "create":
+        return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+      case "update":
+        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+      case "delete":
+        return "bg-destructive/10 text-destructive border-destructive/20"
+      case "auth":
+        return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+      default:
+        return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
     }
   }
 
   return (
-    <div className="space-y-6 flex-1 flex flex-col text-left">
+    <div className="flex flex-1 flex-col space-y-6 text-left">
       {/* Header Info Banner */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 rounded-2xl bg-card border border-border gap-4 shadow-md">
-        <div className="text-left space-y-1">
-          <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+      <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-md sm:flex-row sm:items-center">
+        <div className="space-y-1 text-left">
+          <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
             <Activity className="h-5 w-5 text-primary" />
             Global Activity Trail
           </h3>
-          <p className="text-xs text-muted-foreground">Trace global logins, logouts, administrative mutations, and workspace isolations.</p>
+          <p className="text-xs text-muted-foreground">
+            Trace global logins, logouts, administrative mutations, and
+            workspace isolations.
+          </p>
         </div>
-        <Badge variant="outline" className="px-3.5 py-1 bg-background border-border text-foreground font-bold font-mono shadow-sm">
+        <Badge
+          variant="outline"
+          className="border-border bg-background px-3.5 py-1 font-mono font-bold text-foreground shadow-sm"
+        >
           Total Logs: {activities.length}
         </Badge>
       </div>
 
       {/* Filter controls row */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between p-4 rounded-xl bg-card border border-border shadow-lg">
+      <div className="flex flex-col items-start justify-between gap-4 rounded-xl border border-border bg-card p-4 shadow-lg lg:flex-row lg:items-center">
         <div className="relative w-full lg:max-w-md">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
           <input
             id="input-audit-search"
             type="text"
@@ -118,13 +161,13 @@ export default function SuperAdminAuditPage() {
               setAuditSearch(e.target.value)
               setAuditPage(1) // Reset page on filter
             }}
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
+            className="w-full rounded-lg border border-border bg-background py-2 pr-4 pl-9 text-xs text-foreground placeholder-muted-foreground transition focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
           />
         </div>
 
         {/* Filter buttons */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase mr-1.5 flex items-center gap-1">
+          <span className="mr-1.5 flex items-center gap-1 text-[10px] font-bold text-muted-foreground uppercase">
             <SlidersHorizontal className="h-3 w-3" /> Log Category
           </span>
           {[
@@ -133,7 +176,7 @@ export default function SuperAdminAuditPage() {
             { id: "create", label: "Create" },
             { id: "update", label: "Update" },
             { id: "delete", label: "Delete" },
-            { id: "settings", label: "Settings" }
+            { id: "settings", label: "Settings" },
           ].map((type) => (
             <button
               key={type.id}
@@ -142,10 +185,10 @@ export default function SuperAdminAuditPage() {
                 setAuditFilterType(type.id)
                 setAuditPage(1) // Reset page on filter
               }}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border cursor-pointer transition ${
+              className={`cursor-pointer rounded-lg border px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase transition ${
                 auditFilterType === type.id
-                  ? "bg-primary border-primary text-primary-foreground shadow-lg"
-                  : "border-border bg-background text-muted-foreground hover:text-foreground hover:border-border/80"
+                  ? "border-primary bg-primary text-primary-foreground shadow-lg"
+                  : "border-border bg-background text-muted-foreground hover:border-border/80 hover:text-foreground"
               }`}
             >
               {type.label}
@@ -155,7 +198,7 @@ export default function SuperAdminAuditPage() {
       </div>
 
       {/* Paginated Activities Grid */}
-      <div className="flex-1 flex flex-col justify-between">
+      <div className="flex flex-1 flex-col justify-between">
         <AnimatePresence mode="wait">
           {paginatedLogs.length === 0 ? (
             <motion.div
@@ -163,7 +206,7 @@ export default function SuperAdminAuditPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="py-20 text-center text-xs text-muted-foreground bg-muted/10 border border-border rounded-xl"
+              className="rounded-xl border border-border bg-muted/10 py-20 text-center text-xs text-muted-foreground"
             >
               No activity logs match your search.
             </motion.div>
@@ -176,21 +219,28 @@ export default function SuperAdminAuditPage() {
               transition={{ duration: 0.2 }}
               className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
             >
-              {paginatedLogs.map((log: any) => (
+              {paginatedLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between hover:border-border/80 hover:bg-muted/10 transition text-left"
+                  className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 text-left transition hover:border-border/80 hover:bg-muted/10"
                 >
                   <div className="space-y-2">
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="font-mono text-[9px] text-muted-foreground tracking-wider">ID: {log.id.slice(0, 8)}...</span>
-                      <Badge variant="outline" className={`px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider ${getLogTypeColor(log.type)}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="font-mono text-[9px] tracking-wider text-muted-foreground">
+                        ID: {log.id.slice(0, 8)}...
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={`px-1.5 py-0 text-[8px] font-bold tracking-wider uppercase ${getLogTypeColor(log.type)}`}
+                      >
                         {log.type}
                       </Badge>
                     </div>
 
-                    <p className="text-xs font-bold text-foreground leading-snug">{log.action}</p>
-                    <div className="h-[1px] bg-border my-2" />
+                    <p className="text-xs leading-snug font-bold text-foreground">
+                      {log.action}
+                    </p>
+                    <div className="my-2 h-[1px] bg-border" />
 
                     {/* Profile block */}
                     <div className="flex items-center gap-2">
@@ -201,30 +251,43 @@ export default function SuperAdminAuditPage() {
                           className="h-6 w-6 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="h-6 w-6 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
                           {log.user?.name ? log.user.name[0] : "S"}
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-[10px] font-bold text-foreground truncate leading-none">{log.user?.name || "System"}</p>
-                        <span className="text-[8px] font-mono text-muted-foreground truncate block mt-0.5">{log.user?.email || "system@stockvault.internal"}</span>
+                        <p className="truncate text-[10px] leading-none font-bold text-foreground">
+                          {log.user?.name || "System"}
+                        </p>
+                        <span className="mt-0.5 block truncate font-mono text-[8px] text-muted-foreground">
+                          {log.user?.email || "system@stockvault.internal"}
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Audit Log Footer Details */}
-                  <div className="mt-4 pt-3.5 border-t border-border/60 flex items-center justify-between text-[9px] font-mono text-muted-foreground">
+                  <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3.5 font-mono text-[9px] text-muted-foreground">
                     <div className="flex flex-col text-left">
                       {log.workspaceName ? (
-                        <span className="text-foreground font-semibold truncate max-w-[120px]">WS: {log.workspaceName}</span>
+                        <span className="max-w-[120px] truncate font-semibold text-foreground">
+                          WS: {log.workspaceName}
+                        </span>
                       ) : (
-                        <span className="text-muted-foreground">Global Space</span>
+                        <span className="text-muted-foreground">
+                          Global Space
+                        </span>
                       )}
-                      <span className="text-[8px] text-muted-foreground mt-0.5">IP: {log.ip}</span>
+                      <span className="mt-0.5 text-[8px] text-muted-foreground">
+                        IP: {log.ip}
+                      </span>
                     </div>
                     <span className="flex items-center gap-1 font-semibold text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      {new Date(log.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                      {new Date(log.timestamp).toLocaleString([], {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
                     </span>
                   </div>
                 </div>
@@ -235,9 +298,11 @@ export default function SuperAdminAuditPage() {
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex justify-between items-center border-t border-border pt-6 mt-6">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              Showing logs {(auditPage - 1) * logsPerPage + 1} - {Math.min(auditPage * logsPerPage, filteredLogs.length)} of {filteredLogs.length}
+          <div className="mt-6 flex items-center justify-between border-t border-border pt-6">
+            <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+              Showing logs {(auditPage - 1) * logsPerPage + 1} -{" "}
+              {Math.min(auditPage * logsPerPage, filteredLogs.length)} of{" "}
+              {filteredLogs.length}
             </span>
 
             <div className="flex gap-1.5">
@@ -247,11 +312,11 @@ export default function SuperAdminAuditPage() {
                 size="sm"
                 disabled={auditPage === 1}
                 onClick={() => setAuditPage(auditPage - 1)}
-                className="text-[10px] font-bold uppercase tracking-wider border-border bg-background"
+                className="border-border bg-background text-[10px] font-bold tracking-wider uppercase"
               >
                 Prev
               </Button>
-              <div className="flex items-center px-3 border border-border rounded-lg bg-background text-[10px] font-bold font-mono text-foreground">
+              <div className="flex items-center rounded-lg border border-border bg-background px-3 font-mono text-[10px] font-bold text-foreground">
                 Page {auditPage} / {totalPages}
               </div>
               <Button
@@ -260,7 +325,7 @@ export default function SuperAdminAuditPage() {
                 size="sm"
                 disabled={auditPage === totalPages}
                 onClick={() => setAuditPage(auditPage + 1)}
-                className="text-[10px] font-bold uppercase tracking-wider border-border bg-background"
+                className="border-border bg-background text-[10px] font-bold tracking-wider uppercase"
               >
                 Next
               </Button>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { startTransition, useEffect, useState } from "react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { signOut, useSession } from "next-auth/react"
@@ -67,12 +67,13 @@ export function SuperAdminHeader() {
 
   useEffect(() => {
     if (status !== "authenticated" || !userName) {
-      setIsAvatarReady(false)
       return
     }
 
     if (!userImage) {
-      setIsAvatarReady(true)
+      startTransition(() => {
+        setIsAvatarReady(true)
+      })
       return
     }
 
@@ -84,14 +85,18 @@ export function SuperAdminHeader() {
 
     const finalize = () => {
       if (isMounted) {
-        setIsAvatarReady(true)
+        startTransition(() => {
+          setIsAvatarReady(true)
+        })
       }
     }
 
     if (image.complete) {
       finalize()
     } else {
-      setIsAvatarReady(false)
+      startTransition(() => {
+        setIsAvatarReady(false)
+      })
       image.onload = finalize
       image.onerror = finalize
     }
