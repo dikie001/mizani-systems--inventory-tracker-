@@ -1,4 +1,14 @@
-import type { Product, Prisma } from "@prisma/client"
+import type { Product } from "@prisma/client"
+import type prisma from "@/lib/prisma"
+
+type TransactionCallback = Extract<
+  Parameters<typeof prisma.$transaction>[0],
+  (arg: unknown) => Promise<unknown>
+>
+type PrismaTransactionClient = Parameters<TransactionCallback>[0]
+type ProductInclude = NonNullable<
+  Parameters<typeof prisma.product.findMany>[0]["include"]
+>
 
 export const productExportHeaders = [
   "name",
@@ -68,7 +78,7 @@ export function computeProductStatus(stock: number, minStock: number) {
  * Should be called within a Prisma transaction whenever stock changes.
  */
 export async function updateProductAlerts(
-  tx: Prisma.TransactionClient,
+  tx: PrismaTransactionClient,
   productId: string
 ) {
   const product = await tx.product.findUnique({
@@ -269,7 +279,7 @@ export function productQueryInclude(includeMovements = false) {
           },
         }
       : {}),
-  } satisfies Prisma.ProductInclude
+  } satisfies ProductInclude
 }
 
 function parseCsvImport(content: unknown) {

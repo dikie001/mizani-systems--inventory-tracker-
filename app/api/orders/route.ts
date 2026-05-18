@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import type { Prisma } from "@prisma/client"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 import { updateProductAlerts } from "@/lib/inventory"
@@ -15,7 +14,11 @@ export async function GET(request: Request) {
   const search = searchParams.get("search")
   const status = searchParams.get("status")
 
-  const where: Prisma.OrderWhereInput = {
+  type OrderWhereInput = NonNullable<
+    Parameters<typeof prisma.order.findMany>[0]["where"]
+  >
+
+  const where: OrderWhereInput = {
     workspaceId,
   }
 

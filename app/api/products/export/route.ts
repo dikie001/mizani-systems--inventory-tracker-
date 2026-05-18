@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client"
 import { auth } from "@/auth"
 import { createProductCsv } from "@/lib/inventory"
 import prisma from "@/lib/prisma"
@@ -20,8 +19,11 @@ export async function GET(request: Request) {
     const category = searchParams.get("category")
     const status = searchParams.get("status")
 
+    type ProductWhereInput = NonNullable<
+      Parameters<typeof prisma.product.findMany>[0]["where"]
+    >
 
-    const where: Prisma.ProductWhereInput = {}
+    const where: ProductWhereInput = {}
 
     if (search) {
       where.OR = [
