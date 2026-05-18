@@ -38,6 +38,14 @@ type Workspace = {
   slug: string
 }
 
+function formatWorkspaceName(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ")
+}
+
 export function WorkspaceSwitcher() {
   const { data: session, update: updateSession } = useSession()
   const router = useRouter()
@@ -51,6 +59,7 @@ export function WorkspaceSwitcher() {
   const currentWorkspaceId = session?.user?.workspaceId
   const currentWorkspaceName =
     session?.user?.workspaceName || "Select Workspace"
+  const displayWorkspaceName = formatWorkspaceName(currentWorkspaceName)
 
   React.useEffect(() => {
     async function loadWorkspaces() {
@@ -115,9 +124,9 @@ export function WorkspaceSwitcher() {
             </div>
             <div className="flex flex-col items-start gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
               <span className="max-w-30 truncate text-sm font-semibold tracking-tight text-foreground">
-                {currentWorkspaceName}
+                {displayWorkspaceName}
               </span>
-              <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
                 Workspace
               </span>
             </div>
@@ -146,7 +155,7 @@ export function WorkspaceSwitcher() {
                       <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
                     </div>
                     <span className="flex-1 truncate text-sm">
-                      {workspace.name}
+                      {formatWorkspaceName(workspace.name)}
                     </span>
                     {isSwitching === workspace.id ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
