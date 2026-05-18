@@ -60,7 +60,7 @@ export function computeProductStatus(stock: number, minStock: number) {
   }
 
   if (stock <= minStock) {
-    return "low-stock"
+    return "low-stock" 
   }
 
   return "in-stock"
