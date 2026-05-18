@@ -154,7 +154,7 @@ export function DashboardSidebar() {
                     isActive={isNavItemActive(pathname, item.href)}
                     tooltip={item.title}
                     size="lg"
-                    className="flex h-10 w-full items-center rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-11 group-data-[collapsible=icon]:w-11 group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-amber-400 data-[active=true]:text-slate-950 data-[active=true]:shadow-sm"
+                    className="flex h-10 w-full items-center rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-amber-400 data-[active=true]:text-slate-950 data-[active=true]:shadow-sm"
                   >
                     <Link href={item.href} onClick={handleNavClick}>
                       <item.icon className="h-4 w-4 shrink-0 text-muted-foreground group-data-[active=true]/menu-button:text-slate-950 group-data-[collapsible=icon]:m-0!" />
@@ -192,7 +192,7 @@ export function DashboardSidebar() {
                     isActive={isNavItemActive(pathname, item.href)}
                     tooltip={item.title}
                     size="lg"
-                    className="flex h-10 w-full items-center rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-11 group-data-[collapsible=icon]:w-11 group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-amber-400 data-[active=true]:text-slate-950 data-[active=true]:shadow-sm"
+                    className="flex h-10 w-full items-center rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-[active=true]:bg-amber-400 data-[active=true]:text-slate-950 data-[active=true]:shadow-sm"
                   >
                     <Link href={item.href} onClick={handleNavClick}>
                       <item.icon className="h-4 w-4 shrink-0 text-muted-foreground group-data-[active=true]/menu-button:text-slate-950 group-data-[collapsible=icon]:m-0!" />
@@ -224,7 +224,7 @@ export function DashboardSidebar() {
               isActive={isNavItemActive(pathname, "/dashboard/settings")}
               tooltip="Settings"
               size="lg"
-              className="flex h-10 w-full items-center rounded-lg border border-sidebar-border/50 bg-sidebar-accent/25 px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:h-11 group-data-[collapsible=icon]:w-11 group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 data-[active=true]:border-transparent data-[active=true]:bg-amber-400 data-[active=true]:text-slate-950 data-[active=true]:shadow-sm"
+              className="flex h-10 w-full items-center rounded-lg border border-sidebar-border/50 bg-sidebar-accent/25 px-3 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200 group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:px-0! hover:bg-sidebar-accent/50 data-[active=true]:border-transparent data-[active=true]:bg-amber-400 data-[active=true]:text-slate-950 data-[active=true]:shadow-sm"
             >
               <Link href="/dashboard/settings" onClick={handleNavClick}>
                 <Settings className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 group-hover/menu-button:rotate-90 group-data-[active=true]/menu-button:rotate-90 group-data-[active=true]/menu-button:text-slate-950 group-data-[collapsible=icon]:m-0!" />
