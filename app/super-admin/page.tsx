@@ -7,6 +7,7 @@ import {
   Layers,
   Key,
   Activity,
+  Clock,
   CreditCard,
   TrendingUp,
   AlertTriangle,
