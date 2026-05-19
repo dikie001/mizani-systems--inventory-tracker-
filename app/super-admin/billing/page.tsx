@@ -1,22 +1,20 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import Link from "next/link"
 import { useSession } from "next-auth/react"
 import {
   AlertTriangle,
   ArrowRightLeft,
-  BadgeCheck,
-  CheckCircle2,
+  BarChart3,
   CreditCard,
   DollarSign,
-  History,
+  FileText,
   ReceiptText,
-  Shield,
-  Sparkles,
-  TrendingUp,
   Users,
 } from "lucide-react"
 
+import { StatCard } from "@/components/stat-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -26,13 +24,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -156,9 +147,6 @@ export default function SuperAdminBillingPage() {
   const { data: session } = useSession()
   const [data, setData] = useState<BillingResponse | null>(null)
   const [loading, setLoading] = useState(true)
-  const [billingView, setBillingView] = useState<
-    "overview" | "records" | "plans"
-  >("overview")
 
   useEffect(() => {
     const loadBilling = async () => {
@@ -188,18 +176,13 @@ export default function SuperAdminBillingPage() {
   const invoices = data?.invoices ?? []
 
   const billingHealth = useMemo(() => {
-    const overdueInvoices = invoices.filter(
-      (invoice) => invoice.status === "overdue"
-    ).length
-    const unpaidPayments = payments.filter(
-      (payment) => payment.status === "pending" || payment.status === "failed"
-    ).length
-    const activePlans = plans.filter(
-      (plan) => plan.activeSubscriptions > 0
-    ).length
+    const overdueInvoices = invoices.filter((invoice) => invoice.status === "overdue").length
+    const unpaidPayments = payments.filter((payment) => payment.status === "pending" || payment.status === "failed").length
 
-    return { overdueInvoices, unpaidPayments, activePlans }
-  }, [invoices, payments, plans])
+    return { overdueInvoices, unpaidPayments }
+  }, [invoices, payments])
+
+  const latestPayment = payments[0]
 
   if (loading) {
     return (
@@ -208,12 +191,11 @@ export default function SuperAdminBillingPage() {
           <Skeleton className="h-8 w-72" />
           <Skeleton className="h-4 w-96" />
         </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
         </div>
       </div>
     )
@@ -221,437 +203,268 @@ export default function SuperAdminBillingPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-md lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <Shield className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                Billing Console
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Track subscriptions, invoices, payments, revenue, and plan
-                features across every workspace.
-              </p>
-            </div>
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Billing Console
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Track subscriptions, invoices, payments, revenue, and plan features across every workspace.
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          title="Total Workspaces"
+          value={summary?.totalWorkspaces ?? workspaces.length}
+          icon={Users}
+          valColor="text-blue-500"
+          iconColor="text-blue-500"
+          description="Billing-enabled tenants"
+        />
+        <StatCard
+          title="Active Subscriptions"
+          value={summary?.activeSubscriptions ?? 0}
+          icon={CheckCircle2}
+          valColor="text-emerald-500"
+          iconColor="text-emerald-500"
+          description="Live paid subscriptions"
+        />
+        <StatCard
+          title="Pending Billing"
+          value={(summary?.pendingPayments ?? 0) + billingHealth.overdueInvoices}
+          icon={AlertTriangle}
+          valColor="text-amber-500"
+          iconColor="text-amber-500"
+          description="Unpaid or overdue records"
+        />
+        <StatCard
+          title="Monthly Revenue"
+          value={formatKES(summary?.totalMonthlyRevenue ?? 0)}
+          icon={DollarSign}
+          valColor="text-violet-500"
+          iconColor="text-violet-500"
+          description={latestPayment ? `Latest payment ${formatKES(latestPayment.amount)}` : "No payment history yet"}
+        />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Plan Features and Entitlements
+          </CardTitle>
+          <CardDescription>
+            Subscription tiers, included features, pricing, and active workspace usage.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Active Subs</TableHead>
+                  <TableHead>Features</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {plans.map((plan) => (
+                  <TableRow key={plan.id}>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="font-medium text-foreground">{plan.displayName}</p>
+                        <p className="text-xs text-muted-foreground">{plan.description}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap font-semibold text-foreground">
+                      {formatKES(plan.monthlyPrice)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getBadgeClass(plan.activeSubscriptions > 0 ? "active" : "pending")}>{plan.activeSubscriptions}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-2">
+                        {plan.features.map((feature) => (
+                          <Badge key={feature} variant="outline" className="border-border bg-muted/30 text-[10px] text-muted-foreground">
+                            {feature}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        <div className="flex items-center gap-2">
-          <Select
-            value={billingView}
-            onValueChange={(value) =>
-              setBillingView(value as "overview" | "records" | "plans")
-            }
-          >
-            <SelectTrigger className="h-10 w-40 text-xs">
-              <SelectValue placeholder="View" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="overview">Overview</SelectItem>
-              <SelectItem value="records">Billing Records</SelectItem>
-              <SelectItem value="plans">Plan Features</SelectItem>
-            </SelectContent>
-          </Select>
-          <Badge
-            variant="outline"
-            className="border-border bg-background px-3 py-1 font-mono font-bold text-foreground shadow-sm"
-          >
-            {workspaces.length} workspaces
-          </Badge>
-        </div>
-      </div>
-
-      {summary && (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Workspaces</p>
-                  <p className="text-2xl font-bold text-foreground">
-                    {summary.totalWorkspaces}
-                  </p>
-                </div>
-                <Users className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Active Subs</p>
-                  <p className="text-2xl font-bold text-foreground">
-                    {summary.activeSubscriptions}
-                  </p>
-                </div>
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-foreground">
-                    {summary.pendingPayments}
-                  </p>
-                </div>
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Monthly Revenue
-                  </p>
-                  <p className="text-2xl font-bold text-foreground">
-                    {formatKES(summary.totalMonthlyRevenue)}
-                  </p>
-                </div>
-                <DollarSign className="h-5 w-5 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Paid This Month
-                  </p>
-                  <p className="text-2xl font-bold text-foreground">
-                    {formatKES(summary.paidThisMonth)}
-                  </p>
-                </div>
-                <TrendingUp className="h-5 w-5 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Billing Health</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {billingHealth.overdueInvoices + billingHealth.unpaidPayments}
-                </p>
-              </div>
-              <ReceiptText className="h-5 w-5 text-primary" />
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground">
-              {billingHealth.overdueInvoices} overdue invoices,{" "}
-              {billingHealth.unpaidPayments} unpaid or failed payments.
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Active Plans</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {billingHealth.activePlans}
-                </p>
-              </div>
-              <BadgeCheck className="h-5 w-5 text-emerald-500" />
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground">
-              Plans currently attached to active subscriptions.
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Latest Payment</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {payments[0] ? formatKES(payments[0].amount) : "—"}
-                </p>
-              </div>
-              <History className="h-5 w-5 text-primary" />
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground">
-              {payments[0]
-                ? `${payments[0].workspaceName} · ${payments[0].status}`
-                : "No payment history yet."}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {(billingView === "overview" || billingView === "plans") && (
+      <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Plan Features and Entitlements
+            <CardTitle className="flex items-center gap-2 text-base font-semibold">
+              <CreditCard className="h-5 w-5" />
+              Workspace Billing Records
             </CardTitle>
             <CardDescription>
-              Subscription tiers, included features, pricing, and active
-              workspace usage.
+              Subscription, payment, and renewal status for each workspace.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              {plans.map((plan) => (
-                <div
-                  key={plan.id}
-                  className="rounded-xl border border-border bg-background p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        {plan.displayName}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {plan.description}
-                      </p>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="border-border bg-muted/40 text-[10px] font-bold text-foreground uppercase"
-                    >
-                      {plan.activeSubscriptions} active
-                    </Badge>
-                  </div>
-                  <div className="mt-4 flex items-end justify-between">
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">
-                        {formatKES(plan.monthlyPrice)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">per month</p>
-                    </div>
-                    {plan.badge && (
-                      <Badge className="border-border bg-primary/10 text-primary">
-                        {plan.badge}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {plan.features.map((feature) => (
-                      <Badge
-                        key={feature}
-                        variant="outline"
-                        className="border-border bg-muted/30 text-[10px] text-muted-foreground"
-                      >
-                        {feature}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Workspace</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Next Billing</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {workspaces.map((workspace) => (
+                    <TableRow key={workspace.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium text-foreground">{workspace.name}</p>
+                          <p className="text-xs text-muted-foreground">{workspace.slug}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getBadgeClass(workspace.planName)}>
+                          {workspace.planName || "No Plan"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <Badge className={getBadgeClass(workspace.subscriptionStatus)}>
+                            {workspace.subscriptionStatus || "No Subscription"}
+                          </Badge>
+                          <p className="text-[10px] text-muted-foreground">
+                            Payment: {workspace.paymentStatus || "Unknown"}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                        {formatDate(workspace.nextBillingDate)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>
-      )}
 
-      {(billingView === "overview" || billingView === "records") && (
-        <div className="grid gap-4 xl:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Workspace Billing Records
-              </CardTitle>
-              <CardDescription>
-                Subscription, payment, and renewal status for each workspace.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base font-semibold">
+              <ReceiptText className="h-5 w-5" />
+              Payments and Invoices
+            </CardTitle>
+            <CardDescription>
+              Recent payment activity and invoice records pulled from the billing ledger.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-foreground">Payments</h3>
+                <Badge variant="outline" className="border-border bg-muted/30 text-[10px] uppercase text-muted-foreground">
+                  Latest {payments.length}
+                </Badge>
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-border">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Workspace</TableHead>
-                      <TableHead>Plan</TableHead>
+                      <TableHead>Amount</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Next Billing</TableHead>
+                      <TableHead>Paid</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {workspaces.map((workspace) => (
-                      <TableRow key={workspace.id}>
+                    {payments.map((payment) => (
+                      <TableRow key={payment.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-foreground">
-                              {workspace.name}
-                            </p>
+                            <p className="font-medium text-foreground">{payment.workspaceName}</p>
                             <p className="text-xs text-muted-foreground">
-                              {workspace.slug}
+                              {payment.planName || payment.workspaceSlug}
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <Badge className={getBadgeClass(workspace.planName)}>
-                            {workspace.planName || "No Plan"}
-                          </Badge>
+                        <TableCell className="whitespace-nowrap font-semibold text-foreground">
+                          {formatKES(payment.amount)}
                         </TableCell>
                         <TableCell>
-                          <div className="space-y-1">
-                            <Badge
-                              className={getBadgeClass(
-                                workspace.subscriptionStatus
-                              )}
-                            >
-                              {workspace.subscriptionStatus ||
-                                "No Subscription"}
-                            </Badge>
-                            <p className="text-[10px] text-muted-foreground">
-                              Payment: {workspace.paymentStatus || "Unknown"}
-                            </p>
-                          </div>
+                          <Badge className={getBadgeClass(payment.status)}>{payment.status}</Badge>
                         </TableCell>
-                        <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
-                          {formatDate(workspace.nextBillingDate)}
+                        <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                          {formatDateTime(payment.paidAt || payment.createdAt)}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <History className="h-5 w-5" />
-                Recent Payments and Invoices
-              </CardTitle>
-              <CardDescription>
-                Latest payment activity and invoice records pulled from the
-                billing ledger.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">
-                    Payments
-                  </h3>
-                  <Badge
-                    variant="outline"
-                    className="border-border bg-muted/30 text-[10px] text-muted-foreground uppercase"
-                  >
-                    Latest {payments.length}
-                  </Badge>
-                </div>
-                <div className="overflow-x-auto rounded-xl border border-border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Workspace</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Paid</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {payments.map((payment) => (
-                        <TableRow key={payment.id}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium text-foreground">
-                                {payment.workspaceName}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {payment.planName || payment.workspaceSlug}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-semibold whitespace-nowrap text-foreground">
-                            {formatKES(payment.amount)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getBadgeClass(payment.status)}>
-                              {payment.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
-                            {formatDateTime(
-                              payment.paidAt || payment.createdAt
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+            <div>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-foreground">Invoices</h3>
+                <Badge variant="outline" className="border-border bg-muted/30 text-[10px] uppercase text-muted-foreground">
+                  Latest {invoices.length}
+                </Badge>
               </div>
-
-              <div>
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">
-                    Invoices
-                  </h3>
-                  <Badge
-                    variant="outline"
-                    className="border-border bg-muted/30 text-[10px] text-muted-foreground uppercase"
-                  >
-                    Latest {invoices.length}
-                  </Badge>
-                </div>
-                <div className="overflow-x-auto rounded-xl border border-border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Invoice</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Due</TableHead>
+              <div className="overflow-x-auto rounded-xl border border-border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Invoice</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoices.map((invoice) => (
+                      <TableRow key={invoice.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-foreground">{invoice.invoiceNumber}</p>
+                            <p className="text-xs text-muted-foreground">{invoice.workspaceName}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getBadgeClass(invoice.status)}>{invoice.status}</Badge>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap font-semibold text-foreground">
+                          {formatKES(invoice.amount)}
+                        </TableCell>
+                        <TableCell>
+                          <Button asChild size="sm" variant="outline" className="border-border bg-background text-xs">
+                            <Link href="/dashboard/settings/billing">
+                              <FileText className="mr-1.5 h-3.5 w-3.5" />
+                              Open Billing Page
+                            </Link>
+                          </Button>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {invoices.map((invoice) => (
-                        <TableRow key={invoice.id}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium text-foreground">
-                                {invoice.invoiceNumber}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {invoice.workspaceName}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getBadgeClass(invoice.status)}>
-                              {invoice.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="font-semibold whitespace-nowrap text-foreground">
-                            {formatKES(invoice.amount)}
-                          </TableCell>
-                          <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
-                            {formatDate(invoice.dueDate)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <ArrowRightLeft className="h-5 w-5" />
             Billing Controls
           </CardTitle>

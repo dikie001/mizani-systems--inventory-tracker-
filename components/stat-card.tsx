@@ -19,15 +19,15 @@ export function StatCard({
   description,
 }: StatCardProps) {
   return (
-    <Card className="  bg-card shadow-none">
-      <CardContent className="p-">
+    <Card className="border-border bg-card shadow-sm">
+      <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <p className="truncate text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
               {title}
             </p>
 
-            <div className={`mt-1 text-xl leading-none font-bold ${valColor}`}>
+            <div className={`mt-1 text-2xl leading-none font-bold ${valColor}`}>
               {value}
             </div>
 
@@ -38,7 +38,7 @@ export function StatCard({
             )}
           </div>
 
-          <Icon className={`h-3.5 w-3.5 shrink-0 ${iconColor}`} />
+          <Icon className={`h-4.5 w-4.5 shrink-0 ${iconColor}`} />
         </div>
       </CardContent>
     </Card>
