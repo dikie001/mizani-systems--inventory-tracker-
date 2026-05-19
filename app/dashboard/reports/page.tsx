@@ -131,6 +131,15 @@ export default function ReportsPage() {
   const trendData = (
     Array.isArray(revenueData) ? revenueData : []
   ) as RevenueTrend[]
+
+  // Dynamic formatting for Reports page YAxis ticks without repeating currency prefix
+  const maxTrendVal = Math.max(...trendData.map((item: any) => Number(item.revenue) || 0), 0)
+  const formatTrendTick = (v: number) => {
+    if (maxTrendVal >= 1000) {
+      return `${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1)}k`
+    }
+    return String(v)
+  }
   const productData = (
     Array.isArray(topProducts) ? topProducts : []
   ) as TopProduct[]
@@ -248,15 +257,27 @@ export default function ReportsPage() {
       {/* Revenue vs Costs Chart */}
       <Card className="print:shadow-none">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Revenue Trend</CardTitle>
+          <CardTitle className="text-lg">Revenue Trend ({currency})</CardTitle>
           <CardDescription>
             Revenue and order volume for the selected period
           </CardDescription>
         </CardHeader>
         <CardContent>
           {revLoading ? (
-            <div className="flex h-56 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="space-y-4 h-56 flex flex-col justify-end pb-2">
+              <div className="flex justify-between items-center w-full px-2">
+                <Skeleton className="h-3 w-28 bg-muted/70" />
+                <Skeleton className="h-3 w-16 bg-muted/50" />
+              </div>
+              <div className="flex items-end gap-3.5 h-36 w-full px-2">
+                {[...Array(8)].map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    className="w-full rounded-t opacity-70 bg-muted/60"
+                    style={{ height: `${30 + (i % 3) * 20 + Math.sin(i) * 12}%` }}
+                  />
+                ))}
+              </div>
             </div>
           ) : (
             <ChartContainer config={revenueConfig} className="h-56 w-full">
@@ -298,11 +319,7 @@ export default function ReportsPage() {
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
-                    tickFormatter={(v) =>
-                      currency === "USD"
-                        ? `$${(v / 1000).toFixed(0)}k`
-                        : `${currency} ${(v / 1000).toFixed(0)}k`
-                    }
+                    tickFormatter={formatTrendTick}
                   />
                   <YAxis
                     yAxisId="right"
@@ -367,8 +384,16 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             {topLoading ? (
-              <div className="flex h-52 items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="space-y-4 h-52 justify-center flex flex-col px-2">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="flex justify-between">
+                      <Skeleton className="h-3 w-32 bg-muted/70" />
+                      <Skeleton className="h-3 w-8 bg-muted/50" />
+                    </div>
+                    <Skeleton className="h-4 w-full rounded" />
+                  </div>
+                ))}
               </div>
             ) : (
               <ChartContainer config={productConfig} className="h-52 w-full">
@@ -410,8 +435,18 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             {catLoading ? (
-              <div className="flex h-52 items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="flex h-52 items-center justify-center gap-6 px-4">
+                <Skeleton className="h-32 w-32 rounded-full border-8 border-muted/30 bg-transparent flex items-center justify-center shrink-0">
+                  <div className="h-16 w-16 rounded-full bg-background" />
+                </Skeleton>
+                <div className="space-y-2.5 flex-1 max-w-[140px]">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Skeleton className="h-2.5 w-2.5 rounded-full shrink-0 bg-muted/80" />
+                      <Skeleton className="h-3.5 w-full bg-muted/60" />
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : (
               <ChartContainer config={pieConfig} className="h-52 w-full">

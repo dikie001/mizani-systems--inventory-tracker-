@@ -30,6 +30,8 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { StatCard } from "@/components/stat-card"
 import {
   Card,
   CardContent,
@@ -140,6 +142,18 @@ export default function DashboardPage() {
   const categories = (categoryData ?? []) as CategoryStat[]
   const revenue = Array.isArray(revenueData) ? revenueData : []
 
+  // Dynamic formatting for Revenue YAxis ticks without repeating currency prefix
+  const maxRevVal = Math.max(...revenue.map((item: any) => Number(item[revMetric]) || 0), 0)
+  const formatRevenueTick = (v: number) => {
+    if (revMetric === "revenue") {
+      if (maxRevVal >= 1000) {
+        return `${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1)}k`
+      }
+      return String(v)
+    }
+    return String(v)
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -152,50 +166,66 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
         {[
           {
             title: "Total Products",
-            value: statsLoading ? "-" : stats?.totalProducts,
+            value: statsLoading ? (
+              <Skeleton className="h-6 w-16" />
+            ) : (
+              stats?.totalProducts
+            ),
             icon: Layers,
-            color: "text-blue-600 dark:text-blue-400",
+            valColor: "text-blue-500",
+            iconColor: "text-blue-500",
+            description: "Active catalog items",
           },
           {
             title: "Low Stock Alerts",
-            value: statsLoading ? "-" : stats?.lowStock,
+            value: statsLoading ? (
+              <Skeleton className="h-6 w-16" />
+            ) : (
+              stats?.lowStock
+            ),
             icon: AlertCircle,
-            color: "text-orange-600 dark:text-orange-400",
+            valColor: "text-orange-500",
+            iconColor: "text-orange-500",
+            description: "Needs restocking",
           },
           {
             title: "Monthly Revenue",
-            value: statsLoading
-              ? "-"
-              : formatPrice(stats?.totalRevenue ?? 0, currency),
+            value: statsLoading ? (
+              <Skeleton className="h-6 w-24" />
+            ) : (
+              formatPrice(stats?.totalRevenue ?? 0, currency)
+            ),
             icon: BarChart3,
-            color: "text-emerald-600 dark:text-emerald-400",
+            valColor: "text-emerald-500",
+            iconColor: "text-emerald-500",
+            description: "Current billing cycle",
           },
           {
             title: "Pending Orders",
-            value: statsLoading ? "-" : stats?.pendingOrders,
+            value: statsLoading ? (
+              <Skeleton className="h-6 w-16" />
+            ) : (
+              stats?.pendingOrders
+            ),
             icon: ShoppingCart,
-            color: "text-indigo-600 dark:text-indigo-400",
+            valColor: "text-indigo-500",
+            iconColor: "text-indigo-500",
+            description: "Awaiting shipment",
           },
         ].map((kpi) => (
-          <Card key={kpi.title}>
-            <CardContent className="p-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase">
-                    {kpi.title}
-                  </p>
-                  <h3 className={`text-lg font-bold ${kpi.color}`}>
-                    {kpi.value}
-                  </h3>
-                </div>
-                <kpi.icon className={`h-4 w-4 ${kpi.color} opacity-70`} />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            key={kpi.title}
+            title={kpi.title}
+            value={kpi.value}
+            icon={kpi.icon}
+            valColor={kpi.valColor}
+            iconColor={kpi.iconColor}
+            description={kpi.description}
+          />
         ))}
       </div>
 
@@ -206,7 +236,9 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center justify-between gap-4">
               <div>
-                <CardTitle>Revenue Overview</CardTitle>
+                <CardTitle>
+                  Revenue Overview {revMetric === "revenue" ? `(${currency})` : ""}
+                </CardTitle>
                 <CardDescription>
                   {viewInterval === "monthly" ? "Monthly" : "Weekly"} revenue
                   and order trends
@@ -278,8 +310,20 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {revLoading ? (
-              <div className="flex h-[252px] items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="space-y-4 h-[252px] flex flex-col justify-end pb-4">
+                <div className="flex justify-between items-center w-full px-2">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-3.5 w-16" />
+                </div>
+                <div className="flex items-end gap-3 h-40 w-full px-2">
+                  {[...Array(12)].map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="w-full rounded-t opacity-70 bg-muted/60"
+                      style={{ height: `${25 + (i % 4) * 15 + Math.sin(i) * 10}%` }}
+                    />
+                  ))}
+                </div>
               </div>
             ) : (
               <ChartContainer
@@ -341,13 +385,7 @@ export default function DashboardPage() {
                     axisLine={false}
                     tick={{ fontSize: 12 }}
                     tickMargin={6}
-                    tickFormatter={(value) =>
-                      revMetric === "revenue"
-                        ? currency === "USD"
-                          ? `$${(value / 1000).toFixed(0)}k`
-                          : `${currency} ${(value / 1000).toFixed(0)}k`
-                        : value
-                    }
+                    tickFormatter={formatRevenueTick}
                     label={{
                       value: revMetric === "revenue" ? "Revenue" : "Orders",
                       angle: -90,
@@ -407,8 +445,16 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             {catLoading ? (
-              <div className="flex h-[248px] items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="space-y-4.5 h-[248px] justify-center flex flex-col px-2">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="flex justify-between">
+                      <Skeleton className="h-3 w-24 bg-muted/70" />
+                      <Skeleton className="h-3 w-8 bg-muted/50" />
+                    </div>
+                    <Skeleton className="h-4 w-full rounded" />
+                  </div>
+                ))}
               </div>
             ) : (
               <ChartContainer
@@ -507,8 +553,20 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           {actLoading ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="space-y-4 py-2">
+              {[...Array(5)].map((_, idx) => (
+                <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3.5 pt-3.5 last:border-0 last:pb-0">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-36" />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                    <Skeleton className="h-5 w-14 rounded-full" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <Table>
@@ -587,8 +645,19 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {lowLoading ? (
-              <div className="flex justify-center p-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="space-y-4">
+                {[...Array(3)].map((_, idx) => (
+                  <div key={idx} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                      <Skeleton className="h-3 w-8" />
+                    </div>
+                    <Skeleton className="h-2 w-full rounded-full" />
+                  </div>
+                ))}
               </div>
             ) : lowStockItems.length === 0 ? (
               <div className="p-4 text-center text-sm text-muted-foreground">

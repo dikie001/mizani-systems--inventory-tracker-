@@ -8,10 +8,23 @@ import {
   Key,
   Activity,
   Clock,
-  Monitor,
+  CreditCard,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2,
   Shield,
   Loader2,
 } from "lucide-react"
+import { ChartContainer } from "@/components/ui/chart"
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts"
 
 import {
   Card,
@@ -23,6 +36,8 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { StatCard } from "@/components/stat-card"
+import { formatKES } from "@/lib/plans"
 
 type SuperAdminStats = {
   totalUsers?: number
@@ -56,6 +71,18 @@ type SuperAdminData = {
   users?: SuperAdminUser[]
   workspaces?: SuperAdminWorkspace[]
   activities?: SuperAdminActivity[]
+  billingSummary?: {
+    totalWorkspaces: number
+    activeSubscriptions: number
+    pendingPayments: number
+    totalMonthlyRevenue: number
+    planCounts: {
+      trial: number
+      basic: number
+      pro: number
+      unassigned: number
+    }
+  }
   superAdminEmail?: string
 }
 
@@ -114,6 +141,7 @@ export default function SuperAdminPage() {
     users = [],
     workspaces = [],
     activities = [],
+    billingSummary,
     superAdminEmail = "",
   } = data || {}
   const activeUsers = users.filter((user) => user.status === "active")
@@ -136,39 +164,87 @@ export default function SuperAdminPage() {
     }
   }
 
+  // Build an all-time daily registrations series from users
+  const registrationDates = users
+    .map((u: any) => (u.createdAt ? String(u.createdAt).split("T")[0] : null))
+    .filter((date): date is string => !!date)
+    .sort()
+
+  const buildDateRange = (startIso: string, endIso: string) => {
+    const days: string[] = []
+    const current = new Date(`${startIso}T00:00:00`)
+    const end = new Date(`${endIso}T00:00:00`)
+
+    if (startIso === endIso) {
+      current.setDate(current.getDate() - 1)
+      end.setDate(end.getDate() + 1)
+    }
+
+    while (current <= end) {
+      days.push(current.toISOString().split("T")[0])
+      current.setDate(current.getDate() + 1)
+    }
+
+    return days
+  }
+
+  const regCounts: Record<string, number> = {}
+  users.forEach((u: any) => {
+    const created = u.createdAt ? u.createdAt.split("T")[0] : u.createdAt
+    if (!created) return
+    regCounts[created] = (regCounts[created] || 0) + 1
+  })
+
+  const registrationSeries =
+    registrationDates.length > 0
+      ? buildDateRange(
+          registrationDates[0],
+          registrationDates[registrationDates.length - 1]
+        )
+      : []
+
+  const registrationsChartData = registrationSeries.map((iso) => {
+    const d = new Date(iso)
+    const label = d.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    })
+    return { label, registrations: regCounts[iso] || 0 }
+  })
+
+  const exportUsersCsv = () => {
+    if (!users || users.length === 0) return
+    const headers = ["id", "name", "email", "role", "status", "createdAt"]
+    const rows = users.map((u: any) => [
+      u.id,
+      u.name || "",
+      u.email || "",
+      u.role || "",
+      u.status || "",
+      u.createdAt || "",
+    ])
+    const csv = [
+      headers.join(","),
+      ...rows.map((r) =>
+        r
+          .map(String)
+          .map((s) => `"${s.replace(/"/g, '""')}"`)
+          .join(",")
+      ),
+    ].join("\n")
+    const blob = new Blob([csv], { type: "text/csv" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `users-export-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="flex flex-1 flex-col space-y-8">
-      {/* Visual Dynamic Ribbon */}
-      <div className="relative flex flex-col items-start justify-between gap-6 overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-xl backdrop-blur-md md:flex-row md:items-center md:p-8">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-transparent" />
-        <div className="relative z-10 space-y-1">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">
-            Operations Dashboard
-          </h2>
-          <p className="max-w-xl text-xs leading-relaxed text-muted-foreground">
-            Real-time multi-tenant health, workspace isolation metrics, and
-            global audit trace analysis. System updates occur dynamically every
-            10 seconds.
-          </p>
-        </div>
-
-        {/* Connection status card */}
-        <div className="relative z-10 flex items-center gap-4 rounded-xl border border-border bg-background px-4 py-2.5 shadow-inner">
-          <div className="relative flex h-3.5 w-3.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-background bg-emerald-500"></span>
-          </div>
-          <div className="text-left">
-            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-              System Link
-            </p>
-            <p className="text-xs font-bold text-foreground">
-              Active & Syncing
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Premium KPI Cards Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
@@ -176,68 +252,277 @@ export default function SuperAdminPage() {
             title: "Total Registered Users",
             value: stats?.totalUsers || 0,
             icon: Users,
-            color: "from-blue-500 to-indigo-500",
-            badge: `${activeUsers.length} Active`,
+            valColor: "text-blue-500",
+            iconColor: "text-blue-500",
+            description: `${activeUsers.length} active users`,
           },
           {
             title: "Active Workspaces",
             value: stats?.totalWorkspaces || 0,
             icon: Layers,
-            color: "from-purple-500 to-indigo-500",
-            badge: "Multi-Tenant",
+            valColor: "text-indigo-500",
+            iconColor: "text-indigo-500",
+            description: "Multi-tenant workspaces",
           },
           {
             title: "Total Logins Logged",
             value: stats?.totalLogins || 0,
             icon: Key,
-            color: "from-emerald-500 to-teal-500",
-            badge: "Sign-in Events",
+            valColor: "text-emerald-500",
+            iconColor: "text-emerald-500",
+            description: "Google & email authentications",
           },
           {
             title: "Global Activity Logs",
             value: stats?.totalLogs || 0,
             icon: Activity,
-            color: "from-amber-500 to-orange-500",
-            badge: "Audit Trails",
+            valColor: "text-orange-500",
+            iconColor: "text-orange-500",
+            description: "Immutable operations audit logs",
           },
         ].map((kpi) => (
-          <Card
+          <StatCard
             key={kpi.title}
-            className="group relative overflow-hidden shadow-lg transition duration-300 hover:border-primary/30"
-          >
-            <div className="absolute top-0 right-0 h-24 w-24 rounded-full bg-gradient-to-bl from-primary/5 to-transparent transition duration-500 group-hover:scale-125" />
-            <CardContent className="flex h-full flex-col justify-between p-5">
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                  {kpi.title}
-                </p>
-                <div
-                  className={`h-8 w-8 rounded-lg bg-gradient-to-br ${kpi.color} flex items-center justify-center text-white shadow-md shadow-primary/10`}
-                >
-                  <kpi.icon className="h-4 w-4" />
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-baseline justify-between">
-                <h3 className="font-mono text-3xl font-extrabold tracking-tight text-foreground">
-                  {kpi.value}
-                </h3>
-                <Badge
-                  variant="outline"
-                  className="border-border bg-background text-[9px] font-bold tracking-wider text-foreground uppercase"
-                >
-                  {kpi.badge}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+            title={kpi.title}
+            value={kpi.value}
+            icon={kpi.icon}
+            valColor={kpi.valColor}
+            iconColor={kpi.iconColor}
+            description={kpi.description}
+          />
         ))}
       </div>
 
-      {/* Overview Details Section */}
+      {/* Overview Details Section: Registrations + Billing + Quick Actions */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Real-time System Audit Stream */}
-        <Card className="flex flex-col shadow-xl lg:col-span-2">
+        <div className="space-y-6 lg:col-span-2">
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">
+                User Registrations
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
+                Daily registered accounts (all time)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  registrations: { label: "Registrations", color: "#7c3aed" },
+                }}
+                className="h-48 w-full"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={registrationsChartData}
+                    margin={{ top: 4, left: 0, right: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="label"
+                      tickLine={false}
+                      axisLine={false}
+                      minTickGap={8}
+                      tickMargin={4}
+                      padding={{ left: 0, right: 0 }}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tickLine={false}
+                      axisLine={false}
+                      width={28}
+                      tickMargin={4}
+                    />
+                    <Tooltip />
+                    <Bar
+                      dataKey="registrations"
+                      fill="#7c3aed"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">
+                Quick Actions
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
+                Common administrative tasks
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-3">
+              <Button onClick={() => router.push("/super-admin/users")}>
+                View Users
+              </Button>
+              <Button onClick={exportUsersCsv}>Export Users CSV</Button>
+              <Button
+                variant="outline"
+                onClick={() => router.push("/super-admin/audit")}
+              >
+                View Audit Log
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex flex-col">
+          <Card className="flex flex-col shadow-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-bold text-foreground">
+                <CreditCard className="h-4.5 w-4.5 text-primary" />
+                Billing Snapshot
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
+                Workspace plans, subscription state, and monthly revenue.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-4">
+              <div className="rounded-xl border border-border bg-muted/30 p-4">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-muted-foreground">
+                    Total Workspaces
+                  </span>
+                  <span className="font-mono text-foreground">
+                    {billingSummary?.totalWorkspaces ?? workspaces.length}
+                  </span>
+                </div>
+                <div className="mt-3 grid gap-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-muted-foreground">
+                      Active Subscriptions
+                    </span>
+                    <span className="font-mono text-foreground">
+                      {billingSummary?.activeSubscriptions ?? 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-muted-foreground">
+                      Pending Payments
+                    </span>
+                    <span className="font-mono text-foreground">
+                      {billingSummary?.pendingPayments ?? 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-muted-foreground">
+                      Monthly Revenue
+                    </span>
+                    <span className="font-mono text-foreground">
+                      {formatKES(billingSummary?.totalMonthlyRevenue ?? 0)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
+                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
+                  <span>Free Trial</span>
+                  <span className="font-mono text-foreground">
+                    {billingSummary?.planCounts.trial ?? 0}
+                  </span>
+                </div>
+                <Progress
+                  value={
+                    billingSummary?.totalWorkspaces
+                      ? (billingSummary.planCounts.trial /
+                          billingSummary.totalWorkspaces) *
+                        100
+                      : 0
+                  }
+                  className="h-2"
+                />
+
+                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
+                  <span>Basic</span>
+                  <span className="font-mono text-foreground">
+                    {billingSummary?.planCounts.basic ?? 0}
+                  </span>
+                </div>
+                <Progress
+                  value={
+                    billingSummary?.totalWorkspaces
+                      ? (billingSummary.planCounts.basic /
+                          billingSummary.totalWorkspaces) *
+                        100
+                      : 0
+                  }
+                  className="h-2"
+                />
+
+                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
+                  <span>Pro</span>
+                  <span className="font-mono text-foreground">
+                    {billingSummary?.planCounts.pro ?? 0}
+                  </span>
+                </div>
+                <Progress
+                  value={
+                    billingSummary?.totalWorkspaces
+                      ? (billingSummary.planCounts.pro /
+                          billingSummary.totalWorkspaces) *
+                        100
+                      : 0
+                  }
+                  className="h-2"
+                />
+
+                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
+                  <span>Unassigned</span>
+                  <span className="font-mono text-foreground">
+                    {billingSummary?.planCounts.unassigned ?? 0}
+                  </span>
+                </div>
+                <Progress
+                  value={
+                    billingSummary?.totalWorkspaces
+                      ? (billingSummary.planCounts.unassigned /
+                          billingSummary.totalWorkspaces) *
+                        100
+                      : 0
+                  }
+                  className="h-2"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="rounded-xl border border-border bg-background/60 p-3">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                    <span className="font-semibold">Active rate</span>
+                  </div>
+                  <p className="mt-1 font-mono text-lg font-bold text-foreground">
+                    {billingSummary?.totalWorkspaces
+                      ? Math.round(
+                          (billingSummary.activeSubscriptions /
+                            billingSummary.totalWorkspaces) *
+                            100
+                        )
+                      : 0}
+                    %
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border bg-background/60 p-3">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                    <span className="font-semibold">Pending</span>
+                  </div>
+                  <p className="mt-1 font-mono text-lg font-bold text-foreground">
+                    {billingSummary?.pendingPayments ?? 0}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Live Operations Stream: moved lower to the page */}
+      <div className="mt-6">
+        <Card className="flex flex-col shadow-xl">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 text-base font-bold text-foreground">
@@ -258,31 +543,28 @@ export default function SuperAdminPage() {
               View Audit Log
             </Button>
           </CardHeader>
-          <CardContent className="max-h-[360px] flex-1 scrollbar-thin overflow-auto pr-2">
+          <CardContent className="max-h-90 flex-1 scrollbar-thin overflow-auto pr-2">
             {activities.length === 0 ? (
               <div className="py-12 text-center text-xs text-muted-foreground">
                 No activity records found.
               </div>
             ) : (
               <div className="space-y-4">
-                {activities.slice(0, 7).map((log) => (
+                {activities.slice(0, 20).map((log) => (
                   <div
                     key={log.id}
                     className="flex items-start gap-3.5 rounded-xl border border-border bg-card p-3 transition duration-200 hover:bg-muted/30"
                   >
-                    {/* Type indicator bubble */}
                     <Badge
                       variant="outline"
                       className={`px-2 py-0.5 text-[8px] font-bold tracking-wider uppercase ${getLogTypeColor(log.type)}`}
                     >
                       {log.type}
                     </Badge>
-
                     <div className="min-w-0 flex-1 space-y-1 text-left">
                       <p className="truncate text-xs font-bold text-foreground">
                         {log.action}
                       </p>
-
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-semibold text-muted-foreground">
                         <span className="text-primary">
                           {log.user?.name || log.user?.email}
@@ -297,7 +579,6 @@ export default function SuperAdminPage() {
                         )}
                       </div>
                     </div>
-
                     <div className="flex h-full flex-col justify-between text-right font-mono text-[10px] text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />{" "}
@@ -313,110 +594,6 @@ export default function SuperAdminPage() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* System Diagnostics & Parameters */}
-        <Card className="flex flex-col shadow-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base font-bold text-foreground">
-              <Monitor className="h-4.5 w-4.5 text-primary" />
-              Operations Diagnostics
-            </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              Administrative specifications, variables, and health logs.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex-1 space-y-4">
-            <div className="space-y-3.5 rounded-xl border border-border bg-muted/30 p-4">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-muted-foreground">
-                  Node Environment
-                </span>
-                <Badge
-                  variant="outline"
-                  className="border-primary/20 bg-primary/10 font-mono text-[10px] font-bold text-primary"
-                >
-                  production
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-muted-foreground">
-                  OAuth Providers
-                </span>
-                <div className="flex gap-1.5">
-                  <Badge
-                    variant="outline"
-                    className="border-border bg-muted text-[9px] font-bold text-foreground uppercase"
-                  >
-                    Google OAuth
-                  </Badge>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-muted-foreground">
-                  DB Client Schema
-                </span>
-                <span className="font-mono text-[10px] font-bold text-primary">
-                  Prisma (PostgreSQL)
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-muted-foreground">
-                  Super Admin Domain
-                </span>
-                <span className="font-mono text-[10px] font-bold text-foreground">
-                  {superAdminEmail || "Not Configured"}
-                </span>
-              </div>
-            </div>
-
-            {/* Quick performance indicators */}
-            <div className="mt-4 space-y-3 text-left">
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
-                  <span>User Densities (Active / Total)</span>
-                  <span className="font-mono text-foreground">
-                    {users.length > 0
-                      ? Math.round((activeUsers.length / users.length) * 100)
-                      : 0}
-                    %
-                  </span>
-                </div>
-                <Progress
-                  value={
-                    users.length > 0
-                      ? (activeUsers.length / users.length) * 100
-                      : 0
-                  }
-                  className="h-1.5"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
-                  <span>Workspace Load Densities</span>
-                  <span className="font-mono text-foreground">
-                    {workspaces.length > 0
-                      ? Math.round(
-                          (workspacesWithProducts.length / workspaces.length) *
-                            100
-                        )
-                      : 0}
-                    %
-                  </span>
-                </div>
-                <Progress
-                  value={
-                    workspaces.length > 0
-                      ? (workspacesWithProducts.length / workspaces.length) *
-                        100
-                      : 0
-                  }
-                  className="h-1.5"
-                />
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

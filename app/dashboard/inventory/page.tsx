@@ -42,6 +42,8 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { StatCard } from "@/components/stat-card"
 import {
   Card,
   CardContent,
@@ -73,6 +75,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { ImgWithSpinner } from "@/components/image-with-spinner"
 import {
   Popover,
   PopoverContent,
@@ -284,15 +287,81 @@ function formatDate(value: string) {
   }).format(new Date(value))
 }
 
+function InventoryPageSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      {/* Header Skeleton */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48 bg-muted/80" />
+          <Skeleton className="h-4 w-72 bg-muted/60" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-24 bg-muted/70" />
+          <Skeleton className="h-9 w-28 bg-muted/70" />
+        </div>
+      </div>
+
+      {/* KPI Cards Skeleton */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 rounded-lg bg-muted/70" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-3/4 bg-muted/60" />
+                  <Skeleton className="h-6 w-12 bg-muted/80" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Table Card Skeleton */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-32 bg-muted/80" />
+              <Skeleton className="h-4 w-48 bg-muted/60" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-8 w-48 bg-muted/60" />
+              <Skeleton className="h-8 w-32 bg-muted/60" />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[...Array(6)].map((_, idx) => (
+              <div key={idx} className="flex items-center justify-between border-b pb-3.5 pt-3.5 last:border-0 last:pb-0">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 rounded-lg bg-muted/70" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-36 bg-muted/70" />
+                    <Skeleton className="h-3 w-20 bg-muted/50" />
+                  </div>
+                </div>
+                <div className="flex gap-4 items-center">
+                  <Skeleton className="h-4 w-12 bg-muted/60" />
+                  <Skeleton className="h-4 w-16 bg-muted/60" />
+                  <Skeleton className="h-5 w-20 rounded bg-muted/60" />
+                  <Skeleton className="h-8 w-8 rounded bg-muted/50" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export default function InventoryPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-[400px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/40" />
-        </div>
-      }
-    >
+    <Suspense fallback={<InventoryPageSkeleton />}>
       <InventoryPageContent />
     </Suspense>
   )
@@ -1073,48 +1142,66 @@ function InventoryPageContent() {
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
         {[
           {
             label: "Critical Alerts",
-            value: isLoading ? "-" : String(criticalCount),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              String(criticalCount)
+            ),
             icon: Flame,
-            color: "text-rose-600 dark:text-rose-400",
+            valColor: "text-red-500",
+            iconColor: "text-red-500",
+            description: "Needs replenishment",
           },
           {
             label: "Low Stock Warnings",
-            value: isLoading ? "-" : String(lowStockCount),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              String(lowStockCount)
+            ),
             icon: AlertCircle,
-            color: "text-orange-600 dark:text-orange-400",
+            valColor: "text-orange-500",
+            iconColor: "text-orange-500",
+            description: "Under safe threshold",
           },
           {
             label: "Total Inventory",
-            value: isLoading ? "-" : totalUnits.toLocaleString(),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-20" />
+            ) : (
+              totalUnits.toLocaleString()
+            ),
             icon: Box,
-            color: "text-blue-600 dark:text-blue-400",
+            valColor: "text-blue-500",
+            iconColor: "text-blue-500",
+            description: "Total stock count",
           },
           {
             label: "Catalog Items",
-            value: isLoading ? "-" : String(products?.length ?? 0),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              String(products?.length ?? 0)
+            ),
             icon: Package,
-            color: "text-emerald-600 dark:text-emerald-400",
+            valColor: "text-emerald-500",
+            iconColor: "text-emerald-500",
+            description: "Total active products",
           },
         ].map((metric) => (
-          <Card key={metric.label}>
-            <CardContent className="p-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase">
-                    {metric.label}
-                  </p>
-                  <h3 className={`text-lg font-bold ${metric.color}`}>
-                    {metric.value}
-                  </h3>
-                </div>
-                <metric.icon className={`h-4 w-4 ${metric.color} opacity-70`} />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            key={metric.label}
+            title={metric.label}
+            value={metric.value}
+            icon={metric.icon}
+            valColor={metric.valColor}
+            iconColor={metric.iconColor}
+            description={metric.description}
+          />
         ))}
       </div>
 
@@ -1167,8 +1254,24 @@ function InventoryPageContent() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="space-y-3">
+              {[...Array(6)].map((_, idx) => (
+                <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3.5 pt-3.5 last:border-b-0 last:pb-0">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded-lg bg-muted/70" />
+                    <div className="space-y-1.5">
+                      <Skeleton className="h-4 w-36 bg-muted/70" />
+                      <Skeleton className="h-3 w-20 bg-muted/50" />
+                    </div>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <Skeleton className="h-4 w-12 bg-muted/60" />
+                    <Skeleton className="h-4 w-16 bg-muted/60" />
+                    <Skeleton className="h-5 w-20 rounded bg-muted/60" />
+                    <Skeleton className="h-8 w-8 rounded bg-muted/50" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="p-8 text-center text-red-500">
@@ -1208,7 +1311,7 @@ function InventoryPageContent() {
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/40 bg-muted shadow-inner transition-transform group-hover:scale-105">
                           {product.image ? (
-                            <img
+                            <ImgWithSpinner
                               src={product.image}
                               alt={product.name}
                               className="h-full w-full object-cover"
@@ -1557,7 +1660,7 @@ function InventoryPageContent() {
               <Label className="text-xs font-semibold">Product Image</Label>
               {formValues.image ? (
                 <div className="group relative flex max-h-[140px] min-h-[120px] items-center justify-center overflow-hidden rounded-xl border bg-muted/20">
-                  <img
+                  <ImgWithSpinner
                     src={formValues.image}
                     alt="Product preview"
                     className="max-h-[120px] w-full object-contain transition-transform duration-300 group-hover:scale-105"
@@ -1688,7 +1791,7 @@ function InventoryPageContent() {
                   </div>
                 ) : selectedProduct?.image ? (
                   <>
-                    <img
+                    <ImgWithSpinner
                       src={selectedProduct.image}
                       alt={selectedProduct.name}
                       className="h-full w-full cursor-pointer object-cover transition-opacity hover:opacity-90"
@@ -1936,7 +2039,7 @@ function InventoryPageContent() {
         <DialogContent className="flex flex-col items-center gap-2 overflow-hidden rounded-2xl border bg-background p-2 shadow-2xl sm:max-w-[420px]">
           {zoomImageUrl && (
             <div className="relative flex max-h-[360px] min-h-[260px] w-full items-center justify-center overflow-hidden rounded-xl bg-muted/10 p-1">
-              <img
+              <ImgWithSpinner
                 src={zoomImageUrl}
                 alt="Product zoomed preview"
                 className="max-h-[340px] w-full rounded-lg object-contain"

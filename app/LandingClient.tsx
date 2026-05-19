@@ -1,7 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
+import { ImageWithSpinner } from "@/components/image-with-spinner"
 import type { Session } from "next-auth"
 import { motion } from "framer-motion"
 import {
@@ -15,6 +16,8 @@ import {
   TrendingUp,
   Users,
   Package,
+  Menu,
+  X,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -122,6 +125,8 @@ function HeroBackground() {
 // ─── Navbar ──────────────────────────────────────────────────────────────────
 
 function Navbar({ session }: { session: Session | null }) {
+  const [isOpen, setIsOpen] = useState(false)
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -12 }}
@@ -132,14 +137,14 @@ function Navbar({ session }: { session: Session | null }) {
       <div className="container mx-auto flex h-14 items-center justify-between px-6">
         <Link
           href="/"
-          className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight"
+          className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight whitespace-nowrap shrink-0"
         >
-          <Image
+          <ImageWithSpinner
             src="/mizani_logo.png"
             alt="Mizani Systems"
             width={32}
             height={32}
-            className="h-8 w-8 object-contain rounded-lg border border-border shadow-sm"
+            className="h-8 w-8 rounded-lg border border-border shadow-sm"
           />
           <span>Mizani Systems</span>
         </Link>
@@ -157,29 +162,82 @@ function Navbar({ session }: { session: Session | null }) {
         </nav>
 
         <div className="flex items-center gap-3">
-          {session ? (
-            <Button size="sm" asChild>
-              <Link href="/dashboard">
-                Dashboard <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-              </Link>
-            </Button>
-          ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden sm:flex"
-                asChild
-              >
-                <Link href="/auth">Sign in</Link>
-              </Button>
+          <div className="hidden items-center gap-3 md:flex">
+            {session ? (
               <Button size="sm" asChild>
-                <Link href="/auth">Get started</Link>
+                <Link href="/dashboard">
+                  Dashboard <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Link>
               </Button>
-            </>
-          )}
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                >
+                  <Link href="/auth">Sign in</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link href="/auth">Get started</Link>
+                </Button>
+              </>
+            )}
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 rounded-lg md:hidden"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
+
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="border-t border-border/50 bg-background/95 backdrop-blur-lg md:hidden"
+        >
+          <div className="flex flex-col gap-4 px-6 py-6">
+            {["Features", "Pricing", "About"].map((item) => (
+              <Link
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                onClick={() => setIsOpen(false)}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {item}
+              </Link>
+            ))}
+            <div className="my-1 border-t border-border/40" />
+            {session ? (
+              <Button size="sm" className="w-full justify-center" asChild>
+                <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                  Dashboard <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-center"
+                  asChild
+                >
+                  <Link href="/auth" onClick={() => setIsOpen(false)}>Sign in</Link>
+                </Button>
+                <Button size="sm" className="w-full justify-center" asChild>
+                  <Link href="/auth" onClick={() => setIsOpen(false)}>Get started</Link>
+                </Button>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
     </motion.header>
   )
 }
@@ -239,10 +297,10 @@ function HeroSection({ session }: { session: Session | null }) {
           <motion.h1
             variants={fadeUp}
             custom={0.08}
-            className="text-[clamp(2.4rem,5vw,3.8rem)] leading-[1.08] font-bold tracking-tight text-foreground"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] font-bold tracking-tight text-foreground"
           >
-            Inventory tracking built
-            <br />
+            Inventory tracking built{" "}
+            <br className="hidden sm:inline" />
             <span className="font-normal text-muted-foreground">
               for the modern enterprise
             </span>
@@ -251,7 +309,7 @@ function HeroSection({ session }: { session: Session | null }) {
           <motion.p
             variants={fadeUp}
             custom={0.16}
-            className="mx-auto mt-5 max-w-xl text-[1.05rem] leading-relaxed text-muted-foreground"
+            className="mx-auto mt-4 max-w-xl text-sm sm:text-base md:text-[1.05rem] leading-relaxed text-muted-foreground px-4 sm:px-0"
           >
             Monitor stock levels, automate replenishment, and surface insights
             across your entire catalog — all in one place.
@@ -308,98 +366,72 @@ function HeroSection({ session }: { session: Session | null }) {
             </div>
 
             {/* Table */}
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border/50 hover:bg-transparent">
-                  <TableHead className="py-3 pl-5 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    Product
-                  </TableHead>
-                  <TableHead className="py-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    Price
-                  </TableHead>
-                  <TableHead className="py-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    Status
-                  </TableHead>
-                  <TableHead className="py-3 text-right text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    Stock
-                  </TableHead>
-                  <TableHead className="py-3 pr-5 text-right text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    30d
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {INVENTORY_ROWS.map((row, i) => (
-                  <motion.tr
-                    key={row.name}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: 0.55 + i * 0.07, ease }}
-                    className="border-border/40 transition-colors hover:bg-muted/30"
-                  >
-                    <TableCell className="py-3.5 pl-5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-bold text-foreground/70">
-                          {row.name.charAt(0)}
+            <div className="w-full overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border/50 hover:bg-transparent">
+                    <TableHead className="py-3 pl-5 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                      Product
+                    </TableHead>
+                    <TableHead className="py-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                      Price
+                    </TableHead>
+                    <TableHead className="py-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                      Status
+                    </TableHead>
+                    <TableHead className="py-3 text-right text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                      Stock
+                    </TableHead>
+                    <TableHead className="py-3 pr-5 text-right text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                      30d
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {INVENTORY_ROWS.map((row, i) => (
+                    <motion.tr
+                      key={row.name}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 0.55 + i * 0.07, ease }}
+                      className="border-border/40 transition-colors hover:bg-muted/30 whitespace-nowrap"
+                    >
+                      <TableCell className="py-3.5 pl-5">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-bold text-foreground/70">
+                            {row.name.charAt(0)}
+                          </div>
+                          <span className="text-sm font-medium">{row.name}</span>
                         </div>
-                        <span className="text-sm font-medium">{row.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-3.5">
-                      <span className="font-mono text-sm">{row.price}</span>
-                    </TableCell>
-                    <TableCell className="py-3.5">
-                      <span
-                        className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-[11px] font-semibold ${STATUS_COLOR[row.status]}`}
-                      >
-                        {row.status}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-3.5 text-right">
-                      <span className="text-sm font-medium tabular-nums">
-                        {row.stock}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-3.5 pr-5 text-right">
-                      <span
-                        className={`text-[11px] font-semibold tabular-nums ${row.trend.startsWith("+") ? "text-emerald-600" : row.trend === "—" ? "text-muted-foreground" : "text-red-600"}`}
-                      >
-                        {row.trend}
-                      </span>
-                    </TableCell>
-                  </motion.tr>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <span className="font-mono text-sm">{row.price}</span>
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <span
+                          className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-[11px] font-semibold ${STATUS_COLOR[row.status]}`}
+                        >
+                          {row.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3.5 text-right">
+                        <span className="text-sm font-medium tabular-nums">
+                          {row.stock}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3.5 pr-5 text-right">
+                        <span
+                          className={`text-[11px] font-semibold tabular-nums ${row.trend.startsWith("+") ? "text-emerald-600" : row.trend === "—" ? "text-muted-foreground" : "text-red-600"}`}
+                        >
+                          {row.trend}
+                        </span>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
-        </motion.div>
-
-        {/* Stats strip */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={stagger}
-          className="mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-border/50 bg-border/50 sm:grid-cols-4"
-        >
-          {[
-            { label: "Products tracked", value: "12,400+", icon: Package },
-            { label: "Avg accuracy", value: "99.8%", icon: Shield },
-            { label: "Active warehouses", value: "340+", icon: Database },
-            { label: "Daily syncs", value: "2.1M", icon: TrendingUp },
-          ].map(({ label, value, icon: Icon }, i) => (
-            <motion.div
-              key={label}
-              variants={fadeUp}
-              custom={0.5 + i * 0.06}
-              className="flex items-center gap-3 bg-card px-5 py-4"
-            >
-              <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-lg font-bold tabular-nums">{value}</p>
-                <p className="text-[11px] text-muted-foreground">{label}</p>
-              </div>
-            </motion.div>
-          ))}
         </motion.div>
       </div>
     </section>
@@ -433,11 +465,13 @@ const FEATURES = [
     icon: TrendingUp,
     title: "Demand Forecasting",
     desc: "Machine-learning models trained on your historical data surface seasonality trends and recommended stock levels.",
+    comingSoon: true,
   },
   {
     icon: Users,
     title: "Multi-Team Collaboration",
     desc: "Fine-grained permissions for finance, ops, and logistics teams so everyone sees exactly what they need — nothing more.",
+    comingSoon: true,
   },
 ]
 
@@ -445,7 +479,7 @@ function FeatureSection() {
   return (
     <section
       id="features"
-      className="relative overflow-hidden border-y border-border/50 bg-muted/20 py-24"
+      className="relative overflow-hidden border-y border-border/50 bg-muted/20 py-16 md:py-24"
     >
       {/* Section background grid */}
       <div
@@ -491,10 +525,17 @@ function FeatureSection() {
         >
           {FEATURES.map((f, i) => (
             <motion.div key={f.title} variants={fadeUp} custom={i * 0.05}>
-              <Card className="group h-full border border-border/60 bg-card/80 transition-all duration-200 hover:bg-card hover:shadow-md">
+              <Card className="group h-full border border-border/60 bg-card/80 transition-all duration-200 hover:bg-card hover:shadow-md relative overflow-hidden">
                 <CardHeader className="pb-3">
-                  <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-muted transition-all duration-200 group-hover:border-primary/30 group-hover:bg-primary/5">
-                    <f.icon className="h-4 w-4 text-muted-foreground transition-colors duration-200 group-hover:text-primary" />
+                  <div className="flex items-center justify-between">
+                    <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-muted transition-all duration-200 group-hover:border-primary/30 group-hover:bg-primary/5">
+                      <f.icon className="h-4 w-4 text-muted-foreground transition-colors duration-200 group-hover:text-primary" />
+                    </div>
+                    {"comingSoon" in f && f.comingSoon && (
+                      <span className="mb-4 rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-[9px] font-bold tracking-wider text-primary uppercase">
+                        Coming Soon
+                      </span>
+                    )}
                   </div>
                   <CardTitle className="text-base font-semibold">
                     {f.title}
@@ -518,7 +559,7 @@ function FeatureSection() {
 
 function ManageSection() {
   return (
-    <section className="bg-background py-24">
+    <section className="bg-background py-16 md:py-24">
       <div className="container mx-auto grid items-center gap-16 px-6 lg:grid-cols-2">
         <motion.div
           initial="hidden"
@@ -605,72 +646,74 @@ function ManageSection() {
               Live
             </Badge>
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border/40 hover:bg-transparent">
-                <TableHead className="pl-5 text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Product
-                </TableHead>
-                <TableHead className="text-right text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Cost
-                </TableHead>
-                <TableHead className="text-right text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Price
-                </TableHead>
-                <TableHead className="pr-5 text-right text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Margin
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[
-                {
-                  name: "Ultraboost 24",
-                  cost: "$89",
-                  price: "$159",
-                  margin: "44%",
-                },
-                {
-                  name: "Predator Elite",
-                  cost: "$71",
-                  price: "$129",
-                  margin: "45%",
-                },
-                {
-                  name: "Air Force 1",
-                  cost: "$55",
-                  price: "$110",
-                  margin: "50%",
-                },
-                {
-                  name: "NB 990 v6",
-                  cost: "$104",
-                  price: "$185",
-                  margin: "44%",
-                },
-              ].map((row) => (
-                <TableRow
-                  key={row.name}
-                  className="border-border/40 transition-colors hover:bg-muted/30"
-                >
-                  <TableCell className="py-3.5 pl-5 text-sm font-medium">
-                    {row.name}
-                  </TableCell>
-                  <TableCell className="py-3.5 text-right font-mono text-sm text-muted-foreground">
-                    {row.cost}
-                  </TableCell>
-                  <TableCell className="py-3.5 text-right font-mono text-sm">
-                    {row.price}
-                  </TableCell>
-                  <TableCell className="py-3.5 pr-5 text-right">
-                    <span className="rounded-md bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600">
-                      {row.margin}
-                    </span>
-                  </TableCell>
+          <div className="w-full overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border/40 hover:bg-transparent">
+                  <TableHead className="pl-5 text-[11px] tracking-wider text-muted-foreground uppercase">
+                    Product
+                  </TableHead>
+                  <TableHead className="text-right text-[11px] tracking-wider text-muted-foreground uppercase">
+                    Cost
+                  </TableHead>
+                  <TableHead className="text-right text-[11px] tracking-wider text-muted-foreground uppercase">
+                    Price
+                  </TableHead>
+                  <TableHead className="pr-5 text-right text-[11px] tracking-wider text-muted-foreground uppercase">
+                    Margin
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {[
+                  {
+                    name: "Ultraboost 24",
+                    cost: "$89",
+                    price: "$159",
+                    margin: "44%",
+                  },
+                  {
+                    name: "Predator Elite",
+                    cost: "$71",
+                    price: "$129",
+                    margin: "45%",
+                  },
+                  {
+                    name: "Air Force 1",
+                    cost: "$55",
+                    price: "$110",
+                    margin: "50%",
+                  },
+                  {
+                    name: "NB 990 v6",
+                    cost: "$104",
+                    price: "$185",
+                    margin: "44%",
+                  },
+                ].map((row) => (
+                  <TableRow
+                    key={row.name}
+                    className="border-border/40 transition-colors hover:bg-muted/30 whitespace-nowrap"
+                  >
+                    <TableCell className="py-3.5 pl-5 text-sm font-medium">
+                      {row.name}
+                    </TableCell>
+                    <TableCell className="py-3.5 text-right font-mono text-sm text-muted-foreground">
+                      {row.cost}
+                    </TableCell>
+                    <TableCell className="py-3.5 text-right font-mono text-sm">
+                      {row.price}
+                    </TableCell>
+                    <TableCell className="py-3.5 pr-5 text-right">
+                      <span className="rounded-md bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600">
+                        {row.margin}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           {/* Mini bar chart */}
           <div className="border-t border-border/50 bg-muted/20 px-5 py-4">
             <p className="mb-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
@@ -878,13 +921,13 @@ function Footer() {
       <div className="container mx-auto px-6 py-10">
         <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           <div>
-            <div className="mb-2 flex items-center gap-2.5 text-sm font-semibold">
-              <Image
+            <div className="mb-2 flex items-center gap-2.5 text-sm font-semibold whitespace-nowrap shrink-0">
+              <ImageWithSpinner
                 src="/mizani_logo.png"
                 alt="Mizani Systems"
                 width={28}
                 height={28}
-                className="h-7 w-7 object-contain rounded-lg border border-border shadow-sm"
+                className="h-7 w-7 rounded-lg border border-border shadow-sm"
               />
               Mizani Systems
             </div>
@@ -914,7 +957,7 @@ function Footer() {
                   {links.map((l) => (
                     <li key={l}>
                       <Link
-                        href="#"
+                        href={l === "Privacy" ? "/privacy" : l === "Terms" ? "/terms" : "#"}
                         className="text-xs text-muted-foreground transition-colors hover:text-foreground"
                       >
                         {l}

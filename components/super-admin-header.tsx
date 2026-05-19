@@ -112,8 +112,6 @@ export function SuperAdminHeader() {
     switch (path) {
       case "/super-admin/users":
         return "Users & Accounts"
-      case "/super-admin/workspaces":
-        return "Workspaces Portfolio"
       case "/super-admin/audit":
         return "Global Activity Trail"
       default:
@@ -146,11 +144,11 @@ export function SuperAdminHeader() {
           <DropdownMenuTrigger asChild disabled={!isProfileReady}>
             <Button
               variant="ghost"
-              className="h-10 rounded-full border border-border/70 bg-background px-2.5 transition-all hover:bg-muted/40"
+              className="h-7 w-7 rounded-full border-none bg-transparent p-0 shadow-none hover:bg-transparent disabled:cursor-wait disabled:opacity-100 md:h-10 md:w-auto md:border md:border-border/70 md:bg-background md:px-2.5 md:shadow-sm md:hover:bg-muted/40"
             >
               {isProfileReady ? (
                 <div className="flex items-center gap-2">
-                  <Avatar className="h-7 w-7 ring-1 ring-border">
+                  <Avatar className="h-7 w-7">
                     {userImage ? (
                       <AvatarImage
                         src={userImage}

@@ -16,6 +16,8 @@ import {
   Trash2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { StatCard } from "@/components/stat-card"
 import {
   Card,
   CardContent,
@@ -60,6 +62,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { CreateOrderDialog } from "@/components/orders/create-order-dialog"
 import { OrderDetailsDialog } from "@/components/orders/order-details-dialog"
 import { formatPrice } from "@/lib/utils"
+import { ImgWithSpinner } from "@/components/image-with-spinner"
 
 type WorkspaceSummary = {
   currency?: string | null
@@ -269,56 +272,66 @@ export default function OrdersPage() {
       </div>
 
       {/* KPI Row */}
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
         {[
           {
             label: "Total Orders",
-            value: isLoading ? "-" : orders?.length.toString(),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              orders?.length.toString()
+            ),
             icon: Package,
-            color: "text-primary",
-            bg: "bg-primary/10",
+            valColor: "text-blue-500",
+            iconColor: "text-blue-500",
+            description: "Full transactions",
           },
           {
             label: "Pending",
-            value: isLoading
-              ? "-"
-              : orders?.filter((o) => o.status === "pending").length.toString(),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              orders?.filter((o) => o.status === "pending").length.toString()
+            ),
             icon: Clock,
-            color: "text-amber-500",
-            bg: "bg-amber-500/10",
+            valColor: "text-amber-500",
+            iconColor: "text-amber-500",
+            description: "Awaiting fulfillment",
           },
           {
             label: "In Transit",
-            value: isLoading
-              ? "-"
-              : orders?.filter((o) => o.status === "shipped").length.toString(),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-12" />
+            ) : (
+              orders?.filter((o) => o.status === "shipped").length.toString()
+            ),
             icon: Truck,
-            color: "text-blue-500",
-            bg: "bg-blue-500/10",
+            valColor: "text-indigo-500",
+            iconColor: "text-indigo-500",
+            description: "Dispatched & active",
           },
           {
             label: "Revenue",
-            value: isLoading ? "-" : formatPrice(totalRevenue, currency),
+            value: isLoading ? (
+              <Skeleton className="h-6 w-20" />
+            ) : (
+              formatPrice(totalRevenue, currency)
+            ),
             icon: DollarSign,
-            color: "text-emerald-500",
-            bg: "bg-emerald-500/10",
+            valColor: "text-emerald-500",
+            iconColor: "text-emerald-500",
+            description: "Gross sales revenue",
           },
         ].map((s) => (
-          <Card key={s.label}>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${s.bg}`}
-                >
-                  <s.icon className={`h-5 w-5 ${s.color}`} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{s.value}</p>
-                  <p className="text-xs text-muted-foreground">{s.label}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            key={s.label}
+            title={s.label}
+            value={s.value}
+            icon={s.icon}
+            valColor={s.valColor}
+            iconColor={s.iconColor}
+            description={s.description}
+          />
         ))}
       </div>
 
@@ -361,8 +374,23 @@ export default function OrdersPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="space-y-3">
+              {[...Array(6)].map((_, idx) => (
+                <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3.5 pt-3.5 last:border-b-0 last:pb-0">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-4 w-4 bg-muted/50" />
+                    <Skeleton className="h-5 w-20 rounded bg-muted/60" />
+                    <Skeleton className="h-4 w-28 bg-muted/70" />
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <Skeleton className="h-4 w-12 bg-muted/60" />
+                    <Skeleton className="h-4 w-16 bg-muted/60" />
+                    <Skeleton className="h-5 w-20 rounded bg-muted/60" />
+                    <Skeleton className="h-5 w-20 rounded bg-muted/60" />
+                    <Skeleton className="h-8 w-8 rounded bg-muted/50" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="p-8 text-center text-red-500">
@@ -418,7 +446,7 @@ export default function OrdersPage() {
                                 key={idx}
                                 className="relative inline-block h-7 w-7 overflow-hidden rounded-full border border-border/40 bg-muted shadow-sm ring-2 ring-background"
                               >
-                                <img
+                                <ImgWithSpinner
                                   src={imgUrl}
                                   alt="Product"
                                   className="h-full w-full object-cover"
