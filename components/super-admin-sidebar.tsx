@@ -3,7 +3,14 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { Database, Users, Activity, Home, ShieldAlert, CreditCard } from "lucide-react"
+import {
+  Database,
+  Users,
+  Activity,
+  Home,
+  ShieldAlert,
+  CreditCard,
+} from "lucide-react"
 
 import { Separator } from "@/components/ui/separator"
 import {

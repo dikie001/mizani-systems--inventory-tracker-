@@ -14,7 +14,8 @@ export async function GET() {
     const superAdminEmail = process.env.SUPER_ADMIN_EMAIL
     if (
       !superAdminEmail ||
-      session.user.email.toLowerCase() !== superAdminEmail.replace(/"/g, "").toLowerCase()
+      session.user.email.toLowerCase() !==
+        superAdminEmail.replace(/"/g, "").toLowerCase()
     ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
@@ -90,19 +91,30 @@ export async function GET() {
       id: workspace.id,
       name: workspace.name,
       slug: workspace.slug,
-      planName: workspace.subscription?.plan?.displayName || workspace.selectedPlan?.displayName || null,
+      planName:
+        workspace.subscription?.plan?.displayName ||
+        workspace.selectedPlan?.displayName ||
+        null,
       subscriptionStatus: workspace.subscription?.status || null,
       paymentStatus: workspace.subscription?.paymentStatus || null,
-      monthlyPrice: workspace.subscription?.plan?.monthlyPrice || workspace.selectedPlan?.monthlyPrice || null,
-      nextBillingDate: workspace.subscription?.nextBillingDate?.toISOString() || null,
+      monthlyPrice:
+        workspace.subscription?.plan?.monthlyPrice ||
+        workspace.selectedPlan?.monthlyPrice ||
+        null,
+      nextBillingDate:
+        workspace.subscription?.nextBillingDate?.toISOString() || null,
       lastPaymentStatus: workspace.payments[0]?.status || null,
       createdAt: workspace.createdAt.toISOString(),
     }))
 
     const billingPlans = PLANS.map((plan) => {
       const activeSubscriptions = workspaces.filter((workspace: any) => {
-        const selectedPlanName = workspace.subscription?.plan?.name || workspace.selectedPlan?.name
-        return selectedPlanName === plan.name && workspace.subscription?.status === "active"
+        const selectedPlanName =
+          workspace.subscription?.plan?.name || workspace.selectedPlan?.name
+        return (
+          selectedPlanName === plan.name &&
+          workspace.subscription?.status === "active"
+        )
       }).length
 
       return {
@@ -128,12 +140,15 @@ export async function GET() {
         (workspace: any) => workspace.subscription?.status === "active"
       ).length,
       pendingPayments: workspaces.filter(
-        (workspace: any) => workspace.subscription?.paymentStatus === "unpaid" ||
+        (workspace: any) =>
+          workspace.subscription?.paymentStatus === "unpaid" ||
           workspace.payments[0]?.status === "pending"
       ).length,
       totalMonthlyRevenue: workspaces.reduce((sum: number, workspace: any) => {
-        const price = workspace.subscription?.plan?.monthlyPrice ||
-          workspace.selectedPlan?.monthlyPrice || 0
+        const price =
+          workspace.subscription?.plan?.monthlyPrice ||
+          workspace.selectedPlan?.monthlyPrice ||
+          0
         const isActive = workspace.subscription?.status === "active"
         return sum + (isActive ? price : 0)
       }, 0),

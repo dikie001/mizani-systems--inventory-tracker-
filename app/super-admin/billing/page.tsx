@@ -156,9 +156,9 @@ export default function SuperAdminBillingPage() {
   const { data: session } = useSession()
   const [data, setData] = useState<BillingResponse | null>(null)
   const [loading, setLoading] = useState(true)
-  const [billingView, setBillingView] = useState<"overview" | "records" | "plans">(
-    "overview"
-  )
+  const [billingView, setBillingView] = useState<
+    "overview" | "records" | "plans"
+  >("overview")
 
   useEffect(() => {
     const loadBilling = async () => {
@@ -188,9 +188,15 @@ export default function SuperAdminBillingPage() {
   const invoices = data?.invoices ?? []
 
   const billingHealth = useMemo(() => {
-    const overdueInvoices = invoices.filter((invoice) => invoice.status === "overdue").length
-    const unpaidPayments = payments.filter((payment) => payment.status === "pending" || payment.status === "failed").length
-    const activePlans = plans.filter((plan) => plan.activeSubscriptions > 0).length
+    const overdueInvoices = invoices.filter(
+      (invoice) => invoice.status === "overdue"
+    ).length
+    const unpaidPayments = payments.filter(
+      (payment) => payment.status === "pending" || payment.status === "failed"
+    ).length
+    const activePlans = plans.filter(
+      (plan) => plan.activeSubscriptions > 0
+    ).length
 
     return { overdueInvoices, unpaidPayments, activePlans }
   }, [invoices, payments, plans])
@@ -226,7 +232,8 @@ export default function SuperAdminBillingPage() {
                 Billing Console
               </h1>
               <p className="text-sm text-muted-foreground">
-                Track subscriptions, invoices, payments, revenue, and plan features across every workspace.
+                Track subscriptions, invoices, payments, revenue, and plan
+                features across every workspace.
               </p>
             </div>
           </div>
@@ -235,7 +242,9 @@ export default function SuperAdminBillingPage() {
         <div className="flex items-center gap-2">
           <Select
             value={billingView}
-            onValueChange={(value) => setBillingView(value as "overview" | "records" | "plans")}
+            onValueChange={(value) =>
+              setBillingView(value as "overview" | "records" | "plans")
+            }
           >
             <SelectTrigger className="h-10 w-40 text-xs">
               <SelectValue placeholder="View" />
@@ -246,7 +255,10 @@ export default function SuperAdminBillingPage() {
               <SelectItem value="plans">Plan Features</SelectItem>
             </SelectContent>
           </Select>
-          <Badge variant="outline" className="border-border bg-background px-3 py-1 font-mono font-bold text-foreground shadow-sm">
+          <Badge
+            variant="outline"
+            className="border-border bg-background px-3 py-1 font-mono font-bold text-foreground shadow-sm"
+          >
             {workspaces.length} workspaces
           </Badge>
         </div>
@@ -259,7 +271,9 @@ export default function SuperAdminBillingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Workspaces</p>
-                  <p className="text-2xl font-bold text-foreground">{summary.totalWorkspaces}</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {summary.totalWorkspaces}
+                  </p>
                 </div>
                 <Users className="h-5 w-5 text-muted-foreground" />
               </div>
@@ -270,7 +284,9 @@ export default function SuperAdminBillingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Active Subs</p>
-                  <p className="text-2xl font-bold text-foreground">{summary.activeSubscriptions}</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {summary.activeSubscriptions}
+                  </p>
                 </div>
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               </div>
@@ -281,7 +297,9 @@ export default function SuperAdminBillingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-foreground">{summary.pendingPayments}</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {summary.pendingPayments}
+                  </p>
                 </div>
                 <AlertTriangle className="h-5 w-5 text-amber-500" />
               </div>
@@ -291,8 +309,12 @@ export default function SuperAdminBillingPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                  <p className="text-2xl font-bold text-foreground">{formatKES(summary.totalMonthlyRevenue)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Monthly Revenue
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatKES(summary.totalMonthlyRevenue)}
+                  </p>
                 </div>
                 <DollarSign className="h-5 w-5 text-primary" />
               </div>
@@ -302,8 +324,12 @@ export default function SuperAdminBillingPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Paid This Month</p>
-                  <p className="text-2xl font-bold text-foreground">{formatKES(summary.paidThisMonth)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Paid This Month
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatKES(summary.paidThisMonth)}
+                  </p>
                 </div>
                 <TrendingUp className="h-5 w-5 text-primary" />
               </div>
@@ -318,12 +344,15 @@ export default function SuperAdminBillingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Billing Health</p>
-                <p className="text-2xl font-bold text-foreground">{billingHealth.overdueInvoices + billingHealth.unpaidPayments}</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {billingHealth.overdueInvoices + billingHealth.unpaidPayments}
+                </p>
               </div>
               <ReceiptText className="h-5 w-5 text-primary" />
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
-              {billingHealth.overdueInvoices} overdue invoices, {billingHealth.unpaidPayments} unpaid or failed payments.
+              {billingHealth.overdueInvoices} overdue invoices,{" "}
+              {billingHealth.unpaidPayments} unpaid or failed payments.
             </p>
           </CardContent>
         </Card>
@@ -332,7 +361,9 @@ export default function SuperAdminBillingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Active Plans</p>
-                <p className="text-2xl font-bold text-foreground">{billingHealth.activePlans}</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {billingHealth.activePlans}
+                </p>
               </div>
               <BadgeCheck className="h-5 w-5 text-emerald-500" />
             </div>
@@ -346,12 +377,16 @@ export default function SuperAdminBillingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Latest Payment</p>
-                <p className="text-2xl font-bold text-foreground">{payments[0] ? formatKES(payments[0].amount) : "—"}</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {payments[0] ? formatKES(payments[0].amount) : "—"}
+                </p>
               </div>
               <History className="h-5 w-5 text-primary" />
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
-              {payments[0] ? `${payments[0].workspaceName} · ${payments[0].status}` : "No payment history yet."}
+              {payments[0]
+                ? `${payments[0].workspaceName} · ${payments[0].status}`
+                : "No payment history yet."}
             </p>
           </CardContent>
         </Card>
@@ -365,34 +400,53 @@ export default function SuperAdminBillingPage() {
               Plan Features and Entitlements
             </CardTitle>
             <CardDescription>
-              Subscription tiers, included features, pricing, and active workspace usage.
+              Subscription tiers, included features, pricing, and active
+              workspace usage.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               {plans.map((plan) => (
-                <div key={plan.id} className="rounded-xl border border-border bg-background p-4">
+                <div
+                  key={plan.id}
+                  className="rounded-xl border border-border bg-background p-4"
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-foreground">{plan.displayName}</p>
-                      <p className="text-xs text-muted-foreground">{plan.description}</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {plan.displayName}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {plan.description}
+                      </p>
                     </div>
-                    <Badge variant="outline" className="border-border bg-muted/40 text-[10px] font-bold uppercase text-foreground">
+                    <Badge
+                      variant="outline"
+                      className="border-border bg-muted/40 text-[10px] font-bold text-foreground uppercase"
+                    >
                       {plan.activeSubscriptions} active
                     </Badge>
                   </div>
                   <div className="mt-4 flex items-end justify-between">
                     <div>
-                      <p className="text-2xl font-bold text-foreground">{formatKES(plan.monthlyPrice)}</p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {formatKES(plan.monthlyPrice)}
+                      </p>
                       <p className="text-xs text-muted-foreground">per month</p>
                     </div>
                     {plan.badge && (
-                      <Badge className="border-border bg-primary/10 text-primary">{plan.badge}</Badge>
+                      <Badge className="border-border bg-primary/10 text-primary">
+                        {plan.badge}
+                      </Badge>
                     )}
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {plan.features.map((feature) => (
-                      <Badge key={feature} variant="outline" className="border-border bg-muted/30 text-[10px] text-muted-foreground">
+                      <Badge
+                        key={feature}
+                        variant="outline"
+                        className="border-border bg-muted/30 text-[10px] text-muted-foreground"
+                      >
                         {feature}
                       </Badge>
                     ))}
@@ -432,8 +486,12 @@ export default function SuperAdminBillingPage() {
                       <TableRow key={workspace.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-foreground">{workspace.name}</p>
-                            <p className="text-xs text-muted-foreground">{workspace.slug}</p>
+                            <p className="font-medium text-foreground">
+                              {workspace.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {workspace.slug}
+                            </p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -443,15 +501,20 @@ export default function SuperAdminBillingPage() {
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
-                            <Badge className={getBadgeClass(workspace.subscriptionStatus)}>
-                              {workspace.subscriptionStatus || "No Subscription"}
+                            <Badge
+                              className={getBadgeClass(
+                                workspace.subscriptionStatus
+                              )}
+                            >
+                              {workspace.subscriptionStatus ||
+                                "No Subscription"}
                             </Badge>
                             <p className="text-[10px] text-muted-foreground">
                               Payment: {workspace.paymentStatus || "Unknown"}
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                        <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
                           {formatDate(workspace.nextBillingDate)}
                         </TableCell>
                       </TableRow>
@@ -469,14 +532,20 @@ export default function SuperAdminBillingPage() {
                 Recent Payments and Invoices
               </CardTitle>
               <CardDescription>
-                Latest payment activity and invoice records pulled from the billing ledger.
+                Latest payment activity and invoice records pulled from the
+                billing ledger.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">Payments</h3>
-                  <Badge variant="outline" className="border-border bg-muted/30 text-[10px] uppercase text-muted-foreground">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Payments
+                  </h3>
+                  <Badge
+                    variant="outline"
+                    className="border-border bg-muted/30 text-[10px] text-muted-foreground uppercase"
+                  >
                     Latest {payments.length}
                   </Badge>
                 </div>
@@ -495,20 +564,26 @@ export default function SuperAdminBillingPage() {
                         <TableRow key={payment.id}>
                           <TableCell>
                             <div>
-                              <p className="font-medium text-foreground">{payment.workspaceName}</p>
+                              <p className="font-medium text-foreground">
+                                {payment.workspaceName}
+                              </p>
                               <p className="text-xs text-muted-foreground">
                                 {payment.planName || payment.workspaceSlug}
                               </p>
                             </div>
                           </TableCell>
-                          <TableCell className="whitespace-nowrap font-semibold text-foreground">
+                          <TableCell className="font-semibold whitespace-nowrap text-foreground">
                             {formatKES(payment.amount)}
                           </TableCell>
                           <TableCell>
-                            <Badge className={getBadgeClass(payment.status)}>{payment.status}</Badge>
+                            <Badge className={getBadgeClass(payment.status)}>
+                              {payment.status}
+                            </Badge>
                           </TableCell>
-                          <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                            {formatDateTime(payment.paidAt || payment.createdAt)}
+                          <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
+                            {formatDateTime(
+                              payment.paidAt || payment.createdAt
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -519,8 +594,13 @@ export default function SuperAdminBillingPage() {
 
               <div>
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">Invoices</h3>
-                  <Badge variant="outline" className="border-border bg-muted/30 text-[10px] uppercase text-muted-foreground">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Invoices
+                  </h3>
+                  <Badge
+                    variant="outline"
+                    className="border-border bg-muted/30 text-[10px] text-muted-foreground uppercase"
+                  >
                     Latest {invoices.length}
                   </Badge>
                 </div>
@@ -539,17 +619,23 @@ export default function SuperAdminBillingPage() {
                         <TableRow key={invoice.id}>
                           <TableCell>
                             <div>
-                              <p className="font-medium text-foreground">{invoice.invoiceNumber}</p>
-                              <p className="text-xs text-muted-foreground">{invoice.workspaceName}</p>
+                              <p className="font-medium text-foreground">
+                                {invoice.invoiceNumber}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {invoice.workspaceName}
+                              </p>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge className={getBadgeClass(invoice.status)}>{invoice.status}</Badge>
+                            <Badge className={getBadgeClass(invoice.status)}>
+                              {invoice.status}
+                            </Badge>
                           </TableCell>
-                          <TableCell className="whitespace-nowrap font-semibold text-foreground">
+                          <TableCell className="font-semibold whitespace-nowrap text-foreground">
                             {formatKES(invoice.amount)}
                           </TableCell>
-                          <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                          <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
                             {formatDate(invoice.dueDate)}
                           </TableCell>
                         </TableRow>
@@ -583,9 +669,7 @@ export default function SuperAdminBillingPage() {
           <Button variant="outline" className="border-border bg-background">
             Manage Plan Catalog
           </Button>
-          <Button>
-            Open Billing Queue
-          </Button>
+          <Button>Open Billing Queue</Button>
         </CardContent>
       </Card>
     </div>
