@@ -12,6 +12,7 @@ import {
   FileText,
   ReceiptText,
   Users,
+  CheckCircle2,
 } from "lucide-react"
 
 import { StatCard } from "@/components/stat-card"
@@ -176,8 +177,12 @@ export default function SuperAdminBillingPage() {
   const invoices = data?.invoices ?? []
 
   const billingHealth = useMemo(() => {
-    const overdueInvoices = invoices.filter((invoice) => invoice.status === "overdue").length
-    const unpaidPayments = payments.filter((payment) => payment.status === "pending" || payment.status === "failed").length
+    const overdueInvoices = invoices.filter(
+      (invoice) => invoice.status === "overdue"
+    ).length
+    const unpaidPayments = payments.filter(
+      (payment) => payment.status === "pending" || payment.status === "failed"
+    ).length
 
     return { overdueInvoices, unpaidPayments }
   }, [invoices, payments])
@@ -191,7 +196,7 @@ export default function SuperAdminBillingPage() {
           <Skeleton className="h-8 w-72" />
           <Skeleton className="h-4 w-96" />
         </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Skeleton className="h-24" />
           <Skeleton className="h-24" />
           <Skeleton className="h-24" />
@@ -208,11 +213,12 @@ export default function SuperAdminBillingPage() {
           Billing Console
         </h1>
         <p className="text-sm text-muted-foreground">
-          Track subscriptions, invoices, payments, revenue, and plan features across every workspace.
+          Track subscriptions, invoices, payments, revenue, and plan features
+          across every workspace.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           title="Total Workspaces"
           value={summary?.totalWorkspaces ?? workspaces.length}
@@ -231,7 +237,9 @@ export default function SuperAdminBillingPage() {
         />
         <StatCard
           title="Pending Billing"
-          value={(summary?.pendingPayments ?? 0) + billingHealth.overdueInvoices}
+          value={
+            (summary?.pendingPayments ?? 0) + billingHealth.overdueInvoices
+          }
           icon={AlertTriangle}
           valColor="text-amber-500"
           iconColor="text-amber-500"
@@ -243,7 +251,11 @@ export default function SuperAdminBillingPage() {
           icon={DollarSign}
           valColor="text-violet-500"
           iconColor="text-violet-500"
-          description={latestPayment ? `Latest payment ${formatKES(latestPayment.amount)}` : "No payment history yet"}
+          description={
+            latestPayment
+              ? `Latest payment ${formatKES(latestPayment.amount)}`
+              : "No payment history yet"
+          }
         />
       </div>
 
@@ -254,7 +266,8 @@ export default function SuperAdminBillingPage() {
             Plan Features and Entitlements
           </CardTitle>
           <CardDescription>
-            Subscription tiers, included features, pricing, and active workspace usage.
+            Subscription tiers, included features, pricing, and active workspace
+            usage.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -273,20 +286,34 @@ export default function SuperAdminBillingPage() {
                   <TableRow key={plan.id}>
                     <TableCell>
                       <div className="space-y-1">
-                        <p className="font-medium text-foreground">{plan.displayName}</p>
-                        <p className="text-xs text-muted-foreground">{plan.description}</p>
+                        <p className="font-medium text-foreground">
+                          {plan.displayName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {plan.description}
+                        </p>
                       </div>
                     </TableCell>
-                    <TableCell className="whitespace-nowrap font-semibold text-foreground">
+                    <TableCell className="font-semibold whitespace-nowrap text-foreground">
                       {formatKES(plan.monthlyPrice)}
                     </TableCell>
                     <TableCell>
-                      <Badge className={getBadgeClass(plan.activeSubscriptions > 0 ? "active" : "pending")}>{plan.activeSubscriptions}</Badge>
+                      <Badge
+                        className={getBadgeClass(
+                          plan.activeSubscriptions > 0 ? "active" : "pending"
+                        )}
+                      >
+                        {plan.activeSubscriptions}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-2">
                         {plan.features.map((feature) => (
-                          <Badge key={feature} variant="outline" className="border-border bg-muted/30 text-[10px] text-muted-foreground">
+                          <Badge
+                            key={feature}
+                            variant="outline"
+                            className="border-border bg-muted/30 text-[10px] text-muted-foreground"
+                          >
                             {feature}
                           </Badge>
                         ))}
@@ -327,8 +354,12 @@ export default function SuperAdminBillingPage() {
                     <TableRow key={workspace.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium text-foreground">{workspace.name}</p>
-                          <p className="text-xs text-muted-foreground">{workspace.slug}</p>
+                          <p className="font-medium text-foreground">
+                            {workspace.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {workspace.slug}
+                          </p>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -338,7 +369,11 @@ export default function SuperAdminBillingPage() {
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <Badge className={getBadgeClass(workspace.subscriptionStatus)}>
+                          <Badge
+                            className={getBadgeClass(
+                              workspace.subscriptionStatus
+                            )}
+                          >
                             {workspace.subscriptionStatus || "No Subscription"}
                           </Badge>
                           <p className="text-[10px] text-muted-foreground">
@@ -346,7 +381,7 @@ export default function SuperAdminBillingPage() {
                           </p>
                         </div>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                      <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
                         {formatDate(workspace.nextBillingDate)}
                       </TableCell>
                     </TableRow>
@@ -364,14 +399,20 @@ export default function SuperAdminBillingPage() {
               Payments and Invoices
             </CardTitle>
             <CardDescription>
-              Recent payment activity and invoice records pulled from the billing ledger.
+              Recent payment activity and invoice records pulled from the
+              billing ledger.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
               <div className="mb-3 flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold text-foreground">Payments</h3>
-                <Badge variant="outline" className="border-border bg-muted/30 text-[10px] uppercase text-muted-foreground">
+                <h3 className="text-sm font-semibold text-foreground">
+                  Payments
+                </h3>
+                <Badge
+                  variant="outline"
+                  className="border-border bg-muted/30 text-[10px] text-muted-foreground uppercase"
+                >
                   Latest {payments.length}
                 </Badge>
               </div>
@@ -390,19 +431,23 @@ export default function SuperAdminBillingPage() {
                       <TableRow key={payment.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-foreground">{payment.workspaceName}</p>
+                            <p className="font-medium text-foreground">
+                              {payment.workspaceName}
+                            </p>
                             <p className="text-xs text-muted-foreground">
                               {payment.planName || payment.workspaceSlug}
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap font-semibold text-foreground">
+                        <TableCell className="font-semibold whitespace-nowrap text-foreground">
                           {formatKES(payment.amount)}
                         </TableCell>
                         <TableCell>
-                          <Badge className={getBadgeClass(payment.status)}>{payment.status}</Badge>
+                          <Badge className={getBadgeClass(payment.status)}>
+                            {payment.status}
+                          </Badge>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                        <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
                           {formatDateTime(payment.paidAt || payment.createdAt)}
                         </TableCell>
                       </TableRow>
@@ -414,8 +459,13 @@ export default function SuperAdminBillingPage() {
 
             <div>
               <div className="mb-3 flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold text-foreground">Invoices</h3>
-                <Badge variant="outline" className="border-border bg-muted/30 text-[10px] uppercase text-muted-foreground">
+                <h3 className="text-sm font-semibold text-foreground">
+                  Invoices
+                </h3>
+                <Badge
+                  variant="outline"
+                  className="border-border bg-muted/30 text-[10px] text-muted-foreground uppercase"
+                >
                   Latest {invoices.length}
                 </Badge>
               </div>
@@ -434,18 +484,29 @@ export default function SuperAdminBillingPage() {
                       <TableRow key={invoice.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-foreground">{invoice.invoiceNumber}</p>
-                            <p className="text-xs text-muted-foreground">{invoice.workspaceName}</p>
+                            <p className="font-medium text-foreground">
+                              {invoice.invoiceNumber}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {invoice.workspaceName}
+                            </p>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getBadgeClass(invoice.status)}>{invoice.status}</Badge>
+                          <Badge className={getBadgeClass(invoice.status)}>
+                            {invoice.status}
+                          </Badge>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap font-semibold text-foreground">
+                        <TableCell className="font-semibold whitespace-nowrap text-foreground">
                           {formatKES(invoice.amount)}
                         </TableCell>
                         <TableCell>
-                          <Button asChild size="sm" variant="outline" className="border-border bg-background text-xs">
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            className="border-border bg-background text-xs"
+                          >
                             <Link href="/dashboard/settings/billing">
                               <FileText className="mr-1.5 h-3.5 w-3.5" />
                               Open Billing Page
