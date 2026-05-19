@@ -3,7 +3,14 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { Database, Users, Activity, Home, ShieldAlert } from "lucide-react"
+import {
+  Database,
+  Users,
+  Activity,
+  Home,
+  ShieldAlert,
+  CreditCard,
+} from "lucide-react"
 
 import { Separator } from "@/components/ui/separator"
 import {
@@ -23,6 +30,7 @@ import {
 const adminNavItems = [
   { title: "Overview", icon: Database, href: "/super-admin" },
   { title: "Users & Accounts", icon: Users, href: "/super-admin/users" },
+  { title: "Billing Console", icon: CreditCard, href: "/super-admin/billing" },
   {
     title: "Global Activity Trail",
     icon: Activity,

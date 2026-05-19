@@ -112,6 +112,8 @@ export function SuperAdminHeader() {
     switch (path) {
       case "/super-admin/users":
         return "Users & Accounts"
+      case "/super-admin/billing":
+        return "Billing Console"
       case "/super-admin/audit":
         return "Global Activity Trail"
       default:
