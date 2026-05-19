@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
+import { PLANS } from "@/lib/plans"
 
 export async function GET() {
   try {
@@ -36,6 +37,55 @@ export async function GET() {
       },
     })
 
+    const recentPayments = await prisma.payment.findMany({
+      include: {
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        subscription: {
+          include: {
+            plan: true,
+          },
+        },
+        invoice: {
+          select: {
+            id: true,
+            invoiceNumber: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 12,
+    })
+
+    const recentInvoices = await prisma.invoice.findMany({
+      include: {
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        subscription: {
+          include: {
+            plan: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 12,
+    })
+
     const billingWorkspaces = workspaces.map((workspace: any) => ({
       id: workspace.id,
       name: workspace.name,
@@ -48,6 +98,18 @@ export async function GET() {
       lastPaymentStatus: workspace.payments[0]?.status || null,
       createdAt: workspace.createdAt.toISOString(),
     }))
+
+    const billingPlans = PLANS.map((plan) => {
+      const activeSubscriptions = workspaces.filter((workspace: any) => {
+        const selectedPlanName = workspace.subscription?.plan?.name || workspace.selectedPlan?.name
+        return selectedPlanName === plan.name && workspace.subscription?.status === "active"
+      }).length
+
+      return {
+        ...plan,
+        activeSubscriptions,
+      }
+    })
 
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -81,6 +143,43 @@ export async function GET() {
     return NextResponse.json({
       workspaces: billingWorkspaces,
       summary,
+      plans: billingPlans,
+      payments: recentPayments.map((payment) => ({
+        id: payment.id,
+        workspaceId: payment.workspaceId,
+        workspaceName: payment.workspace.name,
+        workspaceSlug: payment.workspace.slug,
+        subscriptionStatus: payment.subscription?.status || null,
+        planName: payment.subscription?.plan?.displayName || null,
+        amount: payment.amount,
+        currency: payment.currency,
+        status: payment.status,
+        paymentMethod: payment.paymentMethod,
+        reference: payment.paystackReference,
+        paidAt: payment.paidAt?.toISOString() || null,
+        createdAt: payment.createdAt.toISOString(),
+        invoiceNumber: payment.invoice?.invoiceNumber || null,
+        invoiceStatus: payment.invoice?.status || null,
+      })),
+      invoices: recentInvoices.map((invoice) => ({
+        id: invoice.id,
+        workspaceId: invoice.workspaceId,
+        workspaceName: invoice.workspace.name,
+        workspaceSlug: invoice.workspace.slug,
+        subscriptionStatus: invoice.subscription?.status || null,
+        planName: invoice.subscription?.plan?.displayName || null,
+        invoiceNumber: invoice.invoiceNumber,
+        amount: invoice.amount,
+        currency: invoice.currency,
+        status: invoice.status,
+        dueDate: invoice.dueDate.toISOString(),
+        paidAt: invoice.paidAt?.toISOString() || null,
+        billingPeriodStart: invoice.billingPeriodStart.toISOString(),
+        billingPeriodEnd: invoice.billingPeriodEnd.toISOString(),
+        description: invoice.description,
+        notes: invoice.notes,
+        createdAt: invoice.createdAt.toISOString(),
+      })),
     })
   } catch (error) {
     console.error("Super admin billing error:", error)
