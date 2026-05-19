@@ -294,7 +294,7 @@ export default function SuperAdminPage() {
       </div>
 
       {/* Overview Details Section: Registrations + Billing + Quick Actions */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3 lg:items-stretch">
         <div className="space-y-6 lg:col-span-2">
           <Card className="shadow-xl">
             <CardHeader>
@@ -345,32 +345,10 @@ export default function SuperAdminPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-base font-bold">
-                Quick Actions
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                Common administrative tasks
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-3">
-              <Button onClick={() => router.push("/super-admin/users")}>
-                View Users
-              </Button>
-              <Button onClick={exportUsersCsv}>Export Users CSV</Button>
-              <Button
-                variant="outline"
-                onClick={() => router.push("/super-admin/audit")}
-              >
-                View Audit Log
-              </Button>
-            </CardContent>
-          </Card>
         </div>
 
-        <div className="flex flex-col">
-          <Card className="flex flex-col shadow-xl">
+        <div className="flex h-full flex-col">
+          <Card className="flex h-full flex-col shadow-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base font-bold text-foreground">
                 <CreditCard className="h-4.5 w-4.5 text-primary" />
@@ -380,44 +358,7 @@ export default function SuperAdminPage() {
                 Workspace plans, subscription state, and monthly revenue.
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 space-y-4">
-              <div className="rounded-xl border border-border bg-muted/30 p-4">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-muted-foreground">
-                    Total Workspaces
-                  </span>
-                  <span className="font-mono text-foreground">
-                    {billingSummary?.totalWorkspaces ?? workspaces.length}
-                  </span>
-                </div>
-                <div className="mt-3 grid gap-3 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-muted-foreground">
-                      Active Subscriptions
-                    </span>
-                    <span className="font-mono text-foreground">
-                      {billingSummary?.activeSubscriptions ?? 0}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-muted-foreground">
-                      Pending Payments
-                    </span>
-                    <span className="font-mono text-foreground">
-                      {billingSummary?.pendingPayments ?? 0}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-muted-foreground">
-                      Monthly Revenue
-                    </span>
-                    <span className="font-mono text-foreground">
-                      {formatKES(billingSummary?.totalMonthlyRevenue ?? 0)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
+            <CardContent className="flex flex-1 flex-col justify-between space-y-4">
               <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
                 <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
                   <span>Free Trial</span>
