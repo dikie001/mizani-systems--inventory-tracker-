@@ -10,8 +10,6 @@ import {
   Clock,
   CreditCard,
   TrendingUp,
-  AlertTriangle,
-  CheckCircle2,
   Shield,
   Loader2,
 } from "lucide-react"
@@ -35,7 +33,6 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import { StatCard } from "@/components/stat-card"
 import { formatKES } from "@/lib/plans"
 
@@ -344,7 +341,6 @@ export default function SuperAdminPage() {
               </ChartContainer>
             </CardContent>
           </Card>
-
         </div>
 
         <div className="flex h-full flex-col">
@@ -358,102 +354,27 @@ export default function SuperAdminPage() {
                 Workspace plans, subscription state, and monthly revenue.
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-1 flex-col justify-between space-y-4">
-              <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
-                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
+            <CardContent className="flex flex-1 flex-col justify-between gap-4">
+              <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-4">
+                <div className="flex items-center justify-between text-sm font-medium text-muted-foreground">
                   <span>Free Trial</span>
                   <span className="font-mono text-foreground">
                     {billingSummary?.planCounts.trial ?? 0}
                   </span>
                 </div>
-                <Progress
-                  value={
-                    billingSummary?.totalWorkspaces
-                      ? (billingSummary.planCounts.trial /
-                          billingSummary.totalWorkspaces) *
-                        100
-                      : 0
-                  }
-                  className="h-2"
-                />
 
-                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
+                <div className="flex items-center justify-between text-sm font-medium text-muted-foreground">
                   <span>Basic</span>
                   <span className="font-mono text-foreground">
                     {billingSummary?.planCounts.basic ?? 0}
                   </span>
                 </div>
-                <Progress
-                  value={
-                    billingSummary?.totalWorkspaces
-                      ? (billingSummary.planCounts.basic /
-                          billingSummary.totalWorkspaces) *
-                        100
-                      : 0
-                  }
-                  className="h-2"
-                />
 
-                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
+                <div className="flex items-center justify-between text-sm font-medium text-muted-foreground">
                   <span>Pro</span>
                   <span className="font-mono text-foreground">
                     {billingSummary?.planCounts.pro ?? 0}
                   </span>
-                </div>
-                <Progress
-                  value={
-                    billingSummary?.totalWorkspaces
-                      ? (billingSummary.planCounts.pro /
-                          billingSummary.totalWorkspaces) *
-                        100
-                      : 0
-                  }
-                  className="h-2"
-                />
-
-                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
-                  <span>Unassigned</span>
-                  <span className="font-mono text-foreground">
-                    {billingSummary?.planCounts.unassigned ?? 0}
-                  </span>
-                </div>
-                <Progress
-                  value={
-                    billingSummary?.totalWorkspaces
-                      ? (billingSummary.planCounts.unassigned /
-                          billingSummary.totalWorkspaces) *
-                        100
-                      : 0
-                  }
-                  className="h-2"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="rounded-xl border border-border bg-background/60 p-3">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                    <span className="font-semibold">Active rate</span>
-                  </div>
-                  <p className="mt-1 font-mono text-lg font-bold text-foreground">
-                    {billingSummary?.totalWorkspaces
-                      ? Math.round(
-                          (billingSummary.activeSubscriptions /
-                            billingSummary.totalWorkspaces) *
-                            100
-                        )
-                      : 0}
-                    %
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border bg-background/60 p-3">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                    <span className="font-semibold">Pending</span>
-                  </div>
-                  <p className="mt-1 font-mono text-lg font-bold text-foreground">
-                    {billingSummary?.pendingPayments ?? 0}
-                  </p>
                 </div>
               </div>
             </CardContent>
