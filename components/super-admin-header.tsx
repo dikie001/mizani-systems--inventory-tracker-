@@ -131,10 +131,10 @@ export function SuperAdminHeader() {
       {/* Admin Breadcrumb */}
       <nav
         aria-label="Breadcrumb"
-        className="flex min-w-0 items-center gap-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+        className="flex min-w-0 items-center gap-1 text-sm font-medium tracking-normal text-muted-foreground"
       >
         <span className="truncate">Admin Console</span>
-        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+        <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground/50" />
         <span className="truncate text-foreground">
           {getActiveTabLabel(pathname)}
         </span>
