@@ -278,7 +278,6 @@ export default function SuperAdminBillingPage() {
                   <TableHead>Plan</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Active Subs</TableHead>
-                  <TableHead>Features</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -305,19 +304,6 @@ export default function SuperAdminBillingPage() {
                       >
                         {plan.activeSubscriptions}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        {plan.features.map((feature) => (
-                          <Badge
-                            key={feature}
-                            variant="outline"
-                            className="border-border bg-muted/30 text-[10px] text-muted-foreground"
-                          >
-                            {feature}
-                          </Badge>
-                        ))}
-                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
