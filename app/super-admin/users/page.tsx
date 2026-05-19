@@ -4,11 +4,19 @@ import { useState } from "react"
 import Image from "next/image"
 import useSWR from "swr"
 import { motion, AnimatePresence } from "framer-motion"
-import { Users, ChevronRight, Shield, Loader2 } from "lucide-react"
+import { Users, ChevronRight, Shield, Loader2, Grid3X3, List } from "lucide-react"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 type WorkspaceMembership = {
   id: string
@@ -45,6 +53,7 @@ export default function SuperAdminUsersPage() {
 
   // Expanded workspace view per user ID
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
+  const [userViewMode, setUserViewMode] = useState<"table" | "cards">("cards")
 
   if (error) {
     return (
@@ -87,28 +96,120 @@ export default function SuperAdminUsersPage() {
 
   return (
     <div className="flex flex-1 flex-col space-y-6 text-left">
-      {/* Users statistics bar */}
-      <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-md sm:flex-row sm:items-center">
-        <div className="space-y-1 text-left">
-          <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
-            <Users className="h-5 w-5 text-primary" />
+      {/* Header with title and toggle */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-lg font-semibold text-foreground">
             Registered Accounts Directory
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Manage user system properties, access metrics, and multi-tenant
-            workspace allocations.
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Total Users: {users.length}
           </p>
         </div>
-        <Badge
-          variant="outline"
-          className="border-border bg-background px-3.5 py-1 font-mono font-bold text-foreground shadow-sm"
-        >
-          Total Users: {users.length}
-        </Badge>
+        <div className="flex gap-2">
+          <Button
+            variant={userViewMode === "cards" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setUserViewMode("cards")}
+            className="gap-2"
+          >
+            <Grid3X3 className="h-4 w-4" />
+            Cards
+          </Button>
+          <Button
+            variant={userViewMode === "table" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setUserViewMode("table")}
+            className="gap-2"
+          >
+            <List className="h-4 w-4" />
+            Table
+          </Button>
+        </div>
       </div>
 
-      {/* Users Grid Layout */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Users View - Table or Cards */}
+      {userViewMode === "table" ? (
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Logins</TableHead>
+                <TableHead>Workspaces</TableHead>
+                <TableHead>Joined</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      {user.image ? (
+                        <Image
+                          src={user.image}
+                          alt={user.name}
+                          width={32}
+                          height={32}
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                          {user.name
+                            .split(" ")
+                            .map((n: string) => n[0])
+                            .join("")}
+                        </div>
+                      )}
+                      <span className="font-medium text-foreground">
+                        {user.name}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {user.email}
+                  </TableCell>
+                  <TableCell>
+                    {user.role === "super_admin" ? (
+                      <Badge className="border-destructive/20 bg-destructive/10 text-destructive">
+                        Super Admin
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline">User</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={`${
+                        user.status === "active"
+                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : "border-border bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {user.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm font-mono font-bold">
+                    {user.loginCount}
+                  </TableCell>
+                  <TableCell className="text-sm font-mono font-bold text-primary">
+                    {user.workspaces.length}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {user.createdAt}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        /* Users Grid Layout */
+        <div className="grid gap-4 md:grid-cols-2">
         {users.map((user) => (
           <Card
             key={user.id}
@@ -258,6 +359,7 @@ export default function SuperAdminUsersPage() {
           </Card>
         ))}
       </div>
+      )}
     </div>
   )
 }
